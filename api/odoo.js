@@ -61,6 +61,7 @@ async function odooSearch(uid, model, domain, fields) {
 </methodCall>`
   });
   const text = await res.text();
+  console.log('XMLRPC object response:', text.slice(0, 500));
   const amounts = [...text.matchAll(/<member><name>amount_total<\/name><value><double>([\d.]+)<\/double><\/value><\/member>/g)];
   return amounts.map(m => ({ amount_total: parseFloat(m[1]) }));
 }
