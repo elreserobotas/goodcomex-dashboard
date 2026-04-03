@@ -1,3 +1,6 @@
+export default async function handler(req, res) {
+  console.log('API KEY presente:', !!process.env.ODOO_API_KEY);
+  res.setHeader('Access-Control-Allow-Origin', '*');
 const ODOO_URL = 'https://goodcomex-el-resero.odoo.com';
 const ODOO_DB = 'goodcomex-el-resero';
 const ODOO_USER = 'kevinlubi@gmail.com';
