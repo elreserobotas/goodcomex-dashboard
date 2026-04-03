@@ -1,30 +1,16 @@
 const ODOO_URL = 'https://goodcomex-el-resero.odoo.com';
-const ODOO_DB = 'goodcomex-el-resero';
 const ODOO_USER = 'kevinlubi@gmail.com';
 
-async function getSession() {
-  const res = await fetch(`${ODOO_URL}/web/session/authenticate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      jsonrpc: '2.0', method: 'call',
-      params: { db: ODOO_DB, login: ODOO_USER, password: process.env.ODOO_API_KEY }
-    })
-  });
-  const text = await res.text();
-  const data = JSON.parse(text);
-  if (!data.result || !data.result.uid) throw new Error('Auth fallida: ' + text.slice(0, 200));
-  const cookies = res.headers.get('set-cookie');
-  const match = cookies?.match(/session_id=([^;]+)/);
-  return match ? match[1] : null;
+function getAuth() {
+  return 'Basic ' + Buffer.from(`${ODOO_USER}:${process.env.ODOO_API_KEY}`).toString('base64');
 }
 
-async function odooCall(session, model, method, args, kwargs = {}) {
+async function odooCall(model, method, args, kwargs = {}) {
   const res = await fetch(`${ODOO_URL}/web/dataset/call_kw`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Cookie': `session_id=${session}`
+      'Authorization': getAuth()
     },
     body: JSON.stringify({
       jsonrpc: '2.0', method: 'call',
@@ -35,15 +21,15 @@ async function odooCall(session, model, method, args, kwargs = {}) {
   return data.result || [];
 }
 
-async function getVentas(session, companyId, desde, hasta) {
-  return odooCall(session, 'account.move', 'search_read',
+async function getVentas(companyId, desde, hasta) {
+  return odooCall('account.move', 'search_read',
     [[['company_id','=',companyId],['move_type','=','out_invoice'],['state','=','posted'],['invoice_date','>=',desde],['invoice_date','<=',hasta]]],
-    { fields: ['amount_total','invoice_date','partner_id','name'], limit: 1000 }
+    { fields: ['amount_total'], limit: 1000 }
   );
 }
 
-async function getOrdenes(session, companyId) {
-  return odooCall(session, 'sale.order', 'search_read',
+async function getOrdenes(companyId) {
+  return odooCall('sale.order', 'search_read',
     [[['company_id','=',companyId],['state','in',['sale','done']]]],
     { fields: ['name','partner_id','amount_total','date_order'], limit: 5, order: 'date_order desc' }
   );
@@ -52,10 +38,6 @@ async function getOrdenes(session, companyId) {
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   try {
-    console.log('API KEY presente:', !!process.env.ODOO_API_KEY);
-    const session = await getSession();
-    if (!session) throw new Error('No se pudo obtener sesión');
-
     const meses = [
       { nombre: 'Enero',   desde: '2026-01-01', hasta: '2026-01-31' },
       { nombre: 'Febrero', desde: '2026-02-01', hasta: '2026-02-28' },
@@ -66,8 +48,8 @@ module.exports = async function handler(req, res) {
     const ventasPorMes = await Promise.all(
       meses.map(async (m) => {
         const [r, e] = await Promise.all([
-          getVentas(session, 1, m.desde, m.hasta),
-          getVentas(session, 2, m.desde, m.hasta)
+          getVentas(1, m.desde, m.hasta),
+          getVentas(2, m.desde, m.hasta)
         ]);
         return {
           mes: m.nombre,
@@ -78,8 +60,8 @@ module.exports = async function handler(req, res) {
     );
 
     const [ordenesResero, ordenesEmpresaB] = await Promise.all([
-      getOrdenes(session, 1),
-      getOrdenes(session, 2)
+      getOrdenes(1),
+      getOrdenes(2)
     ]);
 
     const ordenesRecientes = [
