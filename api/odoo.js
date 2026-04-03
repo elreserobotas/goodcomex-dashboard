@@ -1,10 +1,23 @@
-export default async function handler(req, res) {
-  console.log('API KEY presente:', !!process.env.ODOO_API_KEY);
-  res.setHeader('Access-Control-Allow-Origin', '*');
 const ODOO_URL = 'https://goodcomex-el-resero.odoo.com';
 const ODOO_DB = 'goodcomex-el-resero';
 const ODOO_USER = 'kevinlubi@gmail.com';
-const ODOO_KEY = process.env.ODOO_API_KEY;
+
+async function getSession() {
+  const res = await fetch(`${ODOO_URL}/web/session/authenticate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0', method: 'call',
+      params: { db: ODOO_DB, login: ODOO_USER, password: process.env.ODOO_API_KEY }
+    })
+  });
+  const text = await res.text();
+  const data = JSON.parse(text);
+  if (!data.result || !data.result.uid) throw new Error('Auth fallida: ' + text.slice(0, 200));
+  const cookies = res.headers.get('set-cookie');
+  const match = cookies?.match(/session_id=([^;]+)/);
+  return match ? match[1] : null;
+}
 
 async function odooCall(session, model, method, args, kwargs = {}) {
   const res = await fetch(`${ODOO_URL}/web/dataset/call_kw`, {
@@ -19,51 +32,29 @@ async function odooCall(session, model, method, args, kwargs = {}) {
     })
   });
   const data = await res.json();
-  return data.result;
-}
-
-async function getSession() {
-  const res = await fetch(`${ODOO_URL}/web/session/authenticate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      jsonrpc: '2.0', method: 'call',
-      params: { db: ODOO_DB, login: ODOO_USER, password: ODOO_KEY }
-    })
-  });
-  const cookies = res.headers.get('set-cookie');
-  const match = cookies?.match(/session_id=([^;]+)/);
-  return match ? match[1] : null;
+  return data.result || [];
 }
 
 async function getVentas(session, companyId, desde, hasta) {
-  const result = await odooCall(session, 'account.move', 'search_read',
-    [[
-      ['company_id', '=', companyId],
-      ['move_type', '=', 'out_invoice'],
-      ['state', '=', 'posted'],
-      ['invoice_date', '>=', desde],
-      ['invoice_date', '<=', hasta]
-    ]],
-    { fields: ['amount_total', 'invoice_date', 'partner_id', 'name'], limit: 1000 }
+  return odooCall(session, 'account.move', 'search_read',
+    [[['company_id','=',companyId],['move_type','=','out_invoice'],['state','=','posted'],['invoice_date','>=',desde],['invoice_date','<=',hasta]]],
+    { fields: ['amount_total','invoice_date','partner_id','name'], limit: 1000 }
   );
-  return result || [];
 }
 
-async function getOrdenesRecientes(session, companyId) {
-  const result = await odooCall(session, 'sale.order', 'search_read',
-    [[['company_id', '=', companyId], ['state', 'in', ['sale', 'done']]]],
-    { fields: ['name', 'partner_id', 'amount_total', 'date_order'], limit: 5, order: 'date_order desc' }
+async function getOrdenes(session, companyId) {
+  return odooCall(session, 'sale.order', 'search_read',
+    [[['company_id','=',companyId],['state','in',['sale','done']]]],
+    { fields: ['name','partner_id','amount_total','date_order'], limit: 5, order: 'date_order desc' }
   );
-  return result || [];
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-
   try {
+    console.log('API KEY presente:', !!process.env.ODOO_API_KEY);
     const session = await getSession();
-    if (!session) return res.status(401).json({ error: 'Auth failed' });
+    if (!session) throw new Error('No se pudo obtener sesión');
 
     const meses = [
       { nombre: 'Enero',   desde: '2026-01-01', hasta: '2026-01-31' },
@@ -87,19 +78,19 @@ export default async function handler(req, res) {
     );
 
     const [ordenesResero, ordenesEmpresaB] = await Promise.all([
-      getOrdenesRecientes(session, 1),
-      getOrdenesRecientes(session, 2)
+      getOrdenes(session, 1),
+      getOrdenes(session, 2)
     ]);
 
-    res.json({
-      ventasPorMes,
-      ordenesRecientes: [
-        ...ordenesResero.map(o => ({ ...o, empresa: 'El Resero' })),
-        ...ordenesEmpresaB.map(o => ({ ...o, empresa: 'Empresa B' }))
-      ].sort((a, b) => new Date(b.date_order) - new Date(a.date_order)).slice(0, 8)
-    });
+    const ordenesRecientes = [
+      ...ordenesResero.map(o => ({ ...o, empresa: 'El Resero' })),
+      ...ordenesEmpresaB.map(o => ({ ...o, empresa: 'Empresa B' }))
+    ].sort((a, b) => new Date(b.date_order) - new Date(a.date_order)).slice(0, 8);
+
+    res.json({ ventasPorMes, ordenesRecientes });
 
   } catch (err) {
+    console.error('ERROR:', err.message);
     res.status(500).json({ error: err.message });
   }
-}
+};
