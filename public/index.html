@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Goodcomex — Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f3; color: #1a1a1a; }
+    .topbar { background: #fff; border-bottom: 1px solid #e5e5e5; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    .topbar-title { font-size: 16px; font-weight: 500; }
+    .badge { font-size: 12px; padding: 3px 10px; border-radius: 20px; background: #eaf3de; color: #27500a; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .metrics { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
+    .metric { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1rem 1.25rem; }
+    .metric-label { font-size: 12px; color: #888; margin-bottom: 6px; }
+    .metric-value { font-size: 24px; font-weight: 500; }
+    .metric-sub { font-size: 11px; color: #aaa; margin-top: 4px; }
+    .cards { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
+    .card { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1rem 1.25rem; }
+    .card-label { font-size: 12px; color: #888; margin-bottom: 4px; }
+    .card-value { font-size: 22px; font-weight: 500; }
+    .card-sub { font-size: 11px; color: #aaa; margin-top: 4px; }
+    .chart-wrap { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; }
+    .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .chart-title { font-size: 14px; font-weight: 500; }
+    .legend { display: flex; gap: 16px; font-size: 12px; color: #888; }
+    .legend span { display: flex; align-items: center; gap: 5px; }
+    .dot { width: 10px; height: 10px; border-radius: 2px; }
+    .recent { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1.25rem; }
+    .recent-title { font-size: 14px; font-weight: 500; margin-bottom: 12px; }
+    .row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
+    .row:last-child { border-bottom: none; }
+    .row-name { font-weight: 500; }
+    .row-meta { font-size: 11px; color: #aaa; margin-top: 2px; }
+    .row-amount { font-weight: 500; }
+    .emp-badge { font-size: 10px; padding: 2px 8px; border-radius: 20px; margin-left: 6px; vertical-align: middle; }
+    .b1 { background: #e6f1fb; color: #0c447c; }
+    .b2 { background: #e1f5ee; color: #085041; }
+    .loading { text-align: center; padding: 4rem; color: #888; font-size: 14px; }
+    .error { text-align: center; padding: 4rem; color: #a32d2d; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="topbar-title">Goodcomex — Dashboard</span>
+  <span class="badge" id="status">Cargando...</span>
+</div>
+
+<div class="container">
+  <div id="loading" class="loading">Conectando con Odoo...</div>
+  <div id="content" style="display:none;">
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-label">Total acumulado</div>
+        <div class="metric-value" id="total-general">—</div>
+        <div class="metric-sub">Todas las empresas</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Mejor mes</div>
+        <div class="metric-value" id="mejor-mes">—</div>
+        <div class="metric-sub" id="mejor-mes-monto">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Total facturas</div>
+        <div class="metric-value" id="total-facturas">—</div>
+        <div class="metric-sub">Ambas empresas</div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">El Resero</div>
+        <div class="card-value" id="total-resero">—</div>
+        <div class="card-sub" id="facturas-resero">—</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Empresa B</div>
+        <div class="card-value" id="total-empresab">—</div>
+        <div class="card-sub" id="facturas-empresab">—</div>
+      </div>
+    </div>
+
+    <div class="chart-wrap">
+      <div class="chart-header">
+        <span class="chart-title">Facturación mensual por empresa</span>
+        <div class="legend">
+          <span><span class="dot" style="background:#378ADD"></span>El Resero</span>
+          <span><span class="dot" style="background:#1D9E75"></span>Empresa B</span>
+        </div>
+      </div>
+      <div style="position:relative;height:240px;">
+        <canvas id="barChart"></canvas>
+      </div>
+    </div>
+
+    <div class="recent">
+      <div class="recent-title">Últimas órdenes de venta</div>
+      <div id="ordenes-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const fmt = (n) => '$' + Math.round(n).toLocaleString('es-AR');
+  const fmtM = (n) => '$' + (n / 1000000).toFixed(1) + 'M';
+
+  async function cargarDatos() {
+    try {
+      const res = await fetch('/api/odoo');
+      if (!res.ok) throw new Error('Error al conectar');
+      const data = await res.json();
+
+      const meses = data.ventasPorMes.filter(m => m.resero.cantidad > 0 || m.empresaB.cantidad > 0);
+
+      const totalResero = meses.reduce((a, m) => a + m.resero.total, 0);
+      const totalEmpresaB = meses.reduce((a, m) => a + m.empresaB.total, 0);
+      const totalGeneral = totalResero + totalEmpresaB;
+      const totalFacturas = meses.reduce((a, m) => a + m.resero.cantidad + m.empresaB.cantidad, 0);
+      const totalFacturasResero = meses.reduce((a, m) => a + m.resero.cantidad, 0);
+      const totalFacturasEmpresaB = meses.reduce((a, m) => a + m.empresaB.cantidad, 0);
+
+      const mejorMes = meses.reduce((a, m) => (m.resero.total + m.empresaB.total) > (a.resero.total + a.empresaB.total) ? m : a);
+
+      document.getElementById('total-general').textContent = fmtM(totalGeneral);
+      document.getElementById('mejor-mes').textContent = mejorMes.mes;
+      document.getElementById('mejor-mes-monto').textContent = fmtM(mejorMes.resero.total + mejorMes.empresaB.total) + ' combinado';
+      document.getElementById('total-facturas').textContent = totalFacturas.toLocaleString('es-AR');
+      document.getElementById('total-resero').textContent = fmtM(totalResero);
+      document.getElementById('facturas-resero').textContent = totalFacturasResero + ' facturas';
+      document.getElementById('total-empresab').textContent = fmtM(totalEmpresaB);
+      document.getElementById('facturas-empresab').textContent = totalFacturasEmpresaB + ' facturas';
+
+      new Chart(document.getElementById('barChart'), {
+        type: 'bar',
+        data: {
+          labels: meses.map(m => m.mes),
+          datasets: [
+            {
+              label: 'El Resero',
+              data: meses.map(m => m.resero.total),
+              backgroundColor: '#378ADD',
+              borderRadius: 4,
+              barPercentage: 0.7
+            },
+            {
+              label: 'Empresa B',
+              data: meses.map(m => m.empresaB.total),
+              backgroundColor: '#1D9E75',
+              borderRadius: 4,
+              barPercentage: 0.7
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => ' ' + fmt(ctx.raw)
+              }
+            }
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#888', font: { size: 12 } } },
+            y: {
+              grid: { color: 'rgba(0,0,0,0.06)' },
+              ticks: { color: '#888', font: { size: 11 }, callback: (v) => '$' + (v / 1000000).toFixed(0) + 'M' }
+            }
+          }
+        }
+      });
+
+      const lista = document.getElementById('ordenes-list');
+      data.ordenesRecientes.forEach(o => {
+        const fecha = new Date(o.date_order).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' });
+        const esResero = o.empresa === 'El Resero';
+        lista.innerHTML += `
+          <div class="row">
+            <div>
+              <div class="row-name">
+                ${o.partner_id[1]}
+                <span class="emp-badge ${esResero ? 'b1' : 'b2'}">${o.empresa}</span>
+              </div>
+              <div class="row-meta">${o.name} · ${fecha}</div>
+            </div>
+            <div class="row-amount">${fmt(o.amount_total)}</div>
+          </div>`;
+      });
+
+      document.getElementById('status').textContent = 'Odoo conectado';
+      document.getElementById('status').style.background = '#eaf3de';
+      document.getElementById('status').style.color = '#27500a';
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('content').style.display = 'block';
+
+    } catch (err) {
+      document.getElementById('loading').className = 'error';
+      document.getElementById('loading').textContent = 'Error al conectar con Odoo: ' + err.message;
+      document.getElementById('status').textContent = 'Error';
+      document.getElementById('status').style.background = '#fcebeb';
+      document.getElementById('status').style.color = '#a32d2d';
+    }
+  }
+
+  cargarDatos();
+  setInterval(cargarDatos, 5 * 60 * 1000);
+</script>
+
+</body>
+</html>
