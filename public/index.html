@@ -115,7 +115,7 @@
       if (!res.ok) throw new Error('Error al conectar');
       const data = await res.json();
 
-      const meses = data.ventasPorMes.filter(m => m.resero.cantidad > 0 || m.empresaB.cantidad > 0);
+      const meses = data.ventasPorMes;
 
       const totalResero = meses.reduce((a, m) => a + m.resero.total, 0);
       const totalEmpresaB = meses.reduce((a, m) => a + m.empresaB.total, 0);
