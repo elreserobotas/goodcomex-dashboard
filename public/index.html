@@ -124,8 +124,7 @@
       const totalFacturasResero = meses.reduce((a, m) => a + m.resero.cantidad, 0);
       const totalFacturasEmpresaB = meses.reduce((a, m) => a + m.empresaB.cantidad, 0);
 
-      const mejorMes = meses.reduce((a, m) => (m.resero.total + m.empresaB.total) > (a.resero.total + a.empresaB.total) ? m : a);
-
+const mejorMes = meses.reduce((a, m) => (m.resero.total + m.empresaB.total) > (a.resero.total + a.empresaB.total) ? m : a, meses[0]);
       document.getElementById('total-general').textContent = fmtM(totalGeneral);
       document.getElementById('mejor-mes').textContent = mejorMes.mes;
       document.getElementById('mejor-mes-monto').textContent = fmtM(mejorMes.resero.total + mejorMes.empresaB.total) + ' combinado';
