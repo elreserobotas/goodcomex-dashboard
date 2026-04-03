@@ -14,7 +14,17 @@ async function odooCall(model, method, args, kwargs = {}) {
     },
     body: JSON.stringify({
       jsonrpc: '2.0', method: 'call',
-      params: { model, method, args, kwargs }
+      params: {
+        model, method, args,
+        kwargs: {
+          ...kwargs,
+          context: {
+            allowed_company_ids: [1, 2],
+            lang: 'es_AR',
+            tz: 'America/Argentina/Buenos_Aires'
+          }
+        }
+      }
     })
   });
   const data = await res.json();
