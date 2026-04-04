@@ -51,7 +51,7 @@ async function odooCall(uid, model, domain, fields) {
     body
   });
   const text = await res.text();
-  console.log(`${model} raw:`, text.slice(0, 400));
+  console.log(`${model} raw:`, text.slice(0, 800));
   return text;
 }
 
