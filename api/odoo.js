@@ -26,7 +26,7 @@ async function odooCall(uid, model, domain, fields) {
     } else {
       valXml = `<value><string><![CDATA[${v}]]></string></value>`;
     }
-    return `<value><array><data><value><string>${f}</string></value><value><string>${op}</string></value>${valXml}</data></array></value>`;
+    const safeOp = op.replace(/</g, '&lt;').replace(/>/g, '&gt;'); return `<value><array><data><value><string>${f}</string></value><value><string>${safeOp}</string></value>${valXml}</data></array></value>`;
   }).join('');
 
   const fieldsXml = fields.map(f => `<value><string>${f}</string></value>`).join('');
