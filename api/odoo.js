@@ -54,31 +54,6 @@ async function odooCall(uid, model, domain, fields) {
   return text;
 }
 
-  const fieldsXml = fields.map(f => `<value><string>${f}</string></value>`).join('');
-
-  const body = `<?xml version="1.0"?><methodCall><methodName>execute_kw</methodName><params>
-    <param><value><string>${ODOO_DB}</string></value></param>
-    <param><value><int>${uid}</int></value></param>
-    <param><value><string>${process.env.ODOO_PASSWORD}</string></value></param>
-    <param><value><string>${model}</string></value></param>
-    <param><value><string>search_read</string></value></param>
-    <param><value><array><data><value><array><data>${domainXml}</data></array></value></data></array></value></param>
-    <param><value><struct>
-      <member><name>fields</name><value><array><data>${fieldsXml}</data></array></value></member>
-      <member><name>limit</name><value><int>2000</int></value></member>
-    </struct></value></param>
-  </params></methodCall>`;
-
-  const res = await fetch(`${ODOO_URL}/xmlrpc/2/object`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/xml' },
-    body
-  });
-  const text = await res.text();
-  console.log(`${model} raw:`, text.slice(0, 800));
-  return text;
-}
-
 function parseAmounts(xml) {
   const results = [];
   const memberRegex = /<struct>([\s\S]*?)<\/struct>/g;
