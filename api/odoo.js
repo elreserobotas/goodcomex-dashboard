@@ -128,6 +128,54 @@ function generarMeses(desde, hasta) {
   return meses;
 }
 
+function parsePickings(xml) {
+  const results = [];
+  const memberRegex = /<struct>([\s\S]*?)<\/struct>/g;
+  let struct;
+  while ((struct = memberRegex.exec(xml)) !== null) {
+    const idMatch = struct[1].match(/<name>id<\/name>\s*<value><int>(\d+)<\/int>/);
+    const nameMatch = struct[1].match(/<name>name<\/name>\s*<value><string>([^<]+)<\/string>/);
+    const partnerMatch = struct[1].match(/<name>partner_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
+    const stateMatch = struct[1].match(/<name>state<\/name>\s*<value><string>([^<]+)<\/string>/);
+    const dateMatch = struct[1].match(/<name>scheduled_date<\/name>\s*<value><string>([^<]+)<\/string>/);
+    const companyMatch = struct[1].match(/<name>company_id<\/name>\s*<value><array><data>\s*<value><int>(\d+)<\/int>/);
+    const typeMatch = struct[1].match(/<name>picking_type_code<\/name>\s*<value><string>([^<]+)<\/string>/);
+    if (idMatch && nameMatch) {
+      results.push({
+        id: parseInt(idMatch[1]),
+        name: nameMatch[1],
+        partner: partnerMatch?.[1] || '—',
+        state: stateMatch?.[1] || '',
+        scheduled_date: dateMatch?.[1] || '',
+        company_id: companyMatch ? parseInt(companyMatch[1]) : 0,
+        type: typeMatch?.[1] || ''
+      });
+    }
+  }
+  return results;
+}
+
+function parseMoves(xml) {
+  const results = [];
+  const memberRegex = /<struct>([\s\S]*?)<\/struct>/g;
+  let struct;
+  while ((struct = memberRegex.exec(xml)) !== null) {
+    const pickingMatch = struct[1].match(/<name>picking_id<\/name>\s*<value><array><data>\s*<value><int>(\d+)<\/int>/);
+    const productMatch = struct[1].match(/<name>product_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
+    const qtyMatch = struct[1].match(/<name>product_uom_qty<\/name>\s*<value><double>([\d.]+)<\/double>/);
+    const doneMatch = struct[1].match(/<name>quantity<\/name>\s*<value><double>([\d.]+)<\/double>/);
+    if (pickingMatch && productMatch) {
+      results.push({
+        picking_id: parseInt(pickingMatch[1]),
+        product: productMatch?.[1] || '—',
+        qty: parseFloat(qtyMatch?.[1] || 0),
+        done: parseFloat(doneMatch?.[1] || 0)
+      });
+    }
+  }
+  return results;
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   try {
