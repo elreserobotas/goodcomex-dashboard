@@ -20,7 +20,7 @@ async function odooCall(uid, model, domain, fields, extra = {}) {
     const safeOp = op.replace(/</g, '&lt;').replace(/>/g, '&gt;');
     let valXml;
     if (Array.isArray(v)) {
-      valXml = `<value><array><data>${v.map(i => `<value><string>${i}</string></value>`).join('')}</data></array></value>`;
+      valXml = `<value><array><data>${v.map(i => typeof i === 'number' ? `<value><int>${i}</int></value>` : `<value><string>${i}</string></value>`).join('')}</data></array></value>`;
     } else if (typeof v === 'number') {
       valXml = `<value><int>${v}</int></value>`;
     } else {
@@ -106,28 +106,6 @@ function parseOrders(xml, empresa) {
   return results;
 }
 
-function generarMeses(desde, hasta) {
-  const meses = [];
-  const pad = (n) => String(n).padStart(2, '0');
-  let year = parseInt(desde.slice(0, 4));
-  let month = parseInt(desde.slice(5, 7)) - 1;
-  const hastaYear = parseInt(hasta.slice(0, 4));
-  const hastaMonth = parseInt(hasta.slice(5, 7)) - 1;
-  while (year < hastaYear || (year === hastaYear && month <= hastaMonth)) {
-    const ultimoDia = new Date(year, month + 1, 0).getDate();
-    const d = new Date(year, month, 1);
-    const nombre = d.toLocaleString('es-AR', { month: 'short' }).replace('.', '') + ' ' + String(year).slice(2);
-    meses.push({
-      nombre,
-      desde: `${year}-${pad(month + 1)}-01`,
-      hasta: `${year}-${pad(month + 1)}-${ultimoDia}`
-    });
-    month++;
-    if (month > 11) { month = 0; year++; }
-  }
-  return meses;
-}
-
 function parsePickings(xml) {
   const results = [];
   const memberRegex = /<struct>([\s\S]*?)<\/struct>/g;
@@ -139,7 +117,6 @@ function parsePickings(xml) {
     const stateMatch = struct[1].match(/<name>state<\/name>\s*<value><string>([^<]+)<\/string>/);
     const dateMatch = struct[1].match(/<name>scheduled_date<\/name>\s*<value><string>([^<]+)<\/string>/);
     const companyMatch = struct[1].match(/<name>company_id<\/name>\s*<value><array><data>\s*<value><int>(\d+)<\/int>/);
-    const typeMatch = struct[1].match(/<name>picking_type_code<\/name>\s*<value><string>([^<]+)<\/string>/);
     if (idMatch && nameMatch) {
       results.push({
         id: parseInt(idMatch[1]),
@@ -147,8 +124,7 @@ function parsePickings(xml) {
         partner: partnerMatch?.[1] || '—',
         state: stateMatch?.[1] || '',
         scheduled_date: dateMatch?.[1] || '',
-        company_id: companyMatch ? parseInt(companyMatch[1]) : 0,
-        type: typeMatch?.[1] || ''
+        company_id: companyMatch ? parseInt(companyMatch[1]) : 0
       });
     }
   }
@@ -174,6 +150,28 @@ function parseMoves(xml) {
     }
   }
   return results;
+}
+
+function generarMeses(desde, hasta) {
+  const meses = [];
+  const pad = (n) => String(n).padStart(2, '0');
+  let year = parseInt(desde.slice(0, 4));
+  let month = parseInt(desde.slice(5, 7)) - 1;
+  const hastaYear = parseInt(hasta.slice(0, 4));
+  const hastaMonth = parseInt(hasta.slice(5, 7)) - 1;
+  while (year < hastaYear || (year === hastaYear && month <= hastaMonth)) {
+    const ultimoDia = new Date(year, month + 1, 0).getDate();
+    const d = new Date(year, month, 1);
+    const nombre = d.toLocaleString('es-AR', { month: 'short' }).replace('.', '') + ' ' + String(year).slice(2);
+    meses.push({
+      nombre,
+      desde: `${year}-${pad(month + 1)}-01`,
+      hasta: `${year}-${pad(month + 1)}-${ultimoDia}`
+    });
+    month++;
+    if (month > 11) { month = 0; year++; }
+  }
+  return meses;
 }
 
 module.exports = async function handler(req, res) {
@@ -211,10 +209,8 @@ module.exports = async function handler(req, res) {
       })
     );
 
-    // Todas las facturas del período
     const todasFacturas = ventasPorMes.flatMap(m => m.facturas);
 
-    // Ranking clientes top
     const clienteMap = {};
     todasFacturas.forEach(f => {
       if (!f.partner_name) return;
@@ -222,18 +218,45 @@ module.exports = async function handler(req, res) {
       clienteMap[f.partner_name].total += f.amount_total;
       clienteMap[f.partner_name].cantidad++;
     });
-    const clientesTop = Object.values(clienteMap)
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 10);
+    const clientesTop = Object.values(clienteMap).sort((a, b) => b.total - a.total).slice(0, 10);
 
-    // Facturas pendientes y vencidas
     const hoyStr = hoy.toISOString().slice(0, 10);
     const pendientes = todasFacturas.filter(f => f.payment_state !== 'paid' && f.amount_residual > 0);
     const vencidas = pendientes.filter(f => f.invoice_date_due && f.invoice_date_due < hoyStr);
     const totalPendiente = pendientes.reduce((a, f) => a + f.amount_residual, 0);
     const totalVencido = vencidas.reduce((a, f) => a + f.amount_residual, 0);
 
-    // Órdenes recientes
+    const [xmlPickings1, xmlPickings2] = await Promise.all([
+      odooCall(uid, 'stock.picking',
+        [['company_id','=',1],['state','in',['confirmed','assigned','waiting']],['picking_type_code','=','outgoing']],
+        ['name','partner_id','state','scheduled_date','company_id']
+      ),
+      odooCall(uid, 'stock.picking',
+        [['company_id','=',2],['state','in',['confirmed','assigned','waiting']],['picking_type_code','=','outgoing']],
+        ['name','partner_id','state','scheduled_date','company_id']
+      )
+    ]);
+
+    const pickings1 = parsePickings(xmlPickings1);
+    const pickings2 = parsePickings(xmlPickings2);
+    const todosPickings = [...pickings1, ...pickings2];
+
+    let moves = [];
+    if (todosPickings.length > 0) {
+      const pickingIds = todosPickings.map(p => p.id);
+      const movesXml = await odooCall(uid, 'stock.move',
+        [['picking_id','in',pickingIds],['state','not in',['done','cancel']]],
+        ['picking_id','product_id','product_uom_qty','quantity']
+      );
+      moves = parseMoves(movesXml);
+    }
+
+    const pendientesEntrega = todosPickings.map(p => ({
+      ...p,
+      empresa: p.company_id === 1 ? 'El Resero' : 'Empresa B',
+      productos: moves.filter(m => m.picking_id === p.id)
+    }));
+
     const [xmlResero, xmlEmpresaB] = await Promise.all([
       odooCall(uid, 'sale.order', [['company_id','=',1],['state','in',['sale','done']]], ['name','partner_id','amount_total','date_order'], { limit: 5, order: 'date_order desc' }),
       odooCall(uid, 'sale.order', [['company_id','=',2],['state','in',['sale','done']]], ['name','partner_id','amount_total','date_order'], { limit: 5, order: 'date_order desc' })
@@ -244,44 +267,13 @@ module.exports = async function handler(req, res) {
       ...parseOrders(xmlEmpresaB, 'Empresa B')
     ].sort((a, b) => new Date(b.date_order) - new Date(a.date_order)).slice(0, 8);
 
-    // Pedidos pendientes de entrega
-    const [xmlPickings1, xmlPickings2] = await Promise.all([
-      odooCall(uid, 'stock.picking',
-        [['company_id','=',1],['state','in',['confirmed','assigned','waiting']],['picking_type_code','=','outgoing']],
-        ['name','partner_id','state','scheduled_date','company_id','picking_type_code']
-      ),
-      odooCall(uid, 'stock.picking',
-        [['company_id','=',2],['state','in',['confirmed','assigned','waiting']],['picking_type_code','=','outgoing']],
-        ['name','partner_id','state','scheduled_date','company_id','picking_type_code']
-      )
-    ]);
-
-    const pickings1 = parsePickings(xmlPickings1);
-    const pickings2 = parsePickings(xmlPickings2);
-    const todosPickings = [...pickings1, ...pickings2];
-
-    let movesXml = '';
-    if (todosPickings.length > 0) {
-      const pickingIds = todosPickings.map(p => p.id);
-      movesXml = await odooCall(uid, 'stock.move',
-        [['picking_id','in', pickingIds],['state','not in',['done','cancel']]],
-        ['picking_id','product_id','product_uom_qty','quantity']
-      );
-    }
-    const moves = movesXml ? parseMoves(movesXml) : [];
-
-    const pickingsConProductos = todosPickings.map(p => ({
-      ...p,
-      productos: moves.filter(m => m.picking_id === p.id)
-    }));
-    
     res.json({
       ventasPorMes: ventasPorMes.map(m => ({ mes: m.mes, resero: m.resero, empresaB: m.empresaB })),
       clientesTop,
       pendientes: { total: totalPendiente, cantidad: pendientes.length },
       vencidas: { total: totalVencido, cantidad: vencidas.length, detalle: vencidas.slice(0, 5) },
+      pendientesEntrega,
       ordenesRecientes
-      pendientesEntrega: pickingsConProductos
     });
 
   } catch (err) {
