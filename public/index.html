@@ -23,6 +23,7 @@
     .btn-primary:hover { background: #333; }
     .btn-excel { background: #1D6F42; color: #fff; }
     .btn-excel:hover { background: #155234; }
+    .section-title { font-size: 15px; font-weight: 500; margin: 2rem 0 1rem; color: #1a1a1a; }
     .metrics { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
     .metric { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1rem 1.25rem; }
     .metric-label { font-size: 12px; color: #888; margin-bottom: 6px; }
@@ -30,6 +31,8 @@
     .metric-sub { font-size: 11px; color: #aaa; margin-top: 4px; }
     .metric.alerta { border-color: #f0997b; }
     .metric.alerta .metric-value { color: #993c1d; }
+    .metric.warning { border-color: #FAC775; }
+    .metric.warning .metric-value { color: #854F0B; }
     .cards { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
     .card { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1rem 1.25rem; }
     .card-label { font-size: 12px; color: #888; margin-bottom: 4px; }
@@ -56,6 +59,21 @@
     .venc-name { flex: 1; }
     .venc-meta { font-size: 11px; color: #aaa; margin-top: 2px; }
     .venc-amount { font-weight: 500; color: #993c1d; }
+    .entrega-card { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 10px; cursor: pointer; }
+    .entrega-card:hover { border-color: #ccc; }
+    .entrega-header { display: flex; justify-content: space-between; align-items: center; }
+    .entrega-name { font-weight: 500; font-size: 14px; }
+    .entrega-partner { font-size: 13px; color: #555; margin-top: 2px; }
+    .entrega-fecha { font-size: 12px; color: #888; margin-top: 2px; }
+    .entrega-productos { margin-top: 10px; border-top: 0.5px solid #f0f0f0; padding-top: 8px; display: none; }
+    .entrega-productos.open { display: block; }
+    .prod-row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; color: #555; border-bottom: 0.5px solid #f5f5f5; }
+    .prod-row:last-child { border-bottom: none; }
+    .estado-badge { font-size: 10px; padding: 2px 8px; border-radius: 20px; }
+    .estado-confirmed { background: #faeeda; color: #633806; }
+    .estado-assigned { background: #eaf3de; color: #27500a; }
+    .estado-waiting { background: #e6f1fb; color: #0c447c; }
+    .entregas-cols { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
     .recent { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; }
     .recent-title { font-size: 14px; font-weight: 500; margin-bottom: 12px; }
     .row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; cursor: pointer; }
@@ -69,6 +87,7 @@
     .b2 { background: #e1f5ee; color: #085041; }
     .loading { text-align: center; padding: 4rem; color: #888; font-size: 14px; }
     .error { text-align: center; padding: 4rem; color: #a32d2d; font-size: 14px; }
+    .empty { font-size: 13px; color: #888; padding: 1rem 0; }
     .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
     .modal-bg.open { display: flex; }
     .modal { background: #fff; border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
@@ -78,8 +97,6 @@
     .modal-row:last-child { border-bottom: none; }
     .modal-label { color: #888; }
     .modal-val { font-weight: 500; }
-    .paid { color: #27500a; }
-    .unpaid { color: #993c1d; }
   </style>
 </head>
 <body>
@@ -101,6 +118,8 @@
 
   <div id="loading" class="loading">Conectando con Odoo...</div>
   <div id="content" style="display:none;">
+
+    <div class="section-title">Facturación</div>
 
     <div class="metrics">
       <div class="metric">
@@ -188,6 +207,37 @@
       </div>
     </div>
 
+    <div class="section-title">Entregas pendientes</div>
+
+    <div class="metrics" style="margin-bottom:1.5rem;">
+      <div class="metric warning">
+        <div class="metric-label">Total remitos pendientes</div>
+        <div class="metric-value" id="total-remitos">—</div>
+        <div class="metric-sub">Ambas empresas</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">El Resero</div>
+        <div class="metric-value" id="remitos-resero">—</div>
+        <div class="metric-sub">remitos pendientes</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Empresa B</div>
+        <div class="metric-value" id="remitos-empresab">—</div>
+        <div class="metric-sub">remitos pendientes</div>
+      </div>
+    </div>
+
+    <div class="entregas-cols">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:#0c447c;margin-bottom:10px;">El Resero</div>
+        <div id="entregas-resero"></div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:500;color:#085041;margin-bottom:10px;">Empresa B</div>
+        <div id="entregas-empresab"></div>
+      </div>
+    </div>
+
     <div class="recent">
       <div class="recent-title">Últimas órdenes de venta <span style="font-size:11px;color:#aaa;font-weight:400">(clic para ver detalle)</span></div>
       <div id="ordenes-list"></div>
@@ -229,9 +279,49 @@
       <div class="modal-row"><span class="modal-label">Cliente</span><span class="modal-val">${orden.partner_id[1]}</span></div>
       <div class="modal-row"><span class="modal-label">Fecha</span><span class="modal-val">${new Date(orden.date_order).toLocaleDateString('es-AR', {day:'numeric',month:'long',year:'numeric'})}</span></div>
       <div class="modal-row"><span class="modal-label">Monto total</span><span class="modal-val">${fmt(orden.amount_total)}</span></div>
-      <div class="modal-row"><span class="modal-label">Estado</span><span class="modal-val">${orden.empresa === 'El Resero' ? '<span class="b1 emp-badge">El Resero</span>' : '<span class="b2 emp-badge">Empresa B</span>'}</span></div>
     `;
     document.getElementById('modal-bg').classList.add('open');
+  }
+
+  function estadoLabel(state) {
+    if (state === 'assigned') return '<span class="estado-badge estado-assigned">Listo</span>';
+    if (state === 'confirmed') return '<span class="estado-badge estado-confirmed">Confirmado</span>';
+    return '<span class="estado-badge estado-waiting">En espera</span>';
+  }
+
+  function renderEntregas(pickings, containerId) {
+    const container = document.getElementById(containerId);
+    if (!pickings.length) {
+      container.innerHTML = '<p class="empty">Sin entregas pendientes</p>';
+      return;
+    }
+    container.innerHTML = pickings.map((p, idx) => {
+      const fecha = p.scheduled_date ? new Date(p.scheduled_date).toLocaleDateString('es-AR', {day:'numeric',month:'short',year:'numeric'}) : '—';
+      const productos = p.productos.map(pr => `
+        <div class="prod-row">
+          <span>${pr.product}</span>
+          <span style="white-space:nowrap;margin-left:8px;">${pr.qty} uds</span>
+        </div>`).join('');
+      return `
+        <div class="entrega-card" onclick="toggleProductos('prod-${containerId}-${idx}')">
+          <div class="entrega-header">
+            <div>
+              <div class="entrega-name">${p.name} ${estadoLabel(p.state)}</div>
+              <div class="entrega-partner">${p.partner}</div>
+              <div class="entrega-fecha">Fecha: ${fecha}</div>
+            </div>
+            <div style="font-size:12px;color:#aaa;">${p.productos.length} prod.</div>
+          </div>
+          <div class="entrega-productos" id="prod-${containerId}-${idx}">
+            ${productos || '<p class="empty">Sin productos</p>'}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function toggleProductos(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('open');
   }
 
   function exportarExcel() {
@@ -247,18 +337,21 @@
     }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resumen), 'Resumen');
     const clientes = datosGlobales.clientesTop.map(c => ({
-      Cliente: c.nombre,
-      'Total facturado': c.total,
-      'Cantidad facturas': c.cantidad
+      Cliente: c.nombre, 'Total facturado': c.total, 'Cantidad facturas': c.cantidad
     }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(clientes), 'Top Clientes');
+    const entregas = datosGlobales.pendientesEntrega.map(p => ({
+      Remito: p.name, Empresa: p.empresa, Cliente: p.partner,
+      Estado: p.state, 'Fecha programada': p.scheduled_date,
+      Productos: p.productos.map(pr => pr.product + ' x' + pr.qty).join(', ')
+    }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(entregas), 'Entregas pendientes');
     XLSX.writeFile(wb, `goodcomex-dashboard-${new Date().toISOString().slice(0,10)}.xlsx`);
   }
 
   async function cargarDatos() {
     const desde = document.getElementById('desde').value;
     const hasta = document.getElementById('hasta').value;
-
     document.getElementById('loading').style.display = 'block';
     document.getElementById('loading').className = 'loading';
     document.getElementById('loading').textContent = 'Cargando datos...';
@@ -296,6 +389,14 @@
       document.getElementById('cant-vencido').textContent = data.vencidas.cantidad + ' facturas vencidas';
       document.getElementById('ticket-promedio').textContent = fmt(ticketPromedio);
 
+      const remitoResero = data.pendientesEntrega.filter(p => p.empresa === 'El Resero');
+      const remitoEmpresaB = data.pendientesEntrega.filter(p => p.empresa === 'Empresa B');
+      document.getElementById('total-remitos').textContent = data.pendientesEntrega.length;
+      document.getElementById('remitos-resero').textContent = remitoResero.length;
+      document.getElementById('remitos-empresab').textContent = remitoEmpresaB.length;
+      renderEntregas(remitoResero, 'entregas-resero');
+      renderEntregas(remitoEmpresaB, 'entregas-empresab');
+
       if (chartBar) chartBar.destroy();
       chartBar = new Chart(document.getElementById('barChart'), {
         type: 'bar',
@@ -315,24 +416,15 @@
           },
           animation: {
             onComplete: function() {
-              const chart = this;
-              const ctx = chart.ctx;
-              ctx.save();
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'bottom';
-              const meta0 = chart.getDatasetMeta(0);
-              const meta1 = chart.getDatasetMeta(1);
+              const chart = this; const ctx = chart.ctx;
+              ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+              const meta0 = chart.getDatasetMeta(0); const meta1 = chart.getDatasetMeta(1);
               meses.forEach((m, i) => {
-                const val0 = m.resero.total;
-                const val1 = m.empresaB.total;
-                const bar0 = meta0.data[i];
-                const bar1 = meta1.data[i];
-                if (val0 > 0) { ctx.font = '500 9px system-ui'; ctx.fillStyle = '#0c447c'; ctx.fillText(fmtM(val0), bar0.x, bar0.y - 2); }
-                if (val1 > 0) { ctx.font = '500 9px system-ui'; ctx.fillStyle = '#085041'; ctx.fillText(fmtM(val1), bar1.x, bar1.y - 2); }
-                if (val0 + val1 > 0) {
-                  ctx.font = '500 11px system-ui'; ctx.fillStyle = '#333';
-                  ctx.fillText(fmtM(val0 + val1), (bar0.x + bar1.x) / 2, Math.min(bar0.y, bar1.y) - 16);
-                }
+                const v0 = m.resero.total; const v1 = m.empresaB.total;
+                const b0 = meta0.data[i]; const b1 = meta1.data[i];
+                if (v0 > 0) { ctx.font = '500 9px system-ui'; ctx.fillStyle = '#0c447c'; ctx.fillText(fmtM(v0), b0.x, b0.y - 2); }
+                if (v1 > 0) { ctx.font = '500 9px system-ui'; ctx.fillStyle = '#085041'; ctx.fillText(fmtM(v1), b1.x, b1.y - 2); }
+                if (v0 + v1 > 0) { ctx.font = '500 11px system-ui'; ctx.fillStyle = '#333'; ctx.fillText(fmtM(v0+v1), (b0.x+b1.x)/2, Math.min(b0.y,b1.y)-16); }
               });
               ctx.restore();
             }
@@ -341,16 +433,16 @@
       });
 
       if (chartLine) chartLine.destroy();
-      let acumResero = 0, acumEmpresaB = 0;
-      const acumR = meses.map(m => { acumResero += m.resero.total; return acumResero; });
-      const acumE = meses.map(m => { acumEmpresaB += m.empresaB.total; return acumEmpresaB; });
+      let acumR = 0, acumE = 0;
+      const dataR = meses.map(m => { acumR += m.resero.total; return acumR; });
+      const dataE = meses.map(m => { acumE += m.empresaB.total; return acumE; });
       chartLine = new Chart(document.getElementById('lineChart'), {
         type: 'line',
         data: {
           labels: meses.map(m => m.mes),
           datasets: [
-            { label: 'El Resero', data: acumR, borderColor: '#378ADD', backgroundColor: 'rgba(55,138,221,0.08)', fill: true, tension: 0.3, pointRadius: 4 },
-            { label: 'Empresa B', data: acumE, borderColor: '#1D9E75', backgroundColor: 'rgba(29,158,117,0.08)', fill: true, tension: 0.3, pointRadius: 4 }
+            { label: 'El Resero', data: dataR, borderColor: '#378ADD', backgroundColor: 'rgba(55,138,221,0.08)', fill: true, tension: 0.3, pointRadius: 4 },
+            { label: 'Empresa B', data: dataE, borderColor: '#1D9E75', backgroundColor: 'rgba(29,158,117,0.08)', fill: true, tension: 0.3, pointRadius: 4 }
           ]
         },
         options: {
@@ -373,15 +465,15 @@
         </div>`).join('');
 
       document.getElementById('vencidas-list').innerHTML = data.vencidas.detalle.length === 0
-        ? '<p style="font-size:13px;color:#888;padding:1rem 0">Sin facturas vencidas</p>'
+        ? '<p class="empty">Sin facturas vencidas</p>'
         : data.vencidas.detalle.map(f => `
-        <div class="venc-row">
-          <div class="venc-name">
-            <div style="font-weight:500;font-size:13px">${f.partner_name || '—'}</div>
-            <div class="venc-meta">${f.name} · vence ${f.invoice_date_due}</div>
-          </div>
-          <div class="venc-amount">${fmt(f.amount_residual)}</div>
-        </div>`).join('');
+          <div class="venc-row">
+            <div class="venc-name">
+              <div style="font-weight:500;font-size:13px">${f.partner_name || '—'}</div>
+              <div class="venc-meta">${f.name} · vence ${f.invoice_date_due}</div>
+            </div>
+            <div class="venc-amount">${fmt(f.amount_residual)}</div>
+          </div>`).join('');
 
       document.getElementById('ordenes-list').innerHTML = '';
       data.ordenesRecientes.forEach(o => {
