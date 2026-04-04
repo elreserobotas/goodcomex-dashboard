@@ -56,4 +56,112 @@ function parseAmounts(xml) {
   const results = [];
   const memberRegex = /<struct>([\s\S]*?)<\/struct>/g;
   let struct;
-  while ((struct = memberRegex.exec(xml)) !==
+  while ((struct = memberRegex.exec(xml)) !== null) {
+    const amountMatch = struct[1].match(/<name>amount_total<\/name>\s*<value><double>([\d.]+)<\/double>/);
+    const companyMatch = struct[1].match(/<name>company_id<\/name>\s*<value><array><data>\s*<value><int>(\d+)<\/int>/);
+    if (amountMatch) {
+      results.push({
+        amount_total: parseFloat(amountMatch[1]),
+        company_id: companyMatch ? [parseInt(companyMatch[1])] : [0]
+      });
+    }
+  }
+  return results;
+}
+
+function parseOrders(xml, empresa) {
+  const results = [];
+  const memberRegex = /<struct>([\s\S]*?)<\/struct>/g;
+  let struct;
+  while ((struct = memberRegex.exec(xml)) !== null) {
+    const nameMatch = struct[1].match(/<name>name<\/name>\s*<value><string>(S\d+)<\/string>/);
+    const amountMatch = struct[1].match(/<name>amount_total<\/name>\s*<value><double>([\d.]+)<\/double>/);
+    const dateMatch = struct[1].match(/<name>date_order<\/name>\s*<value><string>([^<]+)<\/string>/);
+    const partnerMatch = struct[1].match(/<name>partner_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
+    if (nameMatch && amountMatch) {
+      results.push({
+        name: nameMatch[1],
+        amount_total: parseFloat(amountMatch[1]),
+        date_order: dateMatch?.[1] || '',
+        partner_id: [0, partnerMatch?.[1] || ''],
+        empresa
+      });
+    }
+  }
+  return results;
+}
+
+function generarMeses(desde, hasta) {
+  const meses = [];
+  const pad = (n) => String(n).padStart(2, '0');
+  let year = parseInt(desde.slice(0, 4));
+  let month = parseInt(desde.slice(5, 7)) - 1;
+  const hastaYear = parseInt(hasta.slice(0, 4));
+  const hastaMonth = parseInt(hasta.slice(5, 7)) - 1;
+
+  while (year < hastaYear || (year === hastaYear && month <= hastaMonth)) {
+    const ultimoDia = new Date(year, month + 1, 0).getDate();
+    const d = new Date(year, month, 1);
+    const nombre = d.toLocaleString('es-AR', { month: 'short' }).replace('.', '') + ' ' + String(year).slice(2);
+    meses.push({
+      nombre,
+      desde: `${year}-${pad(month + 1)}-01`,
+      hasta: `${year}-${pad(month + 1)}-${ultimoDia}`
+    });
+    month++;
+    if (month > 11) { month = 0; year++; }
+  }
+  return meses;
+}
+
+module.exports = async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  try {
+    const hoy = new Date();
+    const defaultDesde = '2025-11-01';
+    const defaultHasta = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-01`;
+
+    const desde = req.query.desde || defaultDesde;
+    const hastaRaw = req.query.hasta || defaultHasta;
+    const hastaDate = new Date(hastaRaw.slice(0, 7) + '-01');
+    hastaDate.setMonth(hastaDate.getMonth() + 1);
+    hastaDate.setDate(0);
+    const hasta = hastaDate.toISOString().slice(0, 10);
+
+    const uid = await getUid();
+    const meses = generarMeses(desde, hasta);
+
+    const ventasPorMes = await Promise.all(
+      meses.map(async (m) => {
+        const xml = await odooCall(uid, 'account.move',
+          [['move_type','=','out_invoice'],['state','=','posted'],['invoice_date','>=',m.desde],['invoice_date','<=',m.hasta]],
+          ['amount_total','company_id']
+        );
+        const facturas = parseAmounts(xml);
+        const resero = facturas.filter(f => f.company_id[0] === 1);
+        const empresaB = facturas.filter(f => f.company_id[0] === 2);
+        return {
+          mes: m.nombre,
+          resero: { total: resero.reduce((a, o) => a + o.amount_total, 0), cantidad: resero.length },
+          empresaB: { total: empresaB.reduce((a, o) => a + o.amount_total, 0), cantidad: empresaB.length }
+        };
+      })
+    );
+
+    const [xmlResero, xmlEmpresaB] = await Promise.all([
+      odooCall(uid, 'sale.order', [['company_id','=',1],['state','in',['sale','done']]], ['name','partner_id','amount_total','date_order']),
+      odooCall(uid, 'sale.order', [['company_id','=',2],['state','in',['sale','done']]], ['name','partner_id','amount_total','date_order'])
+    ]);
+
+    const ordenesRecientes = [
+      ...parseOrders(xmlResero, 'El Resero'),
+      ...parseOrders(xmlEmpresaB, 'Empresa B')
+    ].sort((a, b) => new Date(b.date_order) - new Date(a.date_order)).slice(0, 8);
+
+    res.json({ ventasPorMes, ordenesRecientes });
+
+  } catch (err) {
+    console.error('ERROR:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+};
