@@ -109,7 +109,7 @@ module.exports = async function handler(req, res) {
     const ventasPorMes = await Promise.all(
       meses.map(async (m) => {
         const xml = await odooCall(uid, 'account.move',
-          [['move_type','=','out_invoice'],['state','=','posted'],['invoice_date','>=',m.desde],['invoice_date','<=',m.hasta]],
+          [['move_type','=','out_invoice'],['state','=','posted']],
           ['amount_total','company_id']
         );
         const facturas = parseAmounts(xml);
