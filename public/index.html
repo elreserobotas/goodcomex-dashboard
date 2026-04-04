@@ -10,8 +10,15 @@
     body { font-family: system-ui, sans-serif; background: #f5f5f3; color: #1a1a1a; }
     .topbar { background: #fff; border-bottom: 1px solid #e5e5e5; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
     .topbar-title { font-size: 16px; font-weight: 500; }
-    .badge { font-size: 12px; padding: 3px 10px; border-radius: 20px; background: #eaf3de; color: #27500a; }
+    .badge { font-size: 12px; padding: 3px 10px; border-radius: 20px; }
+    .badge.ok { background: #eaf3de; color: #27500a; }
+    .badge.err { background: #fcebeb; color: #a32d2d; }
     .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .filtros { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .filtros label { font-size: 13px; color: #888; }
+    .filtros input { padding: 6px 10px; border: 0.5px solid #e5e5e5; border-radius: 8px; font-size: 13px; background: #fff; color: #1a1a1a; }
+    .filtros button { padding: 6px 16px; border: 0.5px solid #e5e5e5; border-radius: 8px; font-size: 13px; background: #1a1a1a; color: #fff; cursor: pointer; }
+    .filtros button:hover { background: #333; }
     .metrics { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
     .metric { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1rem 1.25rem; }
     .metric-label { font-size: 12px; color: #888; margin-bottom: 6px; }
@@ -50,6 +57,14 @@
 </div>
 
 <div class="container">
+  <div class="filtros">
+    <label>Desde</label>
+    <input type="month" id="desde" value="2025-11" />
+    <label>Hasta</label>
+    <input type="month" id="hasta" />
+    <button onclick="cargarDatos()">Aplicar</button>
+  </div>
+
   <div id="loading" class="loading">Conectando con Odoo...</div>
   <div id="content" style="display:none;">
 
@@ -57,7 +72,7 @@
       <div class="metric">
         <div class="metric-label">Total acumulado</div>
         <div class="metric-value" id="total-general">—</div>
-        <div class="metric-sub">Todas las empresas</div>
+        <div class="metric-sub" id="periodo-label">—</div>
       </div>
       <div class="metric">
         <div class="metric-label">Mejor mes</div>
@@ -92,7 +107,7 @@
           <span><span class="dot" style="background:#1D9E75"></span>Empresa B</span>
         </div>
       </div>
-      <div style="position:relative;height:240px;">
+      <div style="position:relative;height:280px;">
         <canvas id="barChart"></canvas>
       </div>
     </div>
@@ -108,51 +123,54 @@
 <script>
   const fmt = (n) => '$' + Math.round(n).toLocaleString('es-AR');
   const fmtM = (n) => '$' + (n / 1000000).toFixed(1) + 'M';
+  let chartInstance = null;
+
+  const hoy = new Date();
+  document.getElementById('hasta').value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
 
   async function cargarDatos() {
+    const desde = document.getElementById('desde').value;
+    const hasta = document.getElementById('hasta').value;
+
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('loading').className = 'loading';
+    document.getElementById('loading').textContent = 'Cargando datos...';
+    document.getElementById('content').style.display = 'none';
+
     try {
-      const res = await fetch('/api/odoo');
+      const res = await fetch(`/api/odoo?desde=${desde}-01&hasta=${hasta}-01`);
       if (!res.ok) throw new Error('Error al conectar');
       const data = await res.json();
+      if (data.error) throw new Error(data.error);
 
       const meses = data.ventasPorMes;
-
       const totalResero = meses.reduce((a, m) => a + m.resero.total, 0);
       const totalEmpresaB = meses.reduce((a, m) => a + m.empresaB.total, 0);
       const totalGeneral = totalResero + totalEmpresaB;
       const totalFacturas = meses.reduce((a, m) => a + m.resero.cantidad + m.empresaB.cantidad, 0);
       const totalFacturasResero = meses.reduce((a, m) => a + m.resero.cantidad, 0);
       const totalFacturasEmpresaB = meses.reduce((a, m) => a + m.empresaB.cantidad, 0);
+      const mejorMes = meses.reduce((a, m) => (m.resero.total + m.empresaB.total) > (a.resero.total + a.empresaB.total) ? m : a, meses[0]);
 
-const mejorMes = meses.reduce((a, m) => (m.resero.total + m.empresaB.total) > (a.resero.total + a.empresaB.total) ? m : a, meses[0]);
       document.getElementById('total-general').textContent = fmtM(totalGeneral);
-      document.getElementById('mejor-mes').textContent = mejorMes.mes;
-      document.getElementById('mejor-mes-monto').textContent = fmtM(mejorMes.resero.total + mejorMes.empresaB.total) + ' combinado';
+      document.getElementById('periodo-label').textContent = `${meses[0]?.mes} → ${meses[meses.length-1]?.mes}`;
+      document.getElementById('mejor-mes').textContent = mejorMes?.mes || '—';
+      document.getElementById('mejor-mes-monto').textContent = fmtM((mejorMes?.resero.total || 0) + (mejorMes?.empresaB.total || 0)) + ' combinado';
       document.getElementById('total-facturas').textContent = totalFacturas.toLocaleString('es-AR');
       document.getElementById('total-resero').textContent = fmtM(totalResero);
-      document.getElementById('facturas-resero').textContent = totalFacturasResero + ' facturas';
+      document.getElementById('facturas-resero').textContent = totalFacturasResero.toLocaleString('es-AR') + ' facturas';
       document.getElementById('total-empresab').textContent = fmtM(totalEmpresaB);
-      document.getElementById('facturas-empresab').textContent = totalFacturasEmpresaB + ' facturas';
+      document.getElementById('facturas-empresab').textContent = totalFacturasEmpresaB.toLocaleString('es-AR') + ' facturas';
 
-      new Chart(document.getElementById('barChart'), {
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(document.getElementById('barChart'), {
         type: 'bar',
         data: {
           labels: meses.map(m => m.mes),
           datasets: [
-            {
-              label: 'El Resero',
-              data: meses.map(m => m.resero.total),
-              backgroundColor: '#378ADD',
-              borderRadius: 4,
-              barPercentage: 0.7
-            },
-            {
-              label: 'Empresa B',
-              data: meses.map(m => m.empresaB.total),
-              backgroundColor: '#1D9E75',
-              borderRadius: 4,
-              barPercentage: 0.7
-            }
+            { label: 'El Resero', data: meses.map(m => m.resero.total), backgroundColor: '#378ADD', borderRadius: 4, barPercentage: 0.7 },
+            { label: 'Empresa B', data: meses.map(m => m.empresaB.total), backgroundColor: '#1D9E75', borderRadius: 4, barPercentage: 0.7 }
           ]
         },
         options: {
@@ -160,33 +178,63 @@ const mejorMes = meses.reduce((a, m) => (m.resero.total + m.empresaB.total) > (a
           maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => ' ' + fmt(ctx.raw)
-              }
-            }
+            tooltip: { callbacks: { label: (ctx) => ' ' + fmt(ctx.raw) } }
           },
           scales: {
             x: { grid: { display: false }, ticks: { color: '#888', font: { size: 12 } } },
             y: {
               grid: { color: 'rgba(0,0,0,0.06)' },
-              ticks: { color: '#888', font: { size: 11 }, callback: (v) => '$' + (v / 1000000).toFixed(0) + 'M' }
+              ticks: { color: '#888', font: { size: 11 }, callback: (v) => '$' + (v/1000000).toFixed(0) + 'M' }
+            }
+          },
+          animation: {
+            onComplete: function() {
+              const chart = this;
+              const ctx = chart.ctx;
+              ctx.save();
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'bottom';
+              const meta0 = chart.getDatasetMeta(0);
+              const meta1 = chart.getDatasetMeta(1);
+              meses.forEach((m, i) => {
+                const val0 = m.resero.total;
+                const val1 = m.empresaB.total;
+                const total = val0 + val1;
+                const bar0 = meta0.data[i];
+                const bar1 = meta1.data[i];
+                if (val0 > 0) {
+                  ctx.font = '500 9px system-ui';
+                  ctx.fillStyle = '#0c447c';
+                  ctx.fillText(fmtM(val0), bar0.x, bar0.y - 2);
+                }
+                if (val1 > 0) {
+                  ctx.font = '500 9px system-ui';
+                  ctx.fillStyle = '#085041';
+                  ctx.fillText(fmtM(val1), bar1.x, bar1.y - 2);
+                }
+                if (total > 0) {
+                  const centerX = (bar0.x + bar1.x) / 2;
+                  const topY = Math.min(bar0.y, bar1.y) - 16;
+                  ctx.font = '500 11px system-ui';
+                  ctx.fillStyle = '#333';
+                  ctx.fillText(fmtM(total), centerX, topY);
+                }
+              });
+              ctx.restore();
             }
           }
         }
       });
 
       const lista = document.getElementById('ordenes-list');
+      lista.innerHTML = '';
       data.ordenesRecientes.forEach(o => {
         const fecha = new Date(o.date_order).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' });
         const esResero = o.empresa === 'El Resero';
         lista.innerHTML += `
           <div class="row">
             <div>
-              <div class="row-name">
-                ${o.partner_id[1]}
-                <span class="emp-badge ${esResero ? 'b1' : 'b2'}">${o.empresa}</span>
-              </div>
+              <div class="row-name">${o.partner_id[1]}<span class="emp-badge ${esResero ? 'b1' : 'b2'}">${o.empresa}</span></div>
               <div class="row-meta">${o.name} · ${fecha}</div>
             </div>
             <div class="row-amount">${fmt(o.amount_total)}</div>
@@ -194,17 +242,15 @@ const mejorMes = meses.reduce((a, m) => (m.resero.total + m.empresaB.total) > (a
       });
 
       document.getElementById('status').textContent = 'Odoo conectado';
-      document.getElementById('status').style.background = '#eaf3de';
-      document.getElementById('status').style.color = '#27500a';
+      document.getElementById('status').className = 'badge ok';
       document.getElementById('loading').style.display = 'none';
       document.getElementById('content').style.display = 'block';
 
     } catch (err) {
       document.getElementById('loading').className = 'error';
-      document.getElementById('loading').textContent = 'Error al conectar con Odoo: ' + err.message;
+      document.getElementById('loading').textContent = 'Error: ' + err.message;
       document.getElementById('status').textContent = 'Error';
-      document.getElementById('status').style.background = '#fcebeb';
-      document.getElementById('status').style.color = '#a32d2d';
+      document.getElementById('status').className = 'badge err';
     }
   }
 
