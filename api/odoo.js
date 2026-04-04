@@ -244,12 +244,44 @@ module.exports = async function handler(req, res) {
       ...parseOrders(xmlEmpresaB, 'Empresa B')
     ].sort((a, b) => new Date(b.date_order) - new Date(a.date_order)).slice(0, 8);
 
+    // Pedidos pendientes de entrega
+    const [xmlPickings1, xmlPickings2] = await Promise.all([
+      odooCall(uid, 'stock.picking',
+        [['company_id','=',1],['state','in',['confirmed','assigned','waiting']],['picking_type_code','=','outgoing']],
+        ['name','partner_id','state','scheduled_date','company_id','picking_type_code']
+      ),
+      odooCall(uid, 'stock.picking',
+        [['company_id','=',2],['state','in',['confirmed','assigned','waiting']],['picking_type_code','=','outgoing']],
+        ['name','partner_id','state','scheduled_date','company_id','picking_type_code']
+      )
+    ]);
+
+    const pickings1 = parsePickings(xmlPickings1);
+    const pickings2 = parsePickings(xmlPickings2);
+    const todosPickings = [...pickings1, ...pickings2];
+
+    let movesXml = '';
+    if (todosPickings.length > 0) {
+      const pickingIds = todosPickings.map(p => p.id);
+      movesXml = await odooCall(uid, 'stock.move',
+        [['picking_id','in', pickingIds],['state','not in',['done','cancel']]],
+        ['picking_id','product_id','product_uom_qty','quantity']
+      );
+    }
+    const moves = movesXml ? parseMoves(movesXml) : [];
+
+    const pickingsConProductos = todosPickings.map(p => ({
+      ...p,
+      productos: moves.filter(m => m.picking_id === p.id)
+    }));
+    
     res.json({
       ventasPorMes: ventasPorMes.map(m => ({ mes: m.mes, resero: m.resero, empresaB: m.empresaB })),
       clientesTop,
       pendientes: { total: totalPendiente, cantidad: pendientes.length },
       vencidas: { total: totalVencido, cantidad: vencidas.length, detalle: vencidas.slice(0, 5) },
       ordenesRecientes
+      pendientesEntrega: pickingsConProductos
     });
 
   } catch (err) {
