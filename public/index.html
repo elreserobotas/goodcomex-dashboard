@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Goodcomex — Dashboard</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: system-ui, sans-serif; background: #f5f5f3; color: #1a1a1a; }
@@ -17,13 +18,18 @@
     .filtros { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; flex-wrap: wrap; }
     .filtros label { font-size: 13px; color: #888; }
     .filtros input { padding: 6px 10px; border: 0.5px solid #e5e5e5; border-radius: 8px; font-size: 13px; background: #fff; color: #1a1a1a; }
-    .filtros button { padding: 6px 16px; border: 0.5px solid #e5e5e5; border-radius: 8px; font-size: 13px; background: #1a1a1a; color: #fff; cursor: pointer; }
-    .filtros button:hover { background: #333; }
+    .filtros button { padding: 6px 16px; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; }
+    .btn-primary { background: #1a1a1a; color: #fff; }
+    .btn-primary:hover { background: #333; }
+    .btn-excel { background: #1D6F42; color: #fff; }
+    .btn-excel:hover { background: #155234; }
     .metrics { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
     .metric { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1rem 1.25rem; }
     .metric-label { font-size: 12px; color: #888; margin-bottom: 6px; }
     .metric-value { font-size: 24px; font-weight: 500; }
     .metric-sub { font-size: 11px; color: #aaa; margin-top: 4px; }
+    .metric.alerta { border-color: #f0997b; }
+    .metric.alerta .metric-value { color: #993c1d; }
     .cards { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
     .card { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1rem 1.25rem; }
     .card-label { font-size: 12px; color: #888; margin-bottom: 4px; }
@@ -35,9 +41,25 @@
     .legend { display: flex; gap: 16px; font-size: 12px; color: #888; }
     .legend span { display: flex; align-items: center; gap: 5px; }
     .dot { width: 10px; height: 10px; border-radius: 2px; }
-    .recent { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1.25rem; }
+    .two-col { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
+    .panel { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1.25rem; }
+    .panel-title { font-size: 14px; font-weight: 500; margin-bottom: 12px; }
+    .rank-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
+    .rank-row:last-child { border-bottom: none; }
+    .rank-num { font-size: 11px; color: #aaa; width: 16px; text-align: right; flex-shrink: 0; }
+    .rank-name { flex: 1; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rank-bar-wrap { width: 80px; height: 6px; background: #f0f0f0; border-radius: 3px; flex-shrink: 0; }
+    .rank-bar { height: 6px; background: #378ADD; border-radius: 3px; }
+    .rank-amount { font-weight: 500; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
+    .venc-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
+    .venc-row:last-child { border-bottom: none; }
+    .venc-name { flex: 1; }
+    .venc-meta { font-size: 11px; color: #aaa; margin-top: 2px; }
+    .venc-amount { font-weight: 500; color: #993c1d; }
+    .recent { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; }
     .recent-title { font-size: 14px; font-weight: 500; margin-bottom: 12px; }
-    .row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
+    .row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; cursor: pointer; }
+    .row:hover { background: #fafafa; }
     .row:last-child { border-bottom: none; }
     .row-name { font-weight: 500; }
     .row-meta { font-size: 11px; color: #aaa; margin-top: 2px; }
@@ -47,6 +69,17 @@
     .b2 { background: #e1f5ee; color: #085041; }
     .loading { text-align: center; padding: 4rem; color: #888; font-size: 14px; }
     .error { text-align: center; padding: 4rem; color: #a32d2d; font-size: 14px; }
+    .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+    .modal-bg.open { display: flex; }
+    .modal { background: #fff; border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
+    .modal-title { font-size: 16px; font-weight: 500; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
+    .modal-close { cursor: pointer; font-size: 20px; color: #888; background: none; border: none; }
+    .modal-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
+    .modal-row:last-child { border-bottom: none; }
+    .modal-label { color: #888; }
+    .modal-val { font-weight: 500; }
+    .paid { color: #27500a; }
+    .unpaid { color: #993c1d; }
   </style>
 </head>
 <body>
@@ -62,7 +95,8 @@
     <input type="month" id="desde" value="2025-11" />
     <label>Hasta</label>
     <input type="month" id="hasta" />
-    <button onclick="cargarDatos()">Aplicar</button>
+    <button class="btn-primary" onclick="cargarDatos()">Aplicar</button>
+    <button class="btn-excel" onclick="exportarExcel()">Exportar Excel</button>
   </div>
 
   <div id="loading" class="loading">Conectando con Odoo...</div>
@@ -83,6 +117,24 @@
         <div class="metric-label">Total facturas</div>
         <div class="metric-value" id="total-facturas">—</div>
         <div class="metric-sub">Ambas empresas</div>
+      </div>
+    </div>
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-label">Pendiente de cobro</div>
+        <div class="metric-value" id="total-pendiente">—</div>
+        <div class="metric-sub" id="cant-pendiente">—</div>
+      </div>
+      <div class="metric alerta">
+        <div class="metric-label">Vencido sin cobrar</div>
+        <div class="metric-value" id="total-vencido">—</div>
+        <div class="metric-sub" id="cant-vencido">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Ticket promedio</div>
+        <div class="metric-value" id="ticket-promedio">—</div>
+        <div class="metric-sub">Por factura</div>
       </div>
     </div>
 
@@ -112,21 +164,96 @@
       </div>
     </div>
 
+    <div class="chart-wrap">
+      <div class="chart-header">
+        <span class="chart-title">Evolución acumulada</span>
+        <div class="legend">
+          <span><span class="dot" style="background:#378ADD;border-radius:50%"></span>El Resero</span>
+          <span><span class="dot" style="background:#1D9E75;border-radius:50%"></span>Empresa B</span>
+        </div>
+      </div>
+      <div style="position:relative;height:200px;">
+        <canvas id="lineChart"></canvas>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-title">Top 10 clientes</div>
+        <div id="clientes-list"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title" style="color:#993c1d;">Facturas vencidas</div>
+        <div id="vencidas-list"></div>
+      </div>
+    </div>
+
     <div class="recent">
-      <div class="recent-title">Últimas órdenes de venta</div>
+      <div class="recent-title">Últimas órdenes de venta <span style="font-size:11px;color:#aaa;font-weight:400">(clic para ver detalle)</span></div>
       <div id="ordenes-list"></div>
     </div>
 
   </div>
 </div>
 
+<div class="modal-bg" id="modal-bg" onclick="cerrarModal(event)">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="modal-titulo">Detalle</span>
+      <button class="modal-close" onclick="document.getElementById('modal-bg').classList.remove('open')">×</button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
 <script>
   const fmt = (n) => '$' + Math.round(n).toLocaleString('es-AR');
   const fmtM = (n) => '$' + (n / 1000000).toFixed(1) + 'M';
-  let chartInstance = null;
+  let chartBar = null;
+  let chartLine = null;
+  let datosGlobales = null;
 
   const hoy = new Date();
   document.getElementById('hasta').value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+
+  function cerrarModal(e) {
+    if (e.target === document.getElementById('modal-bg')) {
+      document.getElementById('modal-bg').classList.remove('open');
+    }
+  }
+
+  function abrirDetalle(orden) {
+    document.getElementById('modal-titulo').textContent = orden.name + ' — ' + orden.partner_id[1];
+    document.getElementById('modal-body').innerHTML = `
+      <div class="modal-row"><span class="modal-label">Empresa</span><span class="modal-val">${orden.empresa}</span></div>
+      <div class="modal-row"><span class="modal-label">Cliente</span><span class="modal-val">${orden.partner_id[1]}</span></div>
+      <div class="modal-row"><span class="modal-label">Fecha</span><span class="modal-val">${new Date(orden.date_order).toLocaleDateString('es-AR', {day:'numeric',month:'long',year:'numeric'})}</span></div>
+      <div class="modal-row"><span class="modal-label">Monto total</span><span class="modal-val">${fmt(orden.amount_total)}</span></div>
+      <div class="modal-row"><span class="modal-label">Estado</span><span class="modal-val">${orden.empresa === 'El Resero' ? '<span class="b1 emp-badge">El Resero</span>' : '<span class="b2 emp-badge">Empresa B</span>'}</span></div>
+    `;
+    document.getElementById('modal-bg').classList.add('open');
+  }
+
+  function exportarExcel() {
+    if (!datosGlobales) return;
+    const wb = XLSX.utils.book_new();
+    const resumen = datosGlobales.ventasPorMes.map(m => ({
+      Mes: m.mes,
+      'El Resero': m.resero.total,
+      'Empresa B': m.empresaB.total,
+      Total: m.resero.total + m.empresaB.total,
+      'Facturas Resero': m.resero.cantidad,
+      'Facturas Empresa B': m.empresaB.cantidad
+    }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resumen), 'Resumen');
+    const clientes = datosGlobales.clientesTop.map(c => ({
+      Cliente: c.nombre,
+      'Total facturado': c.total,
+      'Cantidad facturas': c.cantidad
+    }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(clientes), 'Top Clientes');
+    XLSX.writeFile(wb, `goodcomex-dashboard-${new Date().toISOString().slice(0,10)}.xlsx`);
+  }
 
   async function cargarDatos() {
     const desde = document.getElementById('desde').value;
@@ -142,6 +269,7 @@
       if (!res.ok) throw new Error('Error al conectar');
       const data = await res.json();
       if (data.error) throw new Error(data.error);
+      datosGlobales = data;
 
       const meses = data.ventasPorMes;
       const totalResero = meses.reduce((a, m) => a + m.resero.total, 0);
@@ -151,20 +279,25 @@
       const totalFacturasResero = meses.reduce((a, m) => a + m.resero.cantidad, 0);
       const totalFacturasEmpresaB = meses.reduce((a, m) => a + m.empresaB.cantidad, 0);
       const mejorMes = meses.reduce((a, m) => (m.resero.total + m.empresaB.total) > (a.resero.total + a.empresaB.total) ? m : a, meses[0]);
+      const ticketPromedio = totalFacturas > 0 ? totalGeneral / totalFacturas : 0;
 
       document.getElementById('total-general').textContent = fmtM(totalGeneral);
       document.getElementById('periodo-label').textContent = `${meses[0]?.mes} → ${meses[meses.length-1]?.mes}`;
       document.getElementById('mejor-mes').textContent = mejorMes?.mes || '—';
-      document.getElementById('mejor-mes-monto').textContent = fmtM((mejorMes?.resero.total || 0) + (mejorMes?.empresaB.total || 0)) + ' combinado';
+      document.getElementById('mejor-mes-monto').textContent = fmtM((mejorMes?.resero.total||0) + (mejorMes?.empresaB.total||0)) + ' combinado';
       document.getElementById('total-facturas').textContent = totalFacturas.toLocaleString('es-AR');
       document.getElementById('total-resero').textContent = fmtM(totalResero);
       document.getElementById('facturas-resero').textContent = totalFacturasResero.toLocaleString('es-AR') + ' facturas';
       document.getElementById('total-empresab').textContent = fmtM(totalEmpresaB);
       document.getElementById('facturas-empresab').textContent = totalFacturasEmpresaB.toLocaleString('es-AR') + ' facturas';
+      document.getElementById('total-pendiente').textContent = fmtM(data.pendientes.total);
+      document.getElementById('cant-pendiente').textContent = data.pendientes.cantidad + ' facturas';
+      document.getElementById('total-vencido').textContent = fmtM(data.vencidas.total);
+      document.getElementById('cant-vencido').textContent = data.vencidas.cantidad + ' facturas vencidas';
+      document.getElementById('ticket-promedio').textContent = fmt(ticketPromedio);
 
-      if (chartInstance) chartInstance.destroy();
-
-      chartInstance = new Chart(document.getElementById('barChart'), {
+      if (chartBar) chartBar.destroy();
+      chartBar = new Chart(document.getElementById('barChart'), {
         type: 'bar',
         data: {
           labels: meses.map(m => m.mes),
@@ -174,18 +307,11 @@
           ]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: { callbacks: { label: (ctx) => ' ' + fmt(ctx.raw) } }
-          },
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ' ' + fmt(ctx.raw) } } },
           scales: {
             x: { grid: { display: false }, ticks: { color: '#888', font: { size: 12 } } },
-            y: {
-              grid: { color: 'rgba(0,0,0,0.06)' },
-              ticks: { color: '#888', font: { size: 11 }, callback: (v) => '$' + (v/1000000).toFixed(0) + 'M' }
-            }
+            y: { grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { color: '#888', font: { size: 11 }, callback: (v) => '$' + (v/1000000).toFixed(0) + 'M' } }
           },
           animation: {
             onComplete: function() {
@@ -199,25 +325,13 @@
               meses.forEach((m, i) => {
                 const val0 = m.resero.total;
                 const val1 = m.empresaB.total;
-                const total = val0 + val1;
                 const bar0 = meta0.data[i];
                 const bar1 = meta1.data[i];
-                if (val0 > 0) {
-                  ctx.font = '500 9px system-ui';
-                  ctx.fillStyle = '#0c447c';
-                  ctx.fillText(fmtM(val0), bar0.x, bar0.y - 2);
-                }
-                if (val1 > 0) {
-                  ctx.font = '500 9px system-ui';
-                  ctx.fillStyle = '#085041';
-                  ctx.fillText(fmtM(val1), bar1.x, bar1.y - 2);
-                }
-                if (total > 0) {
-                  const centerX = (bar0.x + bar1.x) / 2;
-                  const topY = Math.min(bar0.y, bar1.y) - 16;
-                  ctx.font = '500 11px system-ui';
-                  ctx.fillStyle = '#333';
-                  ctx.fillText(fmtM(total), centerX, topY);
+                if (val0 > 0) { ctx.font = '500 9px system-ui'; ctx.fillStyle = '#0c447c'; ctx.fillText(fmtM(val0), bar0.x, bar0.y - 2); }
+                if (val1 > 0) { ctx.font = '500 9px system-ui'; ctx.fillStyle = '#085041'; ctx.fillText(fmtM(val1), bar1.x, bar1.y - 2); }
+                if (val0 + val1 > 0) {
+                  ctx.font = '500 11px system-ui'; ctx.fillStyle = '#333';
+                  ctx.fillText(fmtM(val0 + val1), (bar0.x + bar1.x) / 2, Math.min(bar0.y, bar1.y) - 16);
                 }
               });
               ctx.restore();
@@ -226,19 +340,63 @@
         }
       });
 
-      const lista = document.getElementById('ordenes-list');
-      lista.innerHTML = '';
+      if (chartLine) chartLine.destroy();
+      let acumResero = 0, acumEmpresaB = 0;
+      const acumR = meses.map(m => { acumResero += m.resero.total; return acumResero; });
+      const acumE = meses.map(m => { acumEmpresaB += m.empresaB.total; return acumEmpresaB; });
+      chartLine = new Chart(document.getElementById('lineChart'), {
+        type: 'line',
+        data: {
+          labels: meses.map(m => m.mes),
+          datasets: [
+            { label: 'El Resero', data: acumR, borderColor: '#378ADD', backgroundColor: 'rgba(55,138,221,0.08)', fill: true, tension: 0.3, pointRadius: 4 },
+            { label: 'Empresa B', data: acumE, borderColor: '#1D9E75', backgroundColor: 'rgba(29,158,117,0.08)', fill: true, tension: 0.3, pointRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ' ' + fmtM(ctx.raw) } } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#888', font: { size: 12 } } },
+            y: { grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { color: '#888', font: { size: 11 }, callback: (v) => '$' + (v/1000000).toFixed(0) + 'M' } }
+          }
+        }
+      });
+
+      const maxCliente = data.clientesTop[0]?.total || 1;
+      document.getElementById('clientes-list').innerHTML = data.clientesTop.map((c, i) => `
+        <div class="rank-row">
+          <span class="rank-num">${i+1}</span>
+          <span class="rank-name" title="${c.nombre}">${c.nombre}</span>
+          <div class="rank-bar-wrap"><div class="rank-bar" style="width:${Math.round(c.total/maxCliente*100)}%"></div></div>
+          <span class="rank-amount">${fmtM(c.total)}</span>
+        </div>`).join('');
+
+      document.getElementById('vencidas-list').innerHTML = data.vencidas.detalle.length === 0
+        ? '<p style="font-size:13px;color:#888;padding:1rem 0">Sin facturas vencidas</p>'
+        : data.vencidas.detalle.map(f => `
+        <div class="venc-row">
+          <div class="venc-name">
+            <div style="font-weight:500;font-size:13px">${f.partner_name || '—'}</div>
+            <div class="venc-meta">${f.name} · vence ${f.invoice_date_due}</div>
+          </div>
+          <div class="venc-amount">${fmt(f.amount_residual)}</div>
+        </div>`).join('');
+
+      document.getElementById('ordenes-list').innerHTML = '';
       data.ordenesRecientes.forEach(o => {
         const fecha = new Date(o.date_order).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' });
         const esResero = o.empresa === 'El Resero';
-        lista.innerHTML += `
-          <div class="row">
-            <div>
-              <div class="row-name">${o.partner_id[1]}<span class="emp-badge ${esResero ? 'b1' : 'b2'}">${o.empresa}</span></div>
-              <div class="row-meta">${o.name} · ${fecha}</div>
-            </div>
-            <div class="row-amount">${fmt(o.amount_total)}</div>
-          </div>`;
+        const div = document.createElement('div');
+        div.className = 'row';
+        div.innerHTML = `
+          <div>
+            <div class="row-name">${o.partner_id[1]}<span class="emp-badge ${esResero ? 'b1' : 'b2'}">${o.empresa}</span></div>
+            <div class="row-meta">${o.name} · ${fecha}</div>
+          </div>
+          <div class="row-amount">${fmt(o.amount_total)}</div>`;
+        div.onclick = () => abrirDetalle(o);
+        document.getElementById('ordenes-list').appendChild(div);
       });
 
       document.getElementById('status').textContent = 'Odoo conectado';
