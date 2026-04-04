@@ -6,7 +6,7 @@ async function getUid() {
   const res = await fetch(`${ODOO_URL}/xmlrpc/2/common`, {
     method: 'POST',
     headers: { 'Content-Type': 'text/xml' },
-    body: `<?xml version="1.0"?><methodCall><methodName>authenticate</methodName><params><param><value><string>${ODOO_DB}</string></value></param><param><value><string>${ODOO_USER}</string></value></param><param><value><string>${process.env.ODOO_API_KEY}</string></value></param><param><value><struct></struct></value></param></params></methodCall>`
+    body: `<?xml version="1.0"?><methodCall><methodName>authenticate</methodName><params><param><value><string>${ODOO_DB}</string></value></param><param><value><string>${ODOO_USER}</string></value></param><param><value><string>${process.env.ODOO_PASSWORD}</string></value></param><param><value><struct></struct></value></param></params></methodCall>`
   });
   const text = await res.text();
   console.log('Auth response:', text.slice(0, 200));
@@ -35,7 +35,7 @@ async function odooCall(uid, model, domain, fields) {
   const body = `<?xml version="1.0"?><methodCall><methodName>execute_kw</methodName><params>
     <param><value><string>${ODOO_DB}</string></value></param>
     <param><value><int>${uid}</int></value></param>
-    <param><value><string>${process.env.ODOO_API_KEY}</string></value></param>
+    <param><value><string>${process.env.ODOO_PASSWORD}</string></value></param>
     <param><value><string>${model}</string></value></param>
     <param><value><string>search_read</string></value></param>
     <param><value><array><data><value><array><data>${domainXml}</data></array></value></data></array></value></param>
