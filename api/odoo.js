@@ -14,7 +14,7 @@ async function getUid() {
   return parseInt(match[1]);
 }
 
-async function odooCall(uid, model, domain, fields) {
+async function odooCall(uid, model, domain, fields, extra = {}) {
   const domainXml = domain.map(d => {
     const [f, op, v] = d;
     const safeOp = op.replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -30,6 +30,8 @@ async function odooCall(uid, model, domain, fields) {
   }).join('');
 
   const fieldsXml = fields.map(f => `<value><string>${f}</string></value>`).join('');
+  const limit = extra.limit || 2000;
+  const orderXml = extra.order ? `<member><name>order</name><value><string>${extra.order}</string></value></member>` : '';
 
   const body = `<?xml version="1.0"?><methodCall><methodName>execute_kw</methodName><params>
     <param><value><string>${ODOO_DB}</string></value></param>
@@ -40,7 +42,8 @@ async function odooCall(uid, model, domain, fields) {
     <param><value><array><data><value><array><data>${domainXml}</data></array></value></data></array></value></param>
     <param><value><struct>
       <member><name>fields</name><value><array><data>${fieldsXml}</data></array></value></member>
-      <member><name>limit</name><value><int>2000</int></value></member>
+      <member><name>limit</name><value><int>${limit}</int></value></member>
+      ${orderXml}
     </struct></value></param>
   </params></methodCall>`;
 
@@ -59,10 +62,22 @@ function parseAmounts(xml) {
   while ((struct = memberRegex.exec(xml)) !== null) {
     const amountMatch = struct[1].match(/<name>amount_total<\/name>\s*<value><double>([\d.]+)<\/double>/);
     const companyMatch = struct[1].match(/<name>company_id<\/name>\s*<value><array><data>\s*<value><int>(\d+)<\/int>/);
+    const partnerMatch = struct[1].match(/<name>partner_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
+    const nameMatch = struct[1].match(/<name>name<\/name>\s*<value><string>([^<]+)<\/string>/);
+    const dateMatch = struct[1].match(/<name>invoice_date<\/name>\s*<value><string>([^<]+)<\/string>/);
+    const dueDateMatch = struct[1].match(/<name>invoice_date_due<\/name>\s*<value><string>([^<]+)<\/string>/);
+    const paymentMatch = struct[1].match(/<name>payment_state<\/name>\s*<value><string>([^<]+)<\/string>/);
+    const amountResidualMatch = struct[1].match(/<name>amount_residual<\/name>\s*<value><double>([\d.]+)<\/double>/);
     if (amountMatch) {
       results.push({
         amount_total: parseFloat(amountMatch[1]),
-        company_id: companyMatch ? [parseInt(companyMatch[1])] : [0]
+        company_id: companyMatch ? [parseInt(companyMatch[1])] : [0],
+        partner_name: partnerMatch?.[1] || '',
+        name: nameMatch?.[1] || '',
+        invoice_date: dateMatch?.[1] || '',
+        invoice_date_due: dueDateMatch?.[1] || '',
+        payment_state: paymentMatch?.[1] || '',
+        amount_residual: amountResidualMatch ? parseFloat(amountResidualMatch[1]) : 0
       });
     }
   }
@@ -98,7 +113,6 @@ function generarMeses(desde, hasta) {
   let month = parseInt(desde.slice(5, 7)) - 1;
   const hastaYear = parseInt(hasta.slice(0, 4));
   const hastaMonth = parseInt(hasta.slice(5, 7)) - 1;
-
   while (year < hastaYear || (year === hastaYear && month <= hastaMonth)) {
     const ultimoDia = new Date(year, month + 1, 0).getDate();
     const d = new Date(year, month, 1);
@@ -135,7 +149,7 @@ module.exports = async function handler(req, res) {
       meses.map(async (m) => {
         const xml = await odooCall(uid, 'account.move',
           [['move_type','=','out_invoice'],['state','=','posted'],['invoice_date','>=',m.desde],['invoice_date','<=',m.hasta]],
-          ['amount_total','company_id']
+          ['amount_total','company_id','partner_id','name','invoice_date','invoice_date_due','payment_state','amount_residual']
         );
         const facturas = parseAmounts(xml);
         const resero = facturas.filter(f => f.company_id[0] === 1);
@@ -143,14 +157,38 @@ module.exports = async function handler(req, res) {
         return {
           mes: m.nombre,
           resero: { total: resero.reduce((a, o) => a + o.amount_total, 0), cantidad: resero.length },
-          empresaB: { total: empresaB.reduce((a, o) => a + o.amount_total, 0), cantidad: empresaB.length }
+          empresaB: { total: empresaB.reduce((a, o) => a + o.amount_total, 0), cantidad: empresaB.length },
+          facturas
         };
       })
     );
 
+    // Todas las facturas del período
+    const todasFacturas = ventasPorMes.flatMap(m => m.facturas);
+
+    // Ranking clientes top
+    const clienteMap = {};
+    todasFacturas.forEach(f => {
+      if (!f.partner_name) return;
+      if (!clienteMap[f.partner_name]) clienteMap[f.partner_name] = { nombre: f.partner_name, total: 0, cantidad: 0 };
+      clienteMap[f.partner_name].total += f.amount_total;
+      clienteMap[f.partner_name].cantidad++;
+    });
+    const clientesTop = Object.values(clienteMap)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 10);
+
+    // Facturas pendientes y vencidas
+    const hoyStr = hoy.toISOString().slice(0, 10);
+    const pendientes = todasFacturas.filter(f => f.payment_state !== 'paid' && f.amount_residual > 0);
+    const vencidas = pendientes.filter(f => f.invoice_date_due && f.invoice_date_due < hoyStr);
+    const totalPendiente = pendientes.reduce((a, f) => a + f.amount_residual, 0);
+    const totalVencido = vencidas.reduce((a, f) => a + f.amount_residual, 0);
+
+    // Órdenes recientes
     const [xmlResero, xmlEmpresaB] = await Promise.all([
-      odooCall(uid, 'sale.order', [['company_id','=',1],['state','in',['sale','done']]], ['name','partner_id','amount_total','date_order']),
-      odooCall(uid, 'sale.order', [['company_id','=',2],['state','in',['sale','done']]], ['name','partner_id','amount_total','date_order'])
+      odooCall(uid, 'sale.order', [['company_id','=',1],['state','in',['sale','done']]], ['name','partner_id','amount_total','date_order'], { limit: 5, order: 'date_order desc' }),
+      odooCall(uid, 'sale.order', [['company_id','=',2],['state','in',['sale','done']]], ['name','partner_id','amount_total','date_order'], { limit: 5, order: 'date_order desc' })
     ]);
 
     const ordenesRecientes = [
@@ -158,7 +196,13 @@ module.exports = async function handler(req, res) {
       ...parseOrders(xmlEmpresaB, 'Empresa B')
     ].sort((a, b) => new Date(b.date_order) - new Date(a.date_order)).slice(0, 8);
 
-    res.json({ ventasPorMes, ordenesRecientes });
+    res.json({
+      ventasPorMes: ventasPorMes.map(m => ({ mes: m.mes, resero: m.resero, empresaB: m.empresaB })),
+      clientesTop,
+      pendientes: { total: totalPendiente, cantidad: pendientes.length },
+      vencidas: { total: totalVencido, cantidad: vencidas.length, detalle: vencidas.slice(0, 5) },
+      ordenesRecientes
+    });
 
   } catch (err) {
     console.error('ERROR:', err.message);
