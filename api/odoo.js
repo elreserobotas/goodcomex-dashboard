@@ -178,29 +178,53 @@ async function getIVA(uid, desde, hasta) {
   const xmlVentas = await odooCall(uid, 'account.move.line',
     [['move_id.move_type','=','out_invoice'],['move_id.state','=','posted'],
      ['tax_line_id','!=',false],['move_id.invoice_date','>=',desde],['move_id.invoice_date','<=',hasta]],
-    ['balance','move_id']
+    ['balance','tax_line_id']
   );
   const xmlCompras = await odooCall(uid, 'account.move.line',
     [['move_id.move_type','=','in_invoice'],['move_id.state','=','posted'],
      ['tax_line_id','!=',false],['move_id.invoice_date','>=',desde],['move_id.invoice_date','<=',hasta]],
-    ['balance','move_id']
+    ['balance','tax_line_id']
   );
 
-  const parseBalances = (xml) => {
+  function parseLineas(xml) {
     const results = [];
     const memberRegex = /<struct>([\s\S]*?)<\/struct>/g;
     let struct;
     while ((struct = memberRegex.exec(xml)) !== null) {
       const balMatch = struct[1].match(/<name>balance<\/name>\s*<value><double>(-?[\d.]+)<\/double>/);
-      if (balMatch) results.push(parseFloat(balMatch[1]));
+      const taxMatch = struct[1].match(/<name>tax_line_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
+      if (balMatch && taxMatch) {
+        results.push({ balance: parseFloat(balMatch[1]), tax: taxMatch[1] });
+      }
     }
     return results;
+  }
+
+  const lineasVentas = parseLineas(xmlVentas);
+  const lineasCompras = parseLineas(xmlCompras);
+
+  const ivaVentasNombres = ['VAT 21%', 'VAT 10.5%', 'VAT 27%', 'Exento (paga IVA 21%)'];
+  const ivaComprasNombres = ['VAT 21%', 'VAT 10.5%', 'VAT 27%', 'Perc VAT'];
+  const iibbNombres = ['P. IIBB CABA', 'P. IIBB BA', 'P. IIBB N', 'P. IIBB LP', 'P. Especial de IVA'];
+
+  const ivaVentas = lineasVentas
+    .filter(l => ivaVentasNombres.some(n => l.tax.includes(n.replace('VAT','').trim()) || l.tax === n))
+    .reduce((a, l) => a + Math.abs(l.balance), 0);
+
+  const ivaCompras = lineasCompras
+    .filter(l => ivaComprasNombres.some(n => l.tax === n))
+    .reduce((a, l) => a + Math.abs(l.balance), 0);
+
+  const iibb = lineasCompras
+    .filter(l => iibbNombres.some(n => l.tax === n))
+    .reduce((a, l) => a + Math.abs(l.balance), 0);
+
+  return {
+    ivaVentas: Math.round(ivaVentas),
+    ivaCompras: Math.round(ivaCompras),
+    iibb: Math.round(iibb),
+    ivaNeto: Math.round(ivaVentas - ivaCompras)
   };
-
-  const ivaVentas = parseBalances(xmlVentas).reduce((a, b) => a + Math.abs(b), 0);
-  const ivaCompras = parseBalances(xmlCompras).reduce((a, b) => a + Math.abs(b), 0);
-
-  return { ivaVentas, ivaCompras, ivaNeto: ivaVentas - ivaCompras };
 }
 
 module.exports = async function handler(req, res) {
