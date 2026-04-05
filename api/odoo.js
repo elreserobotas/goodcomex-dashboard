@@ -319,6 +319,16 @@ const vencidas = { detalle: pendientesConDias.filter(f => f.dias >= 0).slice(0, 
       ...parseOrders(xmlEmpresaB, 'Empresa B')
     ].sort((a, b) => new Date(b.date_order) - new Date(a.date_order)).slice(0, 8);
 
+    const ivaData = await Promise.all(
+  meses.map(m => getIVA(uid, m.desde, m.hasta))
+);
+const ivaMeses = meses.map((m, i) => ({
+  mes: m.nombre,
+  ivaVentas: ivaData[i].ivaVentas,
+  ivaCompras: ivaData[i].ivaCompras,
+  ivaNeto: ivaData[i].ivaNeto
+}));
+    
     res.json({
       ventasPorMes: ventasPorMes.map(m => ({ mes: m.mes, resero: m.resero, empresaB: m.empresaB })),
       clientesTop,
