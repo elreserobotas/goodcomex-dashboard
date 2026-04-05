@@ -12,8 +12,8 @@
 
     .topbar { background: #fff; border-bottom: 1px solid #e5e5e5; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 52px; }
     .topbar-title { font-size: 15px; font-weight: 500; }
-    .topbar-nav { display: flex; gap: 0; height: 100%; }
-    .nav-tab { padding: 0 20px; font-size: 13px; color: #888; border-bottom: 2px solid transparent; display: flex; align-items: center; cursor: pointer; text-decoration: none; transition: color 0.15s; }
+    .topbar-nav { display: flex; height: 100%; }
+    .nav-tab { padding: 0 20px; font-size: 13px; color: #888; border-bottom: 2px solid transparent; display: flex; align-items: center; text-decoration: none; transition: color 0.15s; }
     .nav-tab:hover { color: #1a1a1a; }
     .nav-tab.active { color: #1a1a1a; border-bottom-color: #1a1a1a; font-weight: 500; }
     .badge { font-size: 12px; padding: 3px 10px; border-radius: 20px; }
@@ -30,16 +30,15 @@
     .btn-primary:hover { background: #333; }
     .btn-excel { background: #1D6F42; color: #fff; }
     .btn-excel:hover { background: #155234; }
-    .sep { color: #ccc; font-size: 16px; }
+    .sep { color: #ccc; }
 
     .section-label { font-size: 11px; font-weight: 500; color: #aaa; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 10px; }
+
     .metrics { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
     .metric { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1rem 1.25rem; }
     .metric-label { font-size: 12px; color: #888; margin-bottom: 6px; }
     .metric-value { font-size: 24px; font-weight: 500; }
     .metric-sub { font-size: 11px; color: #aaa; margin-top: 4px; }
-    .metric.alerta { border-color: #f0997b; }
-    .metric.alerta .metric-value { color: #993c1d; }
 
     .cards { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
     .card { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1rem 1.25rem; }
@@ -54,17 +53,13 @@
     .legend span { display: flex; align-items: center; gap: 5px; }
     .dot { width: 10px; height: 10px; border-radius: 2px; }
 
-    .two-col { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
-    .panel { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1.25rem; }
-    .panel-title { font-size: 14px; font-weight: 500; margin-bottom: 12px; }
-
     .tramos { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 8px; margin-bottom: 1.5rem; }
     .tramo { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 10px; padding: 12px; text-align: center; }
     .tramo-label { font-size: 11px; color: #888; margin-bottom: 4px; }
     .tramo-value { font-size: 15px; font-weight: 500; }
     .tramo-cant { font-size: 11px; color: #aaa; margin-top: 2px; }
-    .tramo.t-ok { border-color: #9FE1CB; }
     .tramo.t-ok .tramo-value { color: #085041; }
+    .tramo.t-ok { border-color: #9FE1CB; }
     .tramo.t0 { border-color: #FAC775; }
     .tramo.t0 .tramo-value { color: #633806; }
     .tramo.t1 { border-color: #F0997B; }
@@ -74,51 +69,57 @@
     .tramo.t3 { border-color: #A32D2D; background: #fcebeb; }
     .tramo.t3 .tramo-value { color: #501313; }
 
+    .expandible { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+    .expandible-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+    .expandible-header:hover { background: #fafafa; }
+    .expandible-title { font-size: 14px; font-weight: 500; }
+    .expandible-meta { font-size: 12px; color: #888; margin-top: 2px; }
+    .expandible-arrow { font-size: 11px; color: #aaa; transition: transform 0.2s; }
+    .expandible-arrow.open { transform: rotate(180deg); }
+    .expandible-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 0.5px solid #f0f0f0; }
+    .expandible-body.open { display: block; padding-top: 1rem; }
+
     .rank-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
     .rank-row:last-child { border-bottom: none; }
-    .rank-num { font-size: 11px; color: #aaa; width: 16px; text-align: right; flex-shrink: 0; }
-    .rank-name { flex: 1; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rank-num { font-size: 11px; color: #aaa; width: 18px; text-align: right; flex-shrink: 0; }
+    .rank-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .rank-bar-wrap { width: 80px; height: 6px; background: #f0f0f0; border-radius: 3px; flex-shrink: 0; }
-    .rank-bar { height: 6px; background: #378ADD; border-radius: 3px; }
+    .rank-bar { height: 6px; border-radius: 3px; }
     .rank-amount { font-weight: 500; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
+    .rank-sub { font-size: 11px; color: #aaa; }
 
-    .venc-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
+    .venc-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
     .venc-row:last-child { border-bottom: none; }
     .venc-name { flex: 1; }
     .venc-meta { font-size: 11px; color: #aaa; margin-top: 2px; }
-    .venc-amount { font-weight: 500; color: #993c1d; }
+    .venc-amount { font-weight: 500; color: #993c1d; white-space: nowrap; margin-left: 12px; }
 
-    .iva-toggle { display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 1rem 1.25rem; background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; margin-bottom: 1.5rem; user-select: none; }
+    .entrega-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
+    .entrega-row:last-child { border-bottom: none; }
+    .entrega-info { flex: 1; }
+    .entrega-cliente { font-weight: 500; }
+    .entrega-fecha { font-size: 11px; color: #aaa; margin-top: 2px; }
+    .entrega-monto { font-weight: 500; white-space: nowrap; margin-left: 12px; }
+    .emp-col { font-size: 11px; margin-top: 2px; }
+
+    .iva-wrap { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; margin-bottom: 1.5rem; overflow: hidden; }
+    .iva-toggle { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+    .iva-toggle:hover { background: #fafafa; }
     .iva-toggle-title { font-size: 14px; font-weight: 500; }
-    .iva-toggle-arrow { font-size: 12px; color: #888; transition: transform 0.2s; }
-    .iva-toggle-arrow.open { transform: rotate(180deg); }
-    .iva-content { display: none; background: #fff; border: 0.5px solid #e5e5e5; border-top: none; border-radius: 0 0 12px 12px; padding: 0 1.25rem 1.25rem; margin-top: -1.5rem; margin-bottom: 1.5rem; }
-    .iva-content.open { display: block; }
-    .iva-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
+    .iva-toggle-sub { font-size: 12px; color: #888; margin-top: 2px; }
+    .iva-arrow { font-size: 11px; color: #aaa; transition: transform 0.2s; }
+    .iva-arrow.open { transform: rotate(180deg); }
+    .iva-body { display: none; border-top: 0.5px solid #f0f0f0; padding: 1rem 1.25rem; }
+    .iva-body.open { display: block; }
+    .iva-header-row { display: flex; padding: 0 0 8px; font-size: 11px; color: #aaa; border-bottom: 0.5px solid #f0f0f0; margin-bottom: 4px; }
+    .iva-row { display: flex; align-items: center; padding: 7px 0; border-bottom: 0.5px solid #f5f5f5; font-size: 13px; }
     .iva-row:last-child { border-bottom: none; }
-    .iva-mes { color: #888; width: 80px; }
-    .iva-ventas { color: #0c447c; font-weight: 500; flex: 1; text-align: right; }
-    .iva-compras { color: #085041; font-weight: 500; flex: 1; text-align: right; }
-    .iva-neto { font-weight: 500; flex: 1; text-align: right; }
-    .iva-neto.positivo { color: #993c1d; }
-    .iva-neto.negativo { color: #27500a; }
-    .iva-header { display: flex; justify-content: space-between; padding: 8px 0 4px; font-size: 11px; color: #aaa; border-bottom: 0.5px solid #f0f0f0; margin-bottom: 4px; }
-
-    .entrega-card { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 10px; cursor: pointer; }
-    .entrega-card:hover { border-color: #ccc; }
-    .entrega-header { display: flex; justify-content: space-between; align-items: flex-start; }
-    .entrega-name { font-weight: 500; font-size: 14px; }
-    .entrega-partner { font-size: 13px; color: #555; margin-top: 2px; }
-    .entrega-fecha { font-size: 12px; color: #888; margin-top: 2px; }
-    .entrega-productos { margin-top: 10px; border-top: 0.5px solid #f0f0f0; padding-top: 8px; display: none; }
-    .entrega-productos.open { display: block; }
-    .prod-row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; color: #555; border-bottom: 0.5px solid #f5f5f5; }
-    .prod-row:last-child { border-bottom: none; }
-    .estado-badge { font-size: 10px; padding: 2px 8px; border-radius: 20px; }
-    .estado-confirmed { background: #faeeda; color: #633806; }
-    .estado-assigned { background: #eaf3de; color: #27500a; }
-    .estado-waiting { background: #e6f1fb; color: #0c447c; }
-    .entregas-cols { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
+    .iva-mes { width: 70px; color: #888; font-size: 12px; }
+    .iva-ventas { flex: 1; text-align: right; color: #0c447c; font-weight: 500; }
+    .iva-compras { flex: 1; text-align: right; color: #085041; font-weight: 500; }
+    .iva-iibb { flex: 1; text-align: right; color: #633806; font-weight: 500; }
+    .iva-neto { flex: 1; text-align: right; font-weight: 500; color: #993c1d; }
+    .iva-total-row { display: flex; padding: 8px 0 0; border-top: 0.5px solid #e5e5e5; margin-top: 4px; font-size: 13px; font-weight: 500; }
 
     .recent { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; }
     .recent-title { font-size: 14px; font-weight: 500; margin-bottom: 12px; }
@@ -134,7 +135,7 @@
 
     .loading { text-align: center; padding: 4rem; color: #888; font-size: 14px; }
     .error { text-align: center; padding: 4rem; color: #a32d2d; font-size: 14px; }
-    .empty { font-size: 13px; color: #888; padding: 1rem 0; }
+    .empty { font-size: 13px; color: #888; padding: 0.5rem 0; }
 
     .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
     .modal-bg.open { display: flex; }
@@ -162,18 +163,10 @@
   <div class="filtros">
     <label>Desde</label>
     <select id="desde-mes">
-      <option value="1">Enero</option>
-      <option value="2">Febrero</option>
-      <option value="3">Marzo</option>
-      <option value="4">Abril</option>
-      <option value="5">Mayo</option>
-      <option value="6">Junio</option>
-      <option value="7">Julio</option>
-      <option value="8">Agosto</option>
-      <option value="9">Septiembre</option>
-      <option value="10">Octubre</option>
-      <option value="11" selected>Noviembre</option>
-      <option value="12">Diciembre</option>
+      <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+      <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+      <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+      <option value="10">Octubre</option><option value="11" selected>Noviembre</option><option value="12">Diciembre</option>
     </select>
     <select id="desde-anio">
       <option value="2025" selected>2025</option>
@@ -182,18 +175,10 @@
     <span class="sep">→</span>
     <label>Hasta</label>
     <select id="hasta-mes">
-      <option value="1">Enero</option>
-      <option value="2">Febrero</option>
-      <option value="3">Marzo</option>
-      <option value="4">Abril</option>
-      <option value="5">Mayo</option>
-      <option value="6">Junio</option>
-      <option value="7">Julio</option>
-      <option value="8">Agosto</option>
-      <option value="9">Septiembre</option>
-      <option value="10">Octubre</option>
-      <option value="11">Noviembre</option>
-      <option value="12">Diciembre</option>
+      <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+      <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+      <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+      <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
     </select>
     <select id="hasta-anio">
       <option value="2025">2025</option>
@@ -280,74 +265,86 @@
       </div>
     </div>
 
-    <div class="chart-wrap">
-      <div class="chart-header">
-        <span class="chart-title">Evolución acumulada</span>
-        <div class="legend">
-          <span><span class="dot" style="background:#378ADD;border-radius:50%"></span>El Resero</span>
-          <span><span class="dot" style="background:#1D9E75;border-radius:50%"></span>Empresa B</span>
+    <div class="iva-wrap">
+      <div class="iva-toggle" onclick="toggleIVA()">
+        <div>
+          <div class="iva-toggle-title">IVA por mes</div>
+          <div class="iva-toggle-sub" id="iva-resumen">Clic para ver detalle</div>
         </div>
+        <span class="iva-arrow" id="iva-arrow">▼</span>
       </div>
-      <div style="position:relative;height:200px;">
-        <canvas id="lineChart"></canvas>
+      <div class="iva-body" id="iva-body">
+        <div class="iva-header-row">
+          <span style="width:70px;"></span>
+          <span style="flex:1;text-align:right;color:#0c447c;">IVA ventas</span>
+          <span style="flex:1;text-align:right;color:#085041;">IVA compras</span>
+          <span style="flex:1;text-align:right;color:#633806;">IIBB</span>
+          <span style="flex:1;text-align:right;color:#993c1d;">A pagar AFIP</span>
+        </div>
+        <div id="iva-rows"></div>
       </div>
     </div>
 
-    <div class="iva-toggle" onclick="toggleIVA()">
-      <div>
-        <div class="iva-toggle-title">IVA a pagar por mes</div>
-        <div style="font-size:12px;color:#888;margin-top:2px;" id="iva-resumen">Clic para ver detalle</div>
-      </div>
-      <span class="iva-toggle-arrow" id="iva-arrow">▼</span>
-    </div>
-    <div class="iva-content" id="iva-content">
-      <div class="iva-header">
-        <span style="width:80px;">Mes</span>
-        <span style="flex:1;text-align:right;">IVA ventas</span>
-        <span style="flex:1;text-align:right;">IVA compras</span>
-        <span style="flex:1;text-align:right;">A pagar</span>
-      </div>
-      <div id="iva-rows"></div>
-    </div>
+    <div class="section-label">Análisis</div>
 
-    <div class="two-col">
-      <div class="panel">
-        <div class="panel-title">Top 10 clientes</div>
+    <div class="expandible">
+      <div class="expandible-header" onclick="toggle('clientes')">
+        <div>
+          <div class="expandible-title">Top 10 clientes</div>
+          <div class="expandible-meta" id="clientes-meta">Por monto facturado en el período</div>
+        </div>
+        <span class="expandible-arrow" id="arrow-clientes">▼</span>
+      </div>
+      <div class="expandible-body" id="body-clientes">
         <div id="clientes-list"></div>
       </div>
-      <div class="panel">
-        <div class="panel-title" style="color:#993c1d;">Facturas vencidas</div>
+    </div>
+
+    <div class="expandible">
+      <div class="expandible-header" onclick="toggle('productos')">
+        <div>
+          <div class="expandible-title">Top 10 productos más vendidos</div>
+          <div class="expandible-meta" id="productos-meta">Por cantidad de unidades en el período</div>
+        </div>
+        <span class="expandible-arrow" id="arrow-productos">▼</span>
+      </div>
+      <div class="expandible-body" id="body-productos">
+        <div id="productos-list"></div>
+      </div>
+    </div>
+
+    <div class="expandible">
+      <div class="expandible-header" onclick="toggle('vencidas')">
+        <div>
+          <div class="expandible-title" style="color:#993c1d;">Facturas vencidas sin cobrar</div>
+          <div class="expandible-meta" id="vencidas-meta">—</div>
+        </div>
+        <span class="expandible-arrow" id="arrow-vencidas">▼</span>
+      </div>
+      <div class="expandible-body" id="body-vencidas">
         <div id="vencidas-list"></div>
       </div>
     </div>
 
-    <div class="section-label">Entregas pendientes</div>
-    <div class="metrics" style="margin-bottom:1.5rem;">
-      <div class="metric">
-        <div class="metric-label">Total remitos pendientes</div>
-        <div class="metric-value" id="total-remitos">—</div>
-        <div class="metric-sub">Ambas empresas</div>
+    <div class="expandible">
+      <div class="expandible-header" onclick="toggle('entregas')">
+        <div>
+          <div class="expandible-title">Entregas pendientes</div>
+          <div class="expandible-meta" id="entregas-meta">—</div>
+        </div>
+        <span class="expandible-arrow" id="arrow-entregas">▼</span>
       </div>
-      <div class="metric">
-        <div class="metric-label">El Resero</div>
-        <div class="metric-value" id="remitos-resero">—</div>
-        <div class="metric-sub">remitos pendientes</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">Empresa B</div>
-        <div class="metric-value" id="remitos-empresab">—</div>
-        <div class="metric-sub">remitos pendientes</div>
-      </div>
-    </div>
-
-    <div class="entregas-cols">
-      <div>
-        <div style="font-size:13px;font-weight:500;color:#0c447c;margin-bottom:10px;">El Resero</div>
-        <div id="entregas-resero"></div>
-      </div>
-      <div>
-        <div style="font-size:13px;font-weight:500;color:#085041;margin-bottom:10px;">Empresa B</div>
-        <div id="entregas-empresab"></div>
+      <div class="expandible-body" id="body-entregas">
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.5rem;">
+          <div>
+            <div style="font-size:12px;font-weight:500;color:#0c447c;margin-bottom:8px;">El Resero</div>
+            <div id="entregas-resero"></div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:500;color:#085041;margin-bottom:8px;">Empresa B</div>
+            <div id="entregas-empresab"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -372,7 +369,7 @@
 <script>
   const fmt = (n) => '$' + Math.round(n).toLocaleString('es-AR');
   const fmtM = (n) => '$' + (n / 1000000).toFixed(1) + 'M';
-  let chartBar = null, chartLine = null, datosGlobales = null;
+  let chartBar = null, datosGlobales = null;
 
   function setHastaPorDefecto() {
     const hoy = new Date();
@@ -388,11 +385,16 @@
     return { desde: `${dA}-${dM}-01`, hasta: `${hA}-${hM}-01` };
   }
 
-  function toggleIVA() {
-    const content = document.getElementById('iva-content');
-    const arrow = document.getElementById('iva-arrow');
-    content.classList.toggle('open');
+  function toggle(id) {
+    const body = document.getElementById('body-' + id);
+    const arrow = document.getElementById('arrow-' + id);
+    body.classList.toggle('open');
     arrow.classList.toggle('open');
+  }
+
+  function toggleIVA() {
+    document.getElementById('iva-body').classList.toggle('open');
+    document.getElementById('iva-arrow').classList.toggle('open');
   }
 
   function cerrarModal(e) {
@@ -412,38 +414,6 @@
     document.getElementById('modal-bg').classList.add('open');
   }
 
-  function toggleProductos(id) {
-    const el = document.getElementById(id);
-    if (el) el.classList.toggle('open');
-  }
-
-  function estadoLabel(state) {
-    if (state === 'assigned') return '<span class="estado-badge estado-assigned">Listo</span>';
-    if (state === 'confirmed') return '<span class="estado-badge estado-confirmed">Confirmado</span>';
-    return '<span class="estado-badge estado-waiting">En espera</span>';
-  }
-
-  function renderEntregas(pickings, containerId) {
-    const container = document.getElementById(containerId);
-    if (!pickings.length) { container.innerHTML = '<p class="empty">Sin entregas pendientes</p>'; return; }
-    container.innerHTML = pickings.map((p, idx) => {
-      const fecha = p.scheduled_date ? new Date(p.scheduled_date).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '—';
-      const productos = p.productos.map(pr => `<div class="prod-row"><span>${pr.product}</span><span>${pr.qty} uds</span></div>`).join('');
-      return `
-        <div class="entrega-card" onclick="toggleProductos('ep-${containerId}-${idx}')">
-          <div class="entrega-header">
-            <div>
-              <div class="entrega-name">${p.name} ${estadoLabel(p.state)}</div>
-              <div class="entrega-partner">${p.partner}</div>
-              <div class="entrega-fecha">${fecha}</div>
-            </div>
-            <div style="font-size:12px;color:#aaa;">${p.productos.length} prod.</div>
-          </div>
-          <div class="entrega-productos" id="ep-${containerId}-${idx}">${productos}</div>
-        </div>`;
-    }).join('');
-  }
-
   function exportarExcel() {
     if (!datosGlobales) return;
     const wb = XLSX.utils.book_new();
@@ -453,15 +423,15 @@
       'Facturas Resero': m.resero.cantidad, 'Facturas Empresa B': m.empresaB.cantidad
     }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resumen), 'Resumen');
-    const clientes = datosGlobales.clientesTop.map(c => ({ Cliente: c.nombre, Total: c.total, Facturas: c.cantidad }));
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(clientes), 'Top Clientes');
-    if (datosGlobales.ivaMeses) {
+    if (datosGlobales.ivaMeses?.length) {
       const iva = datosGlobales.ivaMeses.map(m => ({
-        Mes: m.mes, 'IVA Ventas': Math.round(m.ivaVentas),
-        'IVA Compras': Math.round(m.ivaCompras), 'A Pagar': Math.round(m.ivaNeto)
+        Mes: m.mes, 'IVA Ventas': m.ivaVentas, 'IVA Compras': m.ivaCompras,
+        'IIBB': m.iibb, 'A Pagar AFIP': m.ivaNeto
       }));
       XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(iva), 'IVA');
     }
+    const clientes = datosGlobales.clientesTop.map(c => ({ Cliente: c.nombre, Total: c.total, Facturas: c.cantidad }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(clientes), 'Top Clientes');
     XLSX.writeFile(wb, `goodcomex-${new Date().toISOString().slice(0,10)}.xlsx`);
   }
 
@@ -510,20 +480,25 @@
       document.getElementById('tramo-90-cant').textContent = tr.d90.cantidad + ' facturas';
 
       if (data.ivaMeses?.length) {
-        const totalIvaNeto = data.ivaMeses.reduce((a,m) => a + m.ivaNeto, 0);
-        document.getElementById('iva-resumen').textContent = `Total a pagar en período: ${fmt(totalIvaNeto)}`;
+        const totalV = data.ivaMeses.reduce((a,m) => a + m.ivaVentas, 0);
+        const totalC = data.ivaMeses.reduce((a,m) => a + m.ivaCompras, 0);
+        const totalIIBB = data.ivaMeses.reduce((a,m) => a + (m.iibb||0), 0);
+        const totalN = data.ivaMeses.reduce((a,m) => a + m.ivaNeto, 0);
+        document.getElementById('iva-resumen').textContent = `A pagar AFIP en período: ${fmt(totalN)}`;
         document.getElementById('iva-rows').innerHTML = data.ivaMeses.map(m => `
           <div class="iva-row">
             <span class="iva-mes">${m.mes}</span>
             <span class="iva-ventas">${fmt(m.ivaVentas)}</span>
             <span class="iva-compras">${fmt(m.ivaCompras)}</span>
-            <span class="iva-neto ${m.ivaNeto >= 0 ? 'positivo' : 'negativo'}">${fmt(Math.abs(m.ivaNeto))} ${m.ivaNeto >= 0 ? '↑' : '↓'}</span>
+            <span class="iva-iibb">${fmt(m.iibb||0)}</span>
+            <span class="iva-neto">${fmt(m.ivaNeto)}</span>
           </div>`).join('') + `
-          <div class="iva-row" style="border-top:0.5px solid #e5e5e5;margin-top:4px;font-weight:500;">
-            <span class="iva-mes">Total</span>
-            <span class="iva-ventas">${fmt(data.ivaMeses.reduce((a,m)=>a+m.ivaVentas,0))}</span>
-            <span class="iva-compras">${fmt(data.ivaMeses.reduce((a,m)=>a+m.ivaCompras,0))}</span>
-            <span class="iva-neto positivo">${fmt(totalIvaNeto)}</span>
+          <div class="iva-total-row">
+            <span style="width:70px;color:#888;">Total</span>
+            <span style="flex:1;text-align:right;color:#0c447c;">${fmt(totalV)}</span>
+            <span style="flex:1;text-align:right;color:#085041;">${fmt(totalC)}</span>
+            <span style="flex:1;text-align:right;color:#633806;">${fmt(totalIIBB)}</span>
+            <span style="flex:1;text-align:right;color:#993c1d;">${fmt(totalN)}</span>
           </div>`;
       }
 
@@ -554,7 +529,7 @@
                 const b0 = m0.data[i]; const b1 = m1.data[i];
                 if (v0 > 0) { ctx.font = '500 9px system-ui'; ctx.fillStyle = '#0c447c'; ctx.fillText(fmtM(v0), b0.x, b0.y - 2); }
                 if (v1 > 0) { ctx.font = '500 9px system-ui'; ctx.fillStyle = '#085041'; ctx.fillText(fmtM(v1), b1.x, b1.y - 2); }
-                if (v0 + v1 > 0) { ctx.font = '500 11px system-ui'; ctx.fillStyle = '#333'; ctx.fillText(fmtM(v0+v1), (b0.x+b1.x)/2, Math.min(b0.y,b1.y)-16); }
+                if (v0+v1 > 0) { ctx.font = '500 11px system-ui'; ctx.fillStyle = '#333'; ctx.fillText(fmtM(v0+v1), (b0.x+b1.x)/2, Math.min(b0.y,b1.y)-16); }
               });
               ctx.restore();
             }
@@ -562,54 +537,69 @@
         }
       });
 
-      if (chartLine) chartLine.destroy();
-      let acumR = 0, acumE = 0;
-      chartLine = new Chart(document.getElementById('lineChart'), {
-        type: 'line',
-        data: {
-          labels: meses.map(m => m.mes),
-          datasets: [
-            { label: 'El Resero', data: meses.map(m => { acumR += m.resero.total; return acumR; }), borderColor: '#378ADD', backgroundColor: 'rgba(55,138,221,0.08)', fill: true, tension: 0.3, pointRadius: 4 },
-            { label: 'Empresa B', data: meses.map(m => { acumE += m.empresaB.total; return acumE; }), borderColor: '#1D9E75', backgroundColor: 'rgba(29,158,117,0.08)', fill: true, tension: 0.3, pointRadius: 4 }
-          ]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ' ' + fmtM(ctx.raw) } } },
-          scales: {
-            x: { grid: { display: false }, ticks: { color: '#888', font: { size: 12 } } },
-            y: { grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { color: '#888', font: { size: 11 }, callback: v => '$' + (v/1000000).toFixed(0) + 'M' } }
-          }
-        }
-      });
-
       const maxCliente = data.clientesTop[0]?.total || 1;
+      document.getElementById('clientes-meta').textContent = `${data.clientesTop.length} clientes · total ${fmtM(data.clientesTop.reduce((a,c)=>a+c.total,0))}`;
       document.getElementById('clientes-list').innerHTML = data.clientesTop.map((c,i) => `
         <div class="rank-row">
           <span class="rank-num">${i+1}</span>
           <span class="rank-name" title="${c.nombre}">${c.nombre}</span>
-          <div class="rank-bar-wrap"><div class="rank-bar" style="width:${Math.round(c.total/maxCliente*100)}%"></div></div>
+          <div class="rank-bar-wrap"><div class="rank-bar" style="width:${Math.round(c.total/maxCliente*100)}%;background:#378ADD;"></div></div>
           <span class="rank-amount">${fmtM(c.total)}</span>
+          <span class="rank-sub" style="margin-left:6px;">${c.cantidad} fact.</span>
         </div>`).join('');
 
-      document.getElementById('vencidas-list').innerHTML = data.vencidas.detalle.length === 0
+      if (data.productosTop?.length) {
+        const maxProd = data.productosTop[0]?.cantidad || 1;
+        document.getElementById('productos-meta').textContent = `${data.productosTop.length} productos más vendidos en el período`;
+        document.getElementById('productos-list').innerHTML = data.productosTop.map((p,i) => `
+          <div class="rank-row">
+            <span class="rank-num">${i+1}</span>
+            <span class="rank-name" title="${p.nombre}">${p.nombre}</span>
+            <div class="rank-bar-wrap"><div class="rank-bar" style="width:${Math.round(p.cantidad/maxProd*100)}%;background:#1D9E75;"></div></div>
+            <span class="rank-amount">${p.cantidad} uds</span>
+            <span class="rank-sub" style="margin-left:6px;">${fmtM(p.total)}</span>
+          </div>`).join('');
+      } else {
+        document.getElementById('productos-list').innerHTML = '<p class="empty">Sin datos de productos</p>';
+      }
+
+      const totalVencido = data.vencidas.total;
+      const cantVencidas = data.vencidas.cantidad;
+      document.getElementById('vencidas-meta').textContent = `${cantVencidas} facturas · ${fmtM(totalVencido)} sin cobrar`;
+      const todasVencidas = data.vencidas.detalle || [];
+      document.getElementById('vencidas-list').innerHTML = todasVencidas.length === 0
         ? '<p class="empty">Sin facturas vencidas</p>'
-        : data.vencidas.detalle.map(f => `
+        : todasVencidas.sort((a,b) => b.amount_residual - a.amount_residual).map(f => `
           <div class="venc-row">
             <div class="venc-name">
-              <div style="font-weight:500;font-size:13px">${f.partner_name || '—'}</div>
-              <div class="venc-meta">${f.name} · vence ${f.invoice_date_due}</div>
+              <div style="font-weight:500;">${f.partner_name || '—'}</div>
+              <div class="venc-meta">${f.name} · vence ${f.invoice_date_due} · ${Math.floor((new Date()-new Date(f.invoice_date_due))/(1000*60*60*24))} días</div>
             </div>
             <div class="venc-amount">${fmt(f.amount_residual)}</div>
           </div>`).join('');
 
       const remitoResero = data.pendientesEntrega.filter(p => p.empresa === 'El Resero');
       const remitoEmpresaB = data.pendientesEntrega.filter(p => p.empresa === 'Empresa B');
-      document.getElementById('total-remitos').textContent = data.pendientesEntrega.length;
-      document.getElementById('remitos-resero').textContent = remitoResero.length;
-      document.getElementById('remitos-empresab').textContent = remitoEmpresaB.length;
-      renderEntregas(remitoResero, 'entregas-resero');
-      renderEntregas(remitoEmpresaB, 'entregas-empresab');
+      document.getElementById('entregas-meta').textContent = `${data.pendientesEntrega.length} remitos pendientes`;
+
+      const renderEntregasSimple = (pickings, containerId) => {
+        const el = document.getElementById(containerId);
+        if (!pickings.length) { el.innerHTML = '<p class="empty">Sin entregas pendientes</p>'; return; }
+        el.innerHTML = pickings.map(p => {
+          const fecha = p.scheduled_date ? new Date(p.scheduled_date).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '—';
+          const totalMonto = p.productos.reduce((a,pr) => a + (pr.qty * 0), 0);
+          return `
+            <div class="entrega-row">
+              <div class="entrega-info">
+                <div class="entrega-cliente">${p.partner}</div>
+                <div class="entrega-fecha">${p.name} · ${fecha}</div>
+                <div class="entrega-fecha">${p.productos.length} productos · ${p.productos.reduce((a,pr)=>a+pr.qty,0)} uds</div>
+              </div>
+            </div>`;
+        }).join('');
+      };
+      renderEntregasSimple(remitoResero, 'entregas-resero');
+      renderEntregasSimple(remitoEmpresaB, 'entregas-empresab');
 
       document.getElementById('ordenes-list').innerHTML = '';
       data.ordenesRecientes.forEach(o => {
