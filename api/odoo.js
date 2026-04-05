@@ -174,6 +174,35 @@ function generarMeses(desde, hasta) {
   return meses;
 }
 
+async function getIVA(uid, desde, hasta) {
+  const xmlVentas = await odooCall(uid, 'account.move.line',
+    [['move_id.move_type','=','out_invoice'],['move_id.state','=','posted'],
+     ['tax_line_id','!=',false],['move_id.invoice_date','>=',desde],['move_id.invoice_date','<=',hasta]],
+    ['balance','move_id']
+  );
+  const xmlCompras = await odooCall(uid, 'account.move.line',
+    [['move_id.move_type','=','in_invoice'],['move_id.state','=','posted'],
+     ['tax_line_id','!=',false],['move_id.invoice_date','>=',desde],['move_id.invoice_date','<=',hasta]],
+    ['balance','move_id']
+  );
+
+  const parseBalances = (xml) => {
+    const results = [];
+    const memberRegex = /<struct>([\s\S]*?)<\/struct>/g;
+    let struct;
+    while ((struct = memberRegex.exec(xml)) !== null) {
+      const balMatch = struct[1].match(/<name>balance<\/name>\s*<value><double>(-?[\d.]+)<\/double>/);
+      if (balMatch) results.push(parseFloat(balMatch[1]));
+    }
+    return results;
+  };
+
+  const ivaVentas = parseBalances(xmlVentas).reduce((a, b) => a + Math.abs(b), 0);
+  const ivaCompras = parseBalances(xmlCompras).reduce((a, b) => a + Math.abs(b), 0);
+
+  return { ivaVentas, ivaCompras, ivaNeto: ivaVentas - ivaCompras };
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   try {
