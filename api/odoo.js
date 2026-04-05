@@ -346,10 +346,11 @@ const vencidas = { detalle: pendientesConDias.filter(f => f.dias >= 0).slice(0, 
     const ivaData = await Promise.all(
   meses.map(m => getIVA(uid, m.desde, m.hasta))
 );
-const ivaMeses = meses.map((m, i) => ({
+  const ivaMeses = meses.map((m, i) => ({
   mes: m.nombre,
   ivaVentas: ivaData[i].ivaVentas,
   ivaCompras: ivaData[i].ivaCompras,
+  iibb: ivaData[i].iibb,
   ivaNeto: ivaData[i].ivaNeto
 }));
     
