@@ -51,9 +51,9 @@ async function initDB() {
   const existe = await sql`SELECT COUNT(*) FROM usuarios`;
   if (parseInt(existe[0].count) === 0) {
     await sql`INSERT INTO usuarios (nombre, email, password, rol) VALUES
-      ('Admin', 'kevinlubi@gmail.com', 'admin123', 'admin'),
-      ('Jefe Produccion', 'produccion@goodcomex.com', 'produccion123', 'produccion')
-    `;
+  ('Admin', 'kevinlubi@gmail.com', 'kevinlubi', 'admin'),
+  ('Jefe Produccion', 'produccion@goodcomex.com', 'danyfigueroa', 'produccion')
+`;
   }
 }
 
