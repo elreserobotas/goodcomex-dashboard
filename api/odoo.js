@@ -353,11 +353,39 @@ const vencidas = { detalle: pendientesConDias.filter(f => f.dias >= 0).slice(0, 
   iibb: ivaData[i].iibb,
   ivaNeto: ivaData[i].ivaNeto
 }));
+
+    const xmlProductos = await odooCall(uid, 'account.move.line',
+  [['move_id.move_type','=','out_invoice'],['move_id.state','=','posted'],
+   ['move_id.invoice_date','>=',desde],['move_id.invoice_date','<=',hasta],
+   ['product_id','!=',false],['tax_line_id','=',false]],
+  ['product_id','quantity','price_subtotal']
+);
+
+const productoMap = {};
+const memberRegexP = /<struct>([\s\S]*?)<\/struct>/g;
+let structP;
+while ((structP = memberRegexP.exec(xmlProductos)) !== null) {
+  const prodMatch = structP[1].match(/<name>product_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
+  const qtyMatch = structP[1].match(/<name>quantity<\/name>\s*<value><double>(-?[\d.]+)<\/double>/);
+  const totalMatch = structP[1].match(/<name>price_subtotal<\/name>\s*<value><double>(-?[\d.]+)<\/double>/);
+  if (prodMatch && qtyMatch) {
+    const nombre = prodMatch[1];
+    const qty = Math.abs(parseFloat(qtyMatch[1]));
+    const total = Math.abs(parseFloat(totalMatch?.[1] || 0));
+    if (!productoMap[nombre]) productoMap[nombre] = { nombre, cantidad: 0, total: 0 };
+    productoMap[nombre].cantidad += qty;
+    productoMap[nombre].total += total;
+  }
+}
+const productosTop = Object.values(productoMap)
+  .sort((a,b) => b.cantidad - a.cantidad)
+  .slice(0, 10);
     
     res.json({
       ventasPorMes: ventasPorMes.map(m => ({ mes: m.mes, resero: m.resero, empresaB: m.empresaB })),
       ivaMeses,
       clientesTop,
+      productosTop,
       pendientes: {
         total: totalPendiente,
         cantidad: pendientesConDias.length,
