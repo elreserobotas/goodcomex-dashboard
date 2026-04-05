@@ -130,6 +130,7 @@
       </div>
       <span class="topbar-user" id="user-label"></span>
       <button class="btn btn-primary btn-sm" id="btn-nuevo" onclick="abrirNuevo()" style="display:none;">+ Nuevo pedido</button>
+      <button class="btn btn-outline btn-sm" id="btn-importar" onclick="importarOdoo()" style="display:none;">Importar desde Odoo</button>
       <button class="btn btn-outline btn-sm" onclick="logout()">Salir</button>
     </div>
   </div>
@@ -293,8 +294,9 @@
       document.getElementById('app-screen').style.display = 'block';
       document.getElementById('user-label').textContent = usuario.nombre;
       if (usuario.rol === 'produccion' || usuario.rol === 'admin') {
-        document.getElementById('btn-nuevo').style.display = 'inline-block';
-      }
+  document.getElementById('btn-nuevo').style.display = 'inline-block';
+  document.getElementById('btn-importar').style.display = 'inline-block';
+}
       cargarPedidos();
     }).catch(() => {
       document.getElementById('login-err').style.display = 'block';
@@ -591,6 +593,23 @@
   document.getElementById('login-pass').addEventListener('keydown', e => {
     if (e.key === 'Enter') login();
   });
+  async function importarOdoo() {
+  const btn = document.getElementById('btn-importar');
+  btn.textContent = 'Importando...';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/importar-odoo', { method: 'POST' });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    alert(`Importación completa:\n✓ ${data.importados} pedidos importados\n— ${data.omitidos} ya existían`);
+    cargarPedidos();
+  } catch (err) {
+    alert('Error al importar: ' + err.message);
+  } finally {
+    btn.textContent = 'Importar desde Odoo';
+    btn.disabled = false;
+  }
+}
 </script>
 </body>
 </html>
