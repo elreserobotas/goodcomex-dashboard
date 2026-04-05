@@ -331,6 +331,7 @@ const ivaMeses = meses.map((m, i) => ({
     
     res.json({
       ventasPorMes: ventasPorMes.map(m => ({ mes: m.mes, resero: m.resero, empresaB: m.empresaB })),
+      ivaMeses,
       clientesTop,
       pendientes: {
         total: totalPendiente,
