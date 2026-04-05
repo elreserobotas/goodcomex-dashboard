@@ -221,10 +221,33 @@ module.exports = async function handler(req, res) {
     const clientesTop = Object.values(clienteMap).sort((a, b) => b.total - a.total).slice(0, 10);
 
     const hoyStr = hoy.toISOString().slice(0, 10);
-    const pendientes = todasFacturas.filter(f => f.payment_state !== 'paid' && f.amount_residual > 0);
-    const vencidas = pendientes.filter(f => f.invoice_date_due && f.invoice_date_due < hoyStr);
-    const totalPendiente = pendientes.reduce((a, f) => a + f.amount_residual, 0);
-    const totalVencido = vencidas.reduce((a, f) => a + f.amount_residual, 0);
+
+const xmlTodoPendiente = await odooCall(uid, 'account.move',
+  [['move_type','=','out_invoice'],['state','=','posted'],['payment_state','in',['not_paid','partial']]],
+  ['amount_total','company_id','partner_id','name','invoice_date','invoice_date_due','payment_state','amount_residual']
+);
+const todasPendientes = parseAmounts(xmlTodoPendiente);
+
+const diasDiferencia = (fecha) => {
+  if (!fecha) return 0;
+  return Math.floor((new Date(hoyStr) - new Date(fecha)) / (1000 * 60 * 60 * 24));
+};
+
+const pendientesConDias = todasPendientes
+  .filter(f => f.amount_residual > 0)
+  .map(f => ({ ...f, dias: diasDiferencia(f.invoice_date_due) }));
+
+const tramos = {
+  d0_30:  pendientesConDias.filter(f => f.dias >= 0 && f.dias <= 30),
+  d30_60: pendientesConDias.filter(f => f.dias > 30 && f.dias <= 60),
+  d60_90: pendientesConDias.filter(f => f.dias > 60 && f.dias <= 90),
+  d90:    pendientesConDias.filter(f => f.dias > 90),
+  noVencidas: pendientesConDias.filter(f => f.dias < 0)
+};
+
+const totalPendiente = pendientesConDias.reduce((a, f) => a + f.amount_residual, 0);
+const totalVencido = pendientesConDias.filter(f => f.dias >= 0).reduce((a, f) => a + f.amount_residual, 0);
+const vencidas = { detalle: pendientesConDias.filter(f => f.dias >= 0).slice(0, 5) };
 
     const [xmlPickings1, xmlPickings2] = await Promise.all([
       odooCall(uid, 'stock.picking',
