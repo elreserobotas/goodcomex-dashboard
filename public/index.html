@@ -30,7 +30,7 @@
     .btn-primary:hover { background: #333; }
     .btn-excel { background: #1D6F42; color: #fff; }
     .btn-excel:hover { background: #155234; }
-    .sep { color: #e5e5e5; font-size: 18px; }
+    .sep { color: #ccc; font-size: 16px; }
 
     .section-label { font-size: 11px; font-weight: 500; color: #aaa; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 10px; }
     .metrics { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
@@ -58,6 +58,22 @@
     .panel { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1.25rem; }
     .panel-title { font-size: 14px; font-weight: 500; margin-bottom: 12px; }
 
+    .tramos { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 8px; margin-bottom: 1.5rem; }
+    .tramo { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 10px; padding: 12px; text-align: center; }
+    .tramo-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+    .tramo-value { font-size: 15px; font-weight: 500; }
+    .tramo-cant { font-size: 11px; color: #aaa; margin-top: 2px; }
+    .tramo.t-ok { border-color: #9FE1CB; }
+    .tramo.t-ok .tramo-value { color: #085041; }
+    .tramo.t0 { border-color: #FAC775; }
+    .tramo.t0 .tramo-value { color: #633806; }
+    .tramo.t1 { border-color: #F0997B; }
+    .tramo.t1 .tramo-value { color: #712B13; }
+    .tramo.t2 { border-color: #E24B4A; }
+    .tramo.t2 .tramo-value { color: #501313; }
+    .tramo.t3 { border-color: #A32D2D; background: #fcebeb; }
+    .tramo.t3 .tramo-value { color: #501313; }
+
     .rank-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
     .rank-row:last-child { border-bottom: none; }
     .rank-num { font-size: 11px; color: #aaa; width: 16px; text-align: right; flex-shrink: 0; }
@@ -66,25 +82,27 @@
     .rank-bar { height: 6px; background: #378ADD; border-radius: 3px; }
     .rank-amount { font-weight: 500; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
 
-    .tramos { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin-bottom: 1.5rem; }
-    .tramo { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 10px; padding: 12px; text-align: center; }
-    .tramo-label { font-size: 11px; color: #888; margin-bottom: 4px; }
-    .tramo-value { font-size: 16px; font-weight: 500; }
-    .tramo-cant { font-size: 11px; color: #aaa; margin-top: 2px; }
-    .tramo.t0 { border-color: #9FE1CB; }
-    .tramo.t0 .tramo-value { color: #085041; }
-    .tramo.t1 { border-color: #FAC775; }
-    .tramo.t1 .tramo-value { color: #633806; }
-    .tramo.t2 { border-color: #F0997B; }
-    .tramo.t2 .tramo-value { color: #712B13; }
-    .tramo.t3 { border-color: #E24B4A; }
-    .tramo.t3 .tramo-value { color: #501313; }
-
     .venc-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
     .venc-row:last-child { border-bottom: none; }
     .venc-name { flex: 1; }
     .venc-meta { font-size: 11px; color: #aaa; margin-top: 2px; }
     .venc-amount { font-weight: 500; color: #993c1d; }
+
+    .iva-toggle { display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 1rem 1.25rem; background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; margin-bottom: 1.5rem; user-select: none; }
+    .iva-toggle-title { font-size: 14px; font-weight: 500; }
+    .iva-toggle-arrow { font-size: 12px; color: #888; transition: transform 0.2s; }
+    .iva-toggle-arrow.open { transform: rotate(180deg); }
+    .iva-content { display: none; background: #fff; border: 0.5px solid #e5e5e5; border-top: none; border-radius: 0 0 12px 12px; padding: 0 1.25rem 1.25rem; margin-top: -1.5rem; margin-bottom: 1.5rem; }
+    .iva-content.open { display: block; }
+    .iva-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
+    .iva-row:last-child { border-bottom: none; }
+    .iva-mes { color: #888; width: 80px; }
+    .iva-ventas { color: #0c447c; font-weight: 500; flex: 1; text-align: right; }
+    .iva-compras { color: #085041; font-weight: 500; flex: 1; text-align: right; }
+    .iva-neto { font-weight: 500; flex: 1; text-align: right; }
+    .iva-neto.positivo { color: #993c1d; }
+    .iva-neto.negativo { color: #27500a; }
+    .iva-header { display: flex; justify-content: space-between; padding: 8px 0 4px; font-size: 11px; color: #aaa; border-bottom: 0.5px solid #f0f0f0; margin-bottom: 4px; }
 
     .entrega-card { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 10px; cursor: pointer; }
     .entrega-card:hover { border-color: #ccc; }
@@ -144,16 +162,43 @@
   <div class="filtros">
     <label>Desde</label>
     <select id="desde-mes">
-      <option value="11">Noviembre</option>
+      <option value="1">Enero</option>
+      <option value="2">Febrero</option>
+      <option value="3">Marzo</option>
+      <option value="4">Abril</option>
+      <option value="5">Mayo</option>
+      <option value="6">Junio</option>
+      <option value="7">Julio</option>
+      <option value="8">Agosto</option>
+      <option value="9">Septiembre</option>
+      <option value="10">Octubre</option>
+      <option value="11" selected>Noviembre</option>
       <option value="12">Diciembre</option>
     </select>
     <select id="desde-anio">
-      <option value="2025">2025</option>
+      <option value="2025" selected>2025</option>
+      <option value="2026">2026</option>
     </select>
     <span class="sep">→</span>
     <label>Hasta</label>
-    <select id="hasta-mes"></select>
-    <select id="hasta-anio"></select>
+    <select id="hasta-mes">
+      <option value="1">Enero</option>
+      <option value="2">Febrero</option>
+      <option value="3">Marzo</option>
+      <option value="4">Abril</option>
+      <option value="5">Mayo</option>
+      <option value="6">Junio</option>
+      <option value="7">Julio</option>
+      <option value="8">Agosto</option>
+      <option value="9">Septiembre</option>
+      <option value="10">Octubre</option>
+      <option value="11">Noviembre</option>
+      <option value="12">Diciembre</option>
+    </select>
+    <select id="hasta-anio">
+      <option value="2025">2025</option>
+      <option value="2026" selected>2026</option>
+    </select>
     <button class="btn btn-primary" onclick="cargarDatos()">Aplicar</button>
     <button class="btn btn-excel" onclick="exportarExcel()">Exportar Excel</button>
   </div>
@@ -195,6 +240,11 @@
 
     <div class="section-label">Antigüedad de deuda</div>
     <div class="tramos">
+      <div class="tramo t-ok">
+        <div class="tramo-label">No vencidas</div>
+        <div class="tramo-value" id="tramo-ok">—</div>
+        <div class="tramo-cant" id="tramo-ok-cant">—</div>
+      </div>
       <div class="tramo t0">
         <div class="tramo-label">0 - 30 días</div>
         <div class="tramo-value" id="tramo-0-30">—</div>
@@ -241,6 +291,23 @@
       <div style="position:relative;height:200px;">
         <canvas id="lineChart"></canvas>
       </div>
+    </div>
+
+    <div class="iva-toggle" onclick="toggleIVA()">
+      <div>
+        <div class="iva-toggle-title">IVA a pagar por mes</div>
+        <div style="font-size:12px;color:#888;margin-top:2px;" id="iva-resumen">Clic para ver detalle</div>
+      </div>
+      <span class="iva-toggle-arrow" id="iva-arrow">▼</span>
+    </div>
+    <div class="iva-content" id="iva-content">
+      <div class="iva-header">
+        <span style="width:80px;">Mes</span>
+        <span style="flex:1;text-align:right;">IVA ventas</span>
+        <span style="flex:1;text-align:right;">IVA compras</span>
+        <span style="flex:1;text-align:right;">A pagar</span>
+      </div>
+      <div id="iva-rows"></div>
     </div>
 
     <div class="two-col">
@@ -307,34 +374,25 @@
   const fmtM = (n) => '$' + (n / 1000000).toFixed(1) + 'M';
   let chartBar = null, chartLine = null, datosGlobales = null;
 
-  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-
-  function inicializarFiltros() {
+  function setHastaPorDefecto() {
     const hoy = new Date();
-    const hM = document.getElementById('hasta-mes');
-    const hA = document.getElementById('hasta-anio');
-    for (let i = 0; i < 12; i++) {
-      const opt = document.createElement('option');
-      opt.value = i + 1;
-      opt.textContent = MESES[i];
-      hM.appendChild(opt);
-    }
-    hM.value = hoy.getMonth() + 1;
-    const anios = [2025, 2026];
-    anios.forEach(a => {
-      const opt = document.createElement('option');
-      opt.value = a; opt.textContent = a;
-      hA.appendChild(opt);
-    });
-    hA.value = hoy.getFullYear();
+    document.getElementById('hasta-mes').value = hoy.getMonth() + 1;
+    document.getElementById('hasta-anio').value = hoy.getFullYear();
   }
 
   function getFiltros() {
-    const dM = document.getElementById('desde-mes').value.padStart(2,'0');
+    const dM = String(document.getElementById('desde-mes').value).padStart(2,'0');
     const dA = document.getElementById('desde-anio').value;
-    const hM = document.getElementById('hasta-mes').value.padStart(2,'0');
+    const hM = String(document.getElementById('hasta-mes').value).padStart(2,'0');
     const hA = document.getElementById('hasta-anio').value;
     return { desde: `${dA}-${dM}-01`, hasta: `${hA}-${hM}-01` };
+  }
+
+  function toggleIVA() {
+    const content = document.getElementById('iva-content');
+    const arrow = document.getElementById('iva-arrow');
+    content.classList.toggle('open');
+    arrow.classList.toggle('open');
   }
 
   function cerrarModal(e) {
@@ -395,8 +453,15 @@
       'Facturas Resero': m.resero.cantidad, 'Facturas Empresa B': m.empresaB.cantidad
     }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resumen), 'Resumen');
-    const clientes = datosGlobales.clientesTop.map(c => ({ Cliente: c.nombre, 'Total': c.total, 'Facturas': c.cantidad }));
+    const clientes = datosGlobales.clientesTop.map(c => ({ Cliente: c.nombre, Total: c.total, Facturas: c.cantidad }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(clientes), 'Top Clientes');
+    if (datosGlobales.ivaMeses) {
+      const iva = datosGlobales.ivaMeses.map(m => ({
+        Mes: m.mes, 'IVA Ventas': Math.round(m.ivaVentas),
+        'IVA Compras': Math.round(m.ivaCompras), 'A Pagar': Math.round(m.ivaNeto)
+      }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(iva), 'IVA');
+    }
     XLSX.writeFile(wb, `goodcomex-${new Date().toISOString().slice(0,10)}.xlsx`);
   }
 
@@ -433,6 +498,8 @@
       document.getElementById('cant-pendiente').textContent = data.pendientes.cantidad + ' facturas · total en sistema';
 
       const tr = data.pendientes.tramos;
+      document.getElementById('tramo-ok').textContent = fmtM(tr.noVencidas.total);
+      document.getElementById('tramo-ok-cant').textContent = tr.noVencidas.cantidad + ' facturas';
       document.getElementById('tramo-0-30').textContent = fmtM(tr.d0_30.total);
       document.getElementById('tramo-0-30-cant').textContent = tr.d0_30.cantidad + ' facturas';
       document.getElementById('tramo-30-60').textContent = fmtM(tr.d30_60.total);
@@ -441,6 +508,24 @@
       document.getElementById('tramo-60-90-cant').textContent = tr.d60_90.cantidad + ' facturas';
       document.getElementById('tramo-90').textContent = fmtM(tr.d90.total);
       document.getElementById('tramo-90-cant').textContent = tr.d90.cantidad + ' facturas';
+
+      if (data.ivaMeses?.length) {
+        const totalIvaNeto = data.ivaMeses.reduce((a,m) => a + m.ivaNeto, 0);
+        document.getElementById('iva-resumen').textContent = `Total a pagar en período: ${fmt(totalIvaNeto)}`;
+        document.getElementById('iva-rows').innerHTML = data.ivaMeses.map(m => `
+          <div class="iva-row">
+            <span class="iva-mes">${m.mes}</span>
+            <span class="iva-ventas">${fmt(m.ivaVentas)}</span>
+            <span class="iva-compras">${fmt(m.ivaCompras)}</span>
+            <span class="iva-neto ${m.ivaNeto >= 0 ? 'positivo' : 'negativo'}">${fmt(Math.abs(m.ivaNeto))} ${m.ivaNeto >= 0 ? '↑' : '↓'}</span>
+          </div>`).join('') + `
+          <div class="iva-row" style="border-top:0.5px solid #e5e5e5;margin-top:4px;font-weight:500;">
+            <span class="iva-mes">Total</span>
+            <span class="iva-ventas">${fmt(data.ivaMeses.reduce((a,m)=>a+m.ivaVentas,0))}</span>
+            <span class="iva-compras">${fmt(data.ivaMeses.reduce((a,m)=>a+m.ivaCompras,0))}</span>
+            <span class="iva-neto positivo">${fmt(totalIvaNeto)}</span>
+          </div>`;
+      }
 
       if (chartBar) chartBar.destroy();
       chartBar = new Chart(document.getElementById('barChart'), {
@@ -555,7 +640,7 @@
     }
   }
 
-  inicializarFiltros();
+  setHastaPorDefecto();
   cargarDatos();
   setInterval(cargarDatos, 5 * 60 * 1000);
 </script>
