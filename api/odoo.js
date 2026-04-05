@@ -293,8 +293,18 @@ const vencidas = { detalle: pendientesConDias.filter(f => f.dias >= 0).slice(0, 
     res.json({
       ventasPorMes: ventasPorMes.map(m => ({ mes: m.mes, resero: m.resero, empresaB: m.empresaB })),
       clientesTop,
-      pendientes: { total: totalPendiente, cantidad: pendientes.length },
-      vencidas: { total: totalVencido, cantidad: vencidas.length, detalle: vencidas.slice(0, 5) },
+      pendientes: {
+        total: totalPendiente,
+        cantidad: pendientesConDias.length,
+        tramos: {
+          noVencidas: { total: tramos.noVencidas.reduce((a,f)=>a+f.amount_residual,0), cantidad: tramos.noVencidas.length },
+          d0_30:  { total: tramos.d0_30.reduce((a,f)=>a+f.amount_residual,0),  cantidad: tramos.d0_30.length },
+          d30_60: { total: tramos.d30_60.reduce((a,f)=>a+f.amount_residual,0), cantidad: tramos.d30_60.length },
+          d60_90: { total: tramos.d60_90.reduce((a,f)=>a+f.amount_residual,0), cantidad: tramos.d60_90.length },
+          d90:    { total: tramos.d90.reduce((a,f)=>a+f.amount_residual,0),    cantidad: tramos.d90.length }
+  }
+},
+vencidas: { total: totalVencido, cantidad: pendientesConDias.filter(f=>f.dias>=0).length, detalle: vencidas.detalle },
       pendientesEntrega,
       ordenesRecientes
     });
