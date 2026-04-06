@@ -192,7 +192,49 @@ module.exports = async function handler(req, res) {
       ]);
       return res.json({ comparativa: { periodoAnterior, anioAnterior } });
     }
+    
+if (tipo === 'iva') {
+  const xmlVentas = await odooCall(uid, 'account.move.line',
+    [['move_id.move_type','=','out_invoice'],['move_id.state','=','posted'],
+     ['tax_line_id','!=',false],['move_id.invoice_date','>=',desde],['move_id.invoice_date','<=',hasta]],
+    ['balance','tax_line_id']
+  );
+  const xmlCompras = await odooCall(uid, 'account.move.line',
+    [['move_id.move_type','=','in_invoice'],['move_id.state','=','posted'],
+     ['tax_line_id','!=',false],['move_id.invoice_date','>=',desde],['move_id.invoice_date','<=',hasta]],
+    ['balance','tax_line_id']
+  );
 
+  function parseLineas(xml) {
+    const results = [];
+    const memberRegex = /<struct>([\s\S]*?)<\/struct>/g;
+    let struct;
+    while ((struct = memberRegex.exec(xml)) !== null) {
+      const balMatch = struct[1].match(/<name>balance<\/name>\s*<value><double>(-?[\d.]+)<\/double>/);
+      const taxMatch = struct[1].match(/<name>tax_line_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
+      if (balMatch && taxMatch) results.push({ balance: parseFloat(balMatch[1]), tax: taxMatch[1] });
+    }
+    return results;
+  }
+
+  const lineasVentas = parseLineas(xmlVentas);
+  const lineasCompras = parseLineas(xmlCompras);
+  const ivaVentasNombres = ['VAT 21%', 'VAT 10.5%', 'VAT 27%', 'Exento (paga IVA 21%)'];
+  const ivaComprasNombres = ['VAT 21%', 'VAT 10.5%', 'VAT 27%', 'Perc VAT'];
+  const iibbNombres = ['P. IIBB CABA', 'P. IIBB BA', 'P. IIBB N', 'P. IIBB LP', 'P. Especial de IVA'];
+
+  const ivaVentas = lineasVentas.filter(l => ivaVentasNombres.includes(l.tax)).reduce((a,l) => a + Math.abs(l.balance), 0);
+  const ivaCompras = lineasCompras.filter(l => ivaComprasNombres.includes(l.tax)).reduce((a,l) => a + Math.abs(l.balance), 0);
+  const iibb = lineasCompras.filter(l => iibbNombres.includes(l.tax)).reduce((a,l) => a + Math.abs(l.balance), 0);
+
+  return res.json({
+    ivaVentas: Math.round(ivaVentas),
+    ivaCompras: Math.round(ivaCompras),
+    iibb: Math.round(iibb),
+    ivaNeto: Math.round(ivaVentas - ivaCompras)
+  });
+}
+    
     res.status(400).json({ error: 'Tipo no válido' });
   } catch (err) {
     console.error('ERROR odoo-extra:', err.message);
