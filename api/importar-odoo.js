@@ -76,23 +76,21 @@ function parsePickings(xml) {
   return results;
 }
 
-function parseMoves(xml) {
-  const results = [];
-  const memberRegex = /<struct>([\s\S]*?)<\/struct>/g;
-  let struct;
-  while ((struct = memberRegex.exec(xml)) !== null) {
-    const pickingMatch = struct[1].match(/<name>picking_id<\/name>\s*<value><array><data>\s*<value><int>(\d+)<\/int>/);
-    const productMatch = struct[1].match(/<name>product_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
-    const qtyMatch = struct[1].match(/<name>product_uom_qty<\/name>\s*<value><double>([\d.]+)<\/double>/);
-    if (pickingMatch && productMatch) {
-      results.push({
-        picking_id: parseInt(pickingMatch[1]),
-        product: productMatch[1],
-        qty: parseFloat(qtyMatch?.[1] || 0)
-      });
+function parsearTallesDeProductos(productos) {
+  const talles = [];
+  let total = 0;
+  productos.forEach(pr => {
+    const match = pr.product.match(/\[(\d+)\.(\d+)[MNAV]?\]/);
+    if (match) {
+      const talle = match[2];
+      const cantidad = Math.round(pr.qty);
+      if (cantidad > 0) {
+        talles.push({ talle, cantidad });
+        total += cantidad;
+      }
     }
-  }
-  return results;
+  });
+  return { talles, total };
 }
 
 module.exports = async function handler(req, res) {
