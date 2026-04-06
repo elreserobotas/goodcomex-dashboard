@@ -350,15 +350,17 @@
 
 <script>
 const ETAPAS = [
-  { key: 'recibido',      label: 'Pedido recibido',   cls: 'etapa-recibido' },
-  { key: 'corte',         label: 'Corte',              cls: 'etapa-corte' },
-  { key: 'deposito_corte',label: 'Depósito de corte',  cls: 'etapa-deposito_corte' },
-  { key: 'deposito',      label: 'Depósito',           cls: 'etapa-deposito' },
-  { key: 'aparado',       label: 'Aparado',            cls: 'etapa-aparado' },
-  { key: 'armado',        label: 'Armado',             cls: 'etapa-armado' },
-  { key: 'fabrica',       label: 'Fábrica',            cls: 'etapa-fabrica' },
-  { key: 'empaque',       label: 'Empaque',            cls: 'etapa-empaque' },
+  { key: 'recibido',       label: 'Pedido recibido',   cls: 'etapa-recibido' },
+  { key: 'corte',          label: 'Corte',              cls: 'etapa-corte' },
+  { key: 'deposito_corte', label: 'Depósito de corte',  cls: 'etapa-deposito_corte' },
+  { key: 'deposito',       label: 'Depósito',           cls: 'etapa-deposito' },
+  { key: 'aparado',        label: 'Aparado',            cls: 'etapa-aparado' },
+  { key: 'armado',         label: 'Armado',             cls: 'etapa-armado' },
+  { key: 'fabrica',        label: 'Fábrica',            cls: 'etapa-fabrica' },
+  { key: 'cosedor',        label: 'Cosedor',            cls: 'etapa-cosedor' },
+  { key: 'empaque',        label: 'Empaque',            cls: 'etapa-empaque' },
 ];
+  
 const TALLES = ['35','36','37','38','39','40','41','42','43','44','45','46'];
 
 let usuario = null;
@@ -508,16 +510,28 @@ function renderizar() {
 function renderKanban() {
   const board = document.getElementById('kanban-board');
   board.innerHTML = ETAPAS.map(etapa => {
-    const pedidosEnEtapa = pedidos.filter(p => (p.lotes||[]).some(l => l.etapa === etapa.key));
-    const todosUnicos = [...new Set(pedidosEnEtapa.map(p => p.id))].map(id => pedidos.find(p => p.id === id));
+    let pedidosEnCol = [];
+    if (etapa.key === 'recibido') {
+      pedidosEnCol = pedidos.filter(p => {
+        const lotes = p.lotes || [];
+        return lotes.length === 0 || lotes.some(l => l.etapa === 'recibido');
+      });
+    } else {
+      pedidosEnCol = pedidos.filter(p => (p.lotes||[]).some(l => l.etapa === etapa.key));
+    }
+    const uniqueIds = [...new Set(pedidosEnCol.map(p => p.id))];
+    const pedidosUnicos = uniqueIds.map(id => pedidos.find(p => p.id === id));
+    const cntLotes = etapa.key === 'recibido'
+      ? pedidosUnicos.filter(p => (p.lotes||[]).length === 0).length + pedidos.flatMap(p => p.lotes||[]).filter(l => l.etapa === 'recibido').length
+      : pedidos.flatMap(p => p.lotes||[]).filter(l => l.etapa === etapa.key).length;
     return `
       <div class="kanban-col">
         <div class="kanban-header ${etapa.cls}">
           <span>${etapa.label}</span>
-          <span>${(pedidos.flatMap(p => p.lotes||[]).filter(l => l.etapa === etapa.key)).length}</span>
+          <span>${cntLotes}</span>
         </div>
         <div class="kanban-body">
-          ${todosUnicos.length === 0 ? '<div class="empty-state">—</div>' : todosUnicos.map(renderKanbanCard).join('')}
+          ${pedidosUnicos.length === 0 ? '<div class="empty-state">—</div>' : pedidosUnicos.map(p => renderKanbanCard(p, etapa.key)).join('')}
         </div>
       </div>`;
   }).join('');
