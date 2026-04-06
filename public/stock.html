@@ -222,33 +222,27 @@
   let stockItems = [];
   let lotesEnEmpaque = [];
 
-  function login() {
-    const email = document.getElementById('login-email').value.trim();
-    const pass = document.getElementById('login-pass').value;
-    fetch('/api/produccion?action=login', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password: pass })
-    }).then(r => r.json()).then(data => {
-      if (data.error) { document.getElementById('login-err').style.display = 'block'; return; }
-      usuario = data.usuario;
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('app-screen').style.display = 'block';
-      document.getElementById('user-label').textContent = usuario.nombre;
-      if (usuario.rol === 'empaque' || usuario.rol === 'admin' || usuario.rol === 'produccion') {
-        document.getElementById('btn-registrar').style.display = 'inline-block';
-      }
-      cargarStock();
-    }).catch(() => { document.getElementById('login-err').style.display = 'block'; });
-  }
+ function login() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  fetch('/api/produccion?action=login', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password: pass })
+  }).then(r => r.json()).then(data => {
+    if (data.error) { document.getElementById('login-err').style.display = 'block'; return; }
+    localStorage.setItem('gx_usuario', JSON.stringify(data.usuario));
+    iniciarConSesion(data.usuario);
+  }).catch(() => { document.getElementById('login-err').style.display = 'block'; });
+}
 
-  function logout() {
-    document.cookie = 'gx_session=; Path=/; Max-Age=0';
-    usuario = null;
-    document.getElementById('login-screen').style.display = 'block';
-    document.getElementById('app-screen').style.display = 'none';
-    document.getElementById('login-email').value = '';
-    document.getElementById('login-pass').value = '';
-  }
+function logout() {
+  localStorage.removeItem('gx_usuario');
+  usuario = null;
+  document.getElementById('login-screen').style.display = 'block';
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-pass').value = '';
+}
 
   async function cargarStock() {
     const [resStock, resPedidos] = await Promise.all([
