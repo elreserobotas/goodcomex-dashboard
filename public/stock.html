@@ -242,6 +242,7 @@
   }
 
   function logout() {
+    document.cookie = 'gx_session=; Path=/; Max-Age=0';
     usuario = null;
     document.getElementById('login-screen').style.display = 'block';
     document.getElementById('app-screen').style.display = 'none';
@@ -423,6 +424,26 @@
   document.getElementById('login-pass').addEventListener('keydown', e => {
     if (e.key === 'Enter') login();
   });
+
+  function leerSesion() {
+  const cookie = document.cookie.split(';').find(c => c.trim().startsWith('gx_session='));
+  if (!cookie) return null;
+  try { return JSON.parse(decodeURIComponent(cookie.split('=').slice(1).join('='))); } catch { return null; }
+}
+
+function iniciarConSesion(u) {
+  usuario = u;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  document.getElementById('user-label').textContent = u.nombre;
+  if (u.rol === 'empaque' || u.rol === 'admin' || u.rol === 'produccion') {
+    document.getElementById('btn-registrar').style.display = 'inline-block';
+  }
+  cargarStock();
+}
+
+const sesionGuardada = leerSesion();
+if (sesionGuardada) iniciarConSesion(sesionGuardada);
 </script>
 </body>
 </html>
