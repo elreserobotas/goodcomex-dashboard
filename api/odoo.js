@@ -23,6 +23,8 @@ async function odooCall(uid, model, domain, fields, extra = {}) {
       valXml = `<value><array><data>${v.map(i => typeof i === 'number' ? `<value><int>${i}</int></value>` : `<value><string>${i}</string></value>`).join('')}</data></array></value>`;
     } else if (typeof v === 'number') {
       valXml = `<value><int>${v}</int></value>`;
+    } else if (v === false) {
+      valXml = `<value><boolean>0</boolean></value>`;
     } else {
       valXml = `<value><string><![CDATA[${v}]]></string></value>`;
     }
@@ -30,7 +32,7 @@ async function odooCall(uid, model, domain, fields, extra = {}) {
   }).join('');
 
   const fieldsXml = fields.map(f => `<value><string>${f}</string></value>`).join('');
-  const limit = extra.limit || 2000;
+  const limit = extra.limit || 5000;
   const orderXml = extra.order ? `<member><name>order</name><value><string>${extra.order}</string></value></member>` : '';
 
   const body = `<?xml version="1.0"?><methodCall><methodName>execute_kw</methodName><params>
@@ -60,14 +62,14 @@ function parseAmounts(xml) {
   const memberRegex = /<struct>([\s\S]*?)<\/struct>/g;
   let struct;
   while ((struct = memberRegex.exec(xml)) !== null) {
-    const amountMatch = struct[1].match(/<name>amount_total<\/name>\s*<value><double>([\d.]+)<\/double>/);
+    const amountMatch = struct[1].match(/<name>amount_total<\/name>\s*<value><double>(-?[\d.]+)<\/double>/);
     const companyMatch = struct[1].match(/<name>company_id<\/name>\s*<value><array><data>\s*<value><int>(\d+)<\/int>/);
     const partnerMatch = struct[1].match(/<name>partner_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
     const nameMatch = struct[1].match(/<name>name<\/name>\s*<value><string>([^<]+)<\/string>/);
     const dateMatch = struct[1].match(/<name>invoice_date<\/name>\s*<value><string>([^<]+)<\/string>/);
     const dueDateMatch = struct[1].match(/<name>invoice_date_due<\/name>\s*<value><string>([^<]+)<\/string>/);
     const paymentMatch = struct[1].match(/<name>payment_state<\/name>\s*<value><string>([^<]+)<\/string>/);
-    const amountResidualMatch = struct[1].match(/<name>amount_residual<\/name>\s*<value><double>([\d.]+)<\/double>/);
+    const amountResidualMatch = struct[1].match(/<name>amount_residual<\/name>\s*<value><double>(-?[\d.]+)<\/double>/);
     if (amountMatch) {
       results.push({
         amount_total: parseFloat(amountMatch[1]),
@@ -143,7 +145,7 @@ function parseMoves(xml) {
     if (pickingMatch && productMatch) {
       results.push({
         picking_id: parseInt(pickingMatch[1]),
-        product: productMatch?.[1] || '—',
+        product: productMatch[1],
         qty: parseFloat(qtyMatch?.[1] || 0),
         done: parseFloat(doneMatch?.[1] || 0)
       });
@@ -152,9 +154,38 @@ function parseMoves(xml) {
   return results;
 }
 
+function parseLineasFactura(xml) {
+  const results = [];
+  const memberRegex = /<struct>([\s\S]*?)<\/struct>/g;
+  let struct;
+  while ((struct = memberRegex.exec(xml)) !== null) {
+    const prodMatch = struct[1].match(/<name>product_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
+    const qtyMatch = struct[1].match(/<name>quantity<\/name>\s*<value><double>(-?[\d.]+)<\/double>/);
+    const totalMatch = struct[1].match(/<name>price_subtotal<\/name>\s*<value><double>(-?[\d.]+)<\/double>/);
+    if (prodMatch && qtyMatch) {
+      results.push({
+        producto: prodMatch[1],
+        cantidad: Math.abs(parseFloat(qtyMatch[1])),
+        total: Math.abs(parseFloat(totalMatch?.[1] || 0))
+      });
+    }
+  }
+  return results;
+}
+
+function parsearModeloColor(nombre) {
+  const match = nombre.match(/\[(\d+)\.?\d*([MNAV])?\]/);
+  if (!match) return nombre;
+  const modelo = match[1];
+  const colorCod = match[2] || null;
+  const colores = { M: 'Marrón', N: 'Negro', A: 'Arena', V: 'Verde' };
+  const nombreBase = nombre.replace(/\[.*?\]\s*/, '').replace(/\(.*?\)/g, '').trim();
+  return colorCod ? `${modelo} ${colores[colorCod] || colorCod} — ${nombreBase}` : `${modelo} — ${nombreBase}`;
+}
+
 function generarMeses(desde, hasta) {
   const meses = [];
-  const pad = (n) => String(n).padStart(2, '0');
+  const pad = n => String(n).padStart(2, '0');
   let year = parseInt(desde.slice(0, 4));
   let month = parseInt(desde.slice(5, 7)) - 1;
   const hastaYear = parseInt(hasta.slice(0, 4));
@@ -163,15 +194,19 @@ function generarMeses(desde, hasta) {
     const ultimoDia = new Date(year, month + 1, 0).getDate();
     const d = new Date(year, month, 1);
     const nombre = d.toLocaleString('es-AR', { month: 'short' }).replace('.', '') + ' ' + String(year).slice(2);
-    meses.push({
-      nombre,
-      desde: `${year}-${pad(month + 1)}-01`,
-      hasta: `${year}-${pad(month + 1)}-${ultimoDia}`
-    });
+    meses.push({ nombre, desde: `${year}-${pad(month + 1)}-01`, hasta: `${year}-${pad(month + 1)}-${ultimoDia}` });
     month++;
     if (month > 11) { month = 0; year++; }
   }
   return meses;
+}
+
+async function getFacturasPeriodo(uid, desde, hasta) {
+  const xml = await odooCall(uid, 'account.move',
+    [['move_type','=','out_invoice'],['state','=','posted'],['invoice_date','>=',desde],['invoice_date','<=',hasta]],
+    ['amount_total','company_id','partner_id','name','invoice_date','invoice_date_due','payment_state','amount_residual']
+  );
+  return parseAmounts(xml);
 }
 
 async function getIVA(uid, desde, hasta) {
@@ -193,38 +228,22 @@ async function getIVA(uid, desde, hasta) {
     while ((struct = memberRegex.exec(xml)) !== null) {
       const balMatch = struct[1].match(/<name>balance<\/name>\s*<value><double>(-?[\d.]+)<\/double>/);
       const taxMatch = struct[1].match(/<name>tax_line_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
-      if (balMatch && taxMatch) {
-        results.push({ balance: parseFloat(balMatch[1]), tax: taxMatch[1] });
-      }
+      if (balMatch && taxMatch) results.push({ balance: parseFloat(balMatch[1]), tax: taxMatch[1] });
     }
     return results;
   }
 
   const lineasVentas = parseLineas(xmlVentas);
   const lineasCompras = parseLineas(xmlCompras);
-
   const ivaVentasNombres = ['VAT 21%', 'VAT 10.5%', 'VAT 27%', 'Exento (paga IVA 21%)'];
   const ivaComprasNombres = ['VAT 21%', 'VAT 10.5%', 'VAT 27%', 'Perc VAT'];
   const iibbNombres = ['P. IIBB CABA', 'P. IIBB BA', 'P. IIBB N', 'P. IIBB LP', 'P. Especial de IVA'];
 
-  const ivaVentas = lineasVentas
-    .filter(l => ivaVentasNombres.some(n => l.tax.includes(n.replace('VAT','').trim()) || l.tax === n))
-    .reduce((a, l) => a + Math.abs(l.balance), 0);
+  const ivaVentas = lineasVentas.filter(l => ivaVentasNombres.includes(l.tax)).reduce((a,l) => a + Math.abs(l.balance), 0);
+  const ivaCompras = lineasCompras.filter(l => ivaComprasNombres.includes(l.tax)).reduce((a,l) => a + Math.abs(l.balance), 0);
+  const iibb = lineasCompras.filter(l => iibbNombres.includes(l.tax)).reduce((a,l) => a + Math.abs(l.balance), 0);
 
-  const ivaCompras = lineasCompras
-    .filter(l => ivaComprasNombres.some(n => l.tax === n))
-    .reduce((a, l) => a + Math.abs(l.balance), 0);
-
-  const iibb = lineasCompras
-    .filter(l => iibbNombres.some(n => l.tax === n))
-    .reduce((a, l) => a + Math.abs(l.balance), 0);
-
-  return {
-    ivaVentas: Math.round(ivaVentas),
-    ivaCompras: Math.round(ivaCompras),
-    iibb: Math.round(iibb),
-    ivaNeto: Math.round(ivaVentas - ivaCompras)
-  };
+  return { ivaVentas: Math.round(ivaVentas), ivaCompras: Math.round(ivaCompras), iibb: Math.round(iibb), ivaNeto: Math.round(ivaVentas - ivaCompras) };
 }
 
 module.exports = async function handler(req, res) {
@@ -232,31 +251,24 @@ module.exports = async function handler(req, res) {
   try {
     const hoy = new Date();
     const defaultDesde = '2025-11-01';
-    const defaultHasta = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-01`;
+    const defaultHasta = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
 
     const desde = req.query.desde || defaultDesde;
     const hastaRaw = req.query.hasta || defaultHasta;
-    const hastaDate = new Date(hastaRaw.slice(0, 7) + '-01');
-    hastaDate.setMonth(hastaDate.getMonth() + 1);
-    hastaDate.setDate(0);
-    const hasta = hastaDate.toISOString().slice(0, 10);
+    const hasta = hastaRaw;
 
     const uid = await getUid();
-    const meses = generarMeses(desde, hasta);
+    const meses = generarMeses(desde.slice(0,7) + '-01', hasta.slice(0,7) + '-01');
 
     const ventasPorMes = await Promise.all(
-      meses.map(async (m) => {
-        const xml = await odooCall(uid, 'account.move',
-          [['move_type','=','out_invoice'],['state','=','posted'],['invoice_date','>=',m.desde],['invoice_date','<=',m.hasta]],
-          ['amount_total','company_id','partner_id','name','invoice_date','invoice_date_due','payment_state','amount_residual']
-        );
-        const facturas = parseAmounts(xml);
+      meses.map(async m => {
+        const facturas = await getFacturasPeriodo(uid, m.desde, m.hasta);
         const resero = facturas.filter(f => f.company_id[0] === 1);
         const empresaB = facturas.filter(f => f.company_id[0] === 2);
         return {
           mes: m.nombre,
-          resero: { total: resero.reduce((a, o) => a + o.amount_total, 0), cantidad: resero.length },
-          empresaB: { total: empresaB.reduce((a, o) => a + o.amount_total, 0), cantidad: empresaB.length },
+          resero: { total: resero.reduce((a,o) => a + o.amount_total, 0), cantidad: resero.length },
+          empresaB: { total: empresaB.reduce((a,o) => a + o.amount_total, 0), cantidad: empresaB.length },
           facturas
         };
       })
@@ -271,36 +283,56 @@ module.exports = async function handler(req, res) {
       clienteMap[f.partner_name].total += f.amount_total;
       clienteMap[f.partner_name].cantidad++;
     });
-    const clientesTop = Object.values(clienteMap).sort((a, b) => b.total - a.total).slice(0, 10);
+    const clientesTop = Object.values(clienteMap).sort((a,b) => b.total - a.total).slice(0, 10);
 
     const hoyStr = hoy.toISOString().slice(0, 10);
+    const xmlTodoPendiente = await odooCall(uid, 'account.move',
+      [['move_type','=','out_invoice'],['state','=','posted'],['payment_state','in',['not_paid','partial']]],
+      ['amount_total','company_id','partner_id','name','invoice_date','invoice_date_due','payment_state','amount_residual']
+    );
+    const todasPendientes = parseAmounts(xmlTodoPendiente);
+    const diasDiferencia = fecha => fecha ? Math.floor((new Date(hoyStr) - new Date(fecha)) / (1000 * 60 * 60 * 24)) : 0;
+    const pendientesConDias = todasPendientes.filter(f => f.amount_residual > 0).map(f => ({ ...f, dias: diasDiferencia(f.invoice_date_due) }));
+    const tramos = {
+      noVencidas: pendientesConDias.filter(f => f.dias < 0),
+      d0_30: pendientesConDias.filter(f => f.dias >= 0 && f.dias <= 30),
+      d30_60: pendientesConDias.filter(f => f.dias > 30 && f.dias <= 60),
+      d60_90: pendientesConDias.filter(f => f.dias > 60 && f.dias <= 90),
+      d90: pendientesConDias.filter(f => f.dias > 90)
+    };
+    const totalPendiente = pendientesConDias.reduce((a,f) => a + f.amount_residual, 0);
+    const totalVencido = pendientesConDias.filter(f => f.dias >= 0).reduce((a,f) => a + f.amount_residual, 0);
+    const todasVencidas = pendientesConDias.filter(f => f.dias >= 0);
 
-const xmlTodoPendiente = await odooCall(uid, 'account.move',
-  [['move_type','=','out_invoice'],['state','=','posted'],['payment_state','in',['not_paid','partial']]],
-  ['amount_total','company_id','partner_id','name','invoice_date','invoice_date_due','payment_state','amount_residual']
-);
-const todasPendientes = parseAmounts(xmlTodoPendiente);
+    const ivaData = await Promise.all(meses.map(m => getIVA(uid, m.desde, m.hasta)));
+    const ivaMeses = meses.map((m,i) => ({
+      mes: m.nombre,
+      ivaVentas: ivaData[i].ivaVentas,
+      ivaCompras: ivaData[i].ivaCompras,
+      iibb: ivaData[i].iibb,
+      ivaNeto: ivaData[i].ivaNeto
+    }));
 
-const diasDiferencia = (fecha) => {
-  if (!fecha) return 0;
-  return Math.floor((new Date(hoyStr) - new Date(fecha)) / (1000 * 60 * 60 * 24));
-};
-
-const pendientesConDias = todasPendientes
-  .filter(f => f.amount_residual > 0)
-  .map(f => ({ ...f, dias: diasDiferencia(f.invoice_date_due) }));
-
-const tramos = {
-  d0_30:  pendientesConDias.filter(f => f.dias >= 0 && f.dias <= 30),
-  d30_60: pendientesConDias.filter(f => f.dias > 30 && f.dias <= 60),
-  d60_90: pendientesConDias.filter(f => f.dias > 60 && f.dias <= 90),
-  d90:    pendientesConDias.filter(f => f.dias > 90),
-  noVencidas: pendientesConDias.filter(f => f.dias < 0)
-};
-
-const totalPendiente = pendientesConDias.reduce((a, f) => a + f.amount_residual, 0);
-const totalVencido = pendientesConDias.filter(f => f.dias >= 0).reduce((a, f) => a + f.amount_residual, 0);
-const vencidas = { detalle: pendientesConDias.filter(f => f.dias >= 0).slice(0, 5) };
+    const xmlLineas = await odooCall(uid, 'account.move.line',
+      [['move_id.move_type','=','out_invoice'],['move_id.state','=','posted'],
+       ['product_id','!=',false],['tax_line_id','=',false],
+       ['move_id.invoice_date','>=',desde],['move_id.invoice_date','<=',hasta]],
+      ['product_id','quantity','price_subtotal']
+    );
+    const lineas = parseLineasFactura(xmlLineas);
+    const productoMap = {};
+    lineas.forEach(l => {
+      const key = parsearModeloColor(l.producto);
+      if (!productoMap[key]) productoMap[key] = { nombre: key, cantidad: 0, total: 0 };
+      productoMap[key].cantidad += l.cantidad;
+      productoMap[key].total += l.total;
+    });
+    const productosBase = Object.values(productoMap).filter(p => p.cantidad > 0).map(p => ({
+      ...p,
+      promedio: p.cantidad > 0 ? Math.round(p.total / p.cantidad) : 0
+    }));
+    const productosPorCantidad = [...productosBase].sort((a,b) => b.cantidad - a.cantidad).slice(0, 10);
+    const productosPorMonto = [...productosBase].sort((a,b) => b.total - a.total).slice(0, 10);
 
     const [xmlPickings1, xmlPickings2] = await Promise.all([
       odooCall(uid, 'stock.picking',
@@ -312,21 +344,17 @@ const vencidas = { detalle: pendientesConDias.filter(f => f.dias >= 0).slice(0, 
         ['name','partner_id','state','scheduled_date','company_id']
       )
     ]);
-
     const pickings1 = parsePickings(xmlPickings1);
     const pickings2 = parsePickings(xmlPickings2);
     const todosPickings = [...pickings1, ...pickings2];
-
     let moves = [];
     if (todosPickings.length > 0) {
-      const pickingIds = todosPickings.map(p => p.id);
       const movesXml = await odooCall(uid, 'stock.move',
-        [['picking_id','in',pickingIds],['state','not in',['done','cancel']]],
+        [['picking_id','in',todosPickings.map(p => p.id)],['state','not in',['done','cancel']]],
         ['picking_id','product_id','product_uom_qty','quantity']
       );
       moves = parseMoves(movesXml);
     }
-
     const pendientesEntrega = todosPickings.map(p => ({
       ...p,
       empresa: p.company_id === 1 ? 'El Resero' : 'Empresa B',
@@ -334,72 +362,78 @@ const vencidas = { detalle: pendientesConDias.filter(f => f.dias >= 0).slice(0, 
     }));
 
     const [xmlResero, xmlEmpresaB] = await Promise.all([
-      odooCall(uid, 'sale.order', [['company_id','=',1],['state','in',['sale','done']]], ['name','partner_id','amount_total','date_order'], { limit: 5, order: 'date_order desc' }),
-      odooCall(uid, 'sale.order', [['company_id','=',2],['state','in',['sale','done']]], ['name','partner_id','amount_total','date_order'], { limit: 5, order: 'date_order desc' })
+      odooCall(uid, 'sale.order', [['company_id','=',1],['state','in',['sale','done']]], ['name','partner_id','amount_total','date_order'], { limit: 10, order: 'date_order desc' }),
+      odooCall(uid, 'sale.order', [['company_id','=',2],['state','in',['sale','done']]], ['name','partner_id','amount_total','date_order'], { limit: 10, order: 'date_order desc' })
     ]);
-
     const ordenesRecientes = [
       ...parseOrders(xmlResero, 'El Resero'),
       ...parseOrders(xmlEmpresaB, 'Empresa B')
-    ].sort((a, b) => new Date(b.date_order) - new Date(a.date_order)).slice(0, 8);
+    ].sort((a,b) => new Date(b.date_order) - new Date(a.date_order)).slice(0, 10);
 
-    const ivaData = await Promise.all(
-  meses.map(m => getIVA(uid, m.desde, m.hasta))
-);
-  const ivaMeses = meses.map((m, i) => ({
-  mes: m.nombre,
-  ivaVentas: ivaData[i].ivaVentas,
-  ivaCompras: ivaData[i].ivaCompras,
-  iibb: ivaData[i].iibb,
-  ivaNeto: ivaData[i].ivaNeto
-}));
+    const totalGeneral = todasFacturas.reduce((a,f) => a + f.amount_total, 0);
+    const totalResero = todasFacturas.filter(f => f.company_id[0] === 1).reduce((a,f) => a + f.amount_total, 0);
+    const totalEmpresaB = todasFacturas.filter(f => f.company_id[0] === 2).reduce((a,f) => a + f.amount_total, 0);
 
-    const xmlProductos = await odooCall(uid, 'account.move.line',
-  [['move_id.move_type','=','out_invoice'],['move_id.state','=','posted'],
-   ['move_id.invoice_date','>=',desde],['move_id.invoice_date','<=',hasta],
-   ['product_id','!=',false],['tax_line_id','=',false]],
-  ['product_id','quantity','price_subtotal']
-);
+    const periodoAnteriorDesde = (() => {
+      const d = new Date(desde);
+      const h = new Date(hasta);
+      const diff = h - d;
+      const ant = new Date(d - diff - 86400000);
+      return ant.toISOString().slice(0,10);
+    })();
+    const periodoAnteriorHasta = (() => {
+      const d = new Date(desde);
+      return new Date(d - 86400000).toISOString().slice(0,10);
+    })();
+    const mismoAnioAnteriorDesde = desde.replace(/^\d{4}/, y => String(parseInt(y)-1));
+    const mismoAnioAnteriorHasta = hasta.replace(/^\d{4}/, y => String(parseInt(y)-1));
 
-const productoMap = {};
-const memberRegexP = /<struct>([\s\S]*?)<\/struct>/g;
-let structP;
-while ((structP = memberRegexP.exec(xmlProductos)) !== null) {
-  const prodMatch = structP[1].match(/<name>product_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
-  const qtyMatch = structP[1].match(/<name>quantity<\/name>\s*<value><double>(-?[\d.]+)<\/double>/);
-  const totalMatch = structP[1].match(/<name>price_subtotal<\/name>\s*<value><double>(-?[\d.]+)<\/double>/);
-  if (prodMatch && qtyMatch) {
-    const nombre = prodMatch[1];
-    const qty = Math.abs(parseFloat(qtyMatch[1]));
-    const total = Math.abs(parseFloat(totalMatch?.[1] || 0));
-    if (!productoMap[nombre]) productoMap[nombre] = { nombre, cantidad: 0, total: 0 };
-    productoMap[nombre].cantidad += qty;
-    productoMap[nombre].total += total;
-  }
-}
-const productosTop = Object.values(productoMap)
-  .sort((a,b) => b.cantidad - a.cantidad)
-  .slice(0, 10);
-    
+    const [facturasAnteriores, facturasAnioAnterior] = await Promise.all([
+      getFacturasPeriodo(uid, periodoAnteriorDesde, periodoAnteriorHasta),
+      getFacturasPeriodo(uid, mismoAnioAnteriorDesde, mismoAnioAnteriorHasta)
+    ]);
+
+    const comparativa = {
+      periodoAnterior: {
+        total: facturasAnteriores.reduce((a,f) => a + f.amount_total, 0),
+        cantidad: facturasAnteriores.length,
+        resero: facturasAnteriores.filter(f => f.company_id[0] === 1).reduce((a,f) => a + f.amount_total, 0),
+        empresaB: facturasAnteriores.filter(f => f.company_id[0] === 2).reduce((a,f) => a + f.amount_total, 0),
+        desde: periodoAnteriorDesde,
+        hasta: periodoAnteriorHasta
+      },
+      anioAnterior: {
+        total: facturasAnioAnterior.reduce((a,f) => a + f.amount_total, 0),
+        cantidad: facturasAnioAnterior.length,
+        resero: facturasAnioAnterior.filter(f => f.company_id[0] === 1).reduce((a,f) => a + f.amount_total, 0),
+        empresaB: facturasAnioAnterior.filter(f => f.company_id[0] === 2).reduce((a,f) => a + f.amount_total, 0),
+        desde: mismoAnioAnteriorDesde,
+        hasta: mismoAnioAnteriorHasta
+      }
+    };
+
     res.json({
       ventasPorMes: ventasPorMes.map(m => ({ mes: m.mes, resero: m.resero, empresaB: m.empresaB })),
       ivaMeses,
       clientesTop,
-      productosTop,
+      productosPorCantidad,
+      productosPorMonto,
       pendientes: {
         total: totalPendiente,
         cantidad: pendientesConDias.length,
         tramos: {
-          noVencidas: { total: tramos.noVencidas.reduce((a,f)=>a+f.amount_residual,0), cantidad: tramos.noVencidas.length },
-          d0_30:  { total: tramos.d0_30.reduce((a,f)=>a+f.amount_residual,0),  cantidad: tramos.d0_30.length },
-          d30_60: { total: tramos.d30_60.reduce((a,f)=>a+f.amount_residual,0), cantidad: tramos.d30_60.length },
-          d60_90: { total: tramos.d60_90.reduce((a,f)=>a+f.amount_residual,0), cantidad: tramos.d60_90.length },
-          d90:    { total: tramos.d90.reduce((a,f)=>a+f.amount_residual,0),    cantidad: tramos.d90.length }
-  }
-},
-vencidas: { total: totalVencido, cantidad: pendientesConDias.filter(f=>f.dias>=0).length, detalle: vencidas.detalle },
+          noVencidas: { total: tramos.noVencidas.reduce((a,f) => a+f.amount_residual,0), cantidad: tramos.noVencidas.length },
+          d0_30: { total: tramos.d0_30.reduce((a,f) => a+f.amount_residual,0), cantidad: tramos.d0_30.length },
+          d30_60: { total: tramos.d30_60.reduce((a,f) => a+f.amount_residual,0), cantidad: tramos.d30_60.length },
+          d60_90: { total: tramos.d60_90.reduce((a,f) => a+f.amount_residual,0), cantidad: tramos.d60_90.length },
+          d90: { total: tramos.d90.reduce((a,f) => a+f.amount_residual,0), cantidad: tramos.d90.length }
+        }
+      },
+      vencidas: { total: totalVencido, cantidad: todasVencidas.length, detalle: todasVencidas },
       pendientesEntrega,
-      ordenesRecientes
+      ordenesRecientes,
+      comparativa,
+      resumen: { totalGeneral, totalResero, totalEmpresaB, totalFacturas: todasFacturas.length }
     });
 
   } catch (err) {
