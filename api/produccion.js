@@ -119,7 +119,6 @@ module.exports = async function handler(req, res) {
       if (!users.length) return res.status(401).json({ error: 'Credenciales incorrectas' });
       const u = users[0];
       return res.json({ ok: true, usuario: { id: u.id, nombre: u.nombre, email: u.email, rol: u.rol } });
-      res.setHeader('Set-Cookie', `gx_session=${JSON.stringify({id: u.id, nombre: u.nombre, email: u.email, rol: u.rol})}; Path=/; Max-Age=86400; SameSite=Lax`);
 return res.json({ ok: true, usuario: { id: u.id, nombre: u.nombre, email: u.email, rol: u.rol } });
     }
 
