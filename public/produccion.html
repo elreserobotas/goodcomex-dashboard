@@ -34,33 +34,39 @@
     .field textarea { min-height: 70px; resize: vertical; }
     .login-err { font-size: 13px; color: #a32d2d; margin-bottom: 1rem; display: none; }
 
-    .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+    .sticky-header { position: sticky; top: 0; z-index: 50; background: #f5f5f3; padding: 1rem 1.5rem 0; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 0 1.5rem 1.5rem; }
+    .container-inner { max-width: 1400px; margin: 0 auto; }
 
-    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; }
     .view-toggle { display: flex; gap: 4px; }
     .view-btn { padding: 5px 12px; border: 0.5px solid #e5e5e5; background: #fff; border-radius: 8px; font-size: 12px; cursor: pointer; }
     .view-btn.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
     .user-label { font-size: 12px; color: #888; margin-left: auto; }
 
-    .stats { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 10px; margin-bottom: 1.5rem; }
+    .stats { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 10px; margin-bottom: 1rem; }
     .stat { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 0.875rem 1rem; }
     .stat-label { font-size: 11px; color: #888; margin-bottom: 4px; }
     .stat-value { font-size: 20px; font-weight: 500; }
     .stat-sub { font-size: 10px; color: #aaa; margin-top: 2px; }
 
-    .kanban { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 1rem; align-items: flex-start; }
-    .kanban-col { min-width: 195px; max-width: 200px; flex-shrink: 0; }
-    .kanban-header { font-size: 11px; font-weight: 500; padding: 7px 10px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; }
+    .kanban-scroll-wrap { overflow-x: auto; padding-bottom: 1rem; }
+    .kanban { display: flex; gap: 8px; align-items: flex-start; min-width: max-content; }
+    .kanban-col { width: 200px; flex-shrink: 0; }
+    .kanban-header { font-size: 11px; font-weight: 500; padding: 7px 10px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; }
     .kanban-body { background: #f0f0ee; border-radius: 0 0 8px 8px; padding: 6px; min-height: 120px; display: flex; flex-direction: column; gap: 6px; }
 
     .kanban-pedido { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 10px; overflow: hidden; }
     .pedido-header { padding: 8px 10px; cursor: pointer; }
     .pedido-header:hover { background: #fafafa; }
+    .pedido-sin-lotes { padding: 8px 10px; cursor: pointer; border: 0.5px dashed #ccc; border-radius: 10px; background: #fafafa; }
+    .pedido-sin-lotes:hover { background: #f0f0ee; }
     .pedido-num { font-size: 10px; color: #aaa; margin-bottom: 2px; }
     .pedido-cliente { font-size: 12px; font-weight: 500; margin-bottom: 2px; line-height: 1.3; }
     .pedido-modelo { font-size: 10px; color: #666; margin-bottom: 4px; line-height: 1.3; }
     .pedido-bottom { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; }
     .pedido-monto { font-size: 10px; color: #085041; font-weight: 500; margin-top: 3px; }
+    .pedido-accion { font-size: 10px; color: #378ADD; margin-top: 4px; }
 
     .lotes-wrap { border-top: 0.5px solid #f0f0f0; padding: 4px 6px 6px; display: none; flex-direction: column; gap: 4px; background: #fafafa; }
     .lotes-wrap.open { display: flex; }
@@ -90,7 +96,6 @@
     .etapa-cosedor { background: #B5D4F4; color: #042C53; }
     .etapa-empaque { background: #D3D1C7; color: #2C2C2A; }
     .etapa-listo { background: #eaf3de; color: #27500a; }
-
     .etapa-pill { font-size: 10px; padding: 2px 7px; border-radius: 10px; display: inline-block; }
 
     .lista-wrap { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; overflow: hidden; }
@@ -98,7 +103,12 @@
     .lista-table th { text-align: left; padding: 9px 12px; font-size: 10px; color: #888; font-weight: 500; border-bottom: 0.5px solid #f0f0f0; background: #fafafa; }
     .lista-table td { padding: 9px 12px; border-bottom: 0.5px solid #f0f0f0; vertical-align: middle; }
     .lista-table tr:last-child td { border-bottom: none; }
-    .lista-table tr:hover td { background: #fafafa; cursor: pointer; }
+    .lista-table tr:hover td { background: #fafafa; }
+
+    .dividir-lineas { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1rem; }
+    .dividir-linea { display: grid; grid-template-columns: 1fr 80px 80px 32px; gap: 6px; align-items: center; }
+    .dividir-linea input, .dividir-linea select { padding: 6px 8px; border: 0.5px solid #e5e5e5; border-radius: 6px; font-size: 13px; }
+    .dividir-total { font-size: 13px; color: #085041; font-weight: 500; margin-top: 4px; }
 
     .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; align-items: flex-start; justify-content: center; padding: 1.5rem 1rem 5rem; overflow-y: auto; }
     .modal-bg.open { display: flex; }
@@ -116,7 +126,7 @@
     .detalle-label { color: #888; }
     .detalle-val { font-weight: 500; }
     .talles-resumen { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
-    .talle-pill { background: #f5f5f3; border-radius: 5px; padding: 2px 7px; font-size: 11px; }
+    .talle-pill-sm { background: #f5f5f3; border-radius: 5px; padding: 2px 7px; font-size: 11px; }
     .hist-item { display: flex; gap: 8px; padding: 7px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 12px; }
     .hist-item:last-child { border-bottom: none; }
     .hist-fecha { color: #aaa; white-space: nowrap; flex-shrink: 0; font-size: 10px; }
@@ -141,42 +151,48 @@
 </div>
 
 <div id="app-screen" style="display:none;">
-  <div class="container">
-    <div class="toolbar">
-      <div class="view-toggle">
-        <button class="view-btn active" id="btn-kanban" onclick="setVista('kanban')">Kanban</button>
-        <button class="view-btn" id="btn-lista" onclick="setVista('lista')">Lista</button>
+  <div class="sticky-header">
+    <div class="container-inner">
+      <div class="toolbar">
+        <div class="view-toggle">
+          <button class="view-btn active" id="btn-kanban" onclick="setVista('kanban')">Kanban</button>
+          <button class="view-btn" id="btn-lista" onclick="setVista('lista')">Lista</button>
+        </div>
+        <button class="btn btn-outline btn-sm" id="btn-importar" onclick="importarOdoo()" style="display:none;">Importar Odoo</button>
+        <button class="btn btn-primary btn-sm" id="btn-nuevo" onclick="abrirNuevo()" style="display:none;">+ Nuevo pedido</button>
+        <button class="btn btn-outline btn-sm" onclick="cargarPedidos()">Actualizar</button>
+        <span class="user-label" id="user-label"></span>
+        <button class="btn btn-outline btn-sm" onclick="logout()">Salir</button>
       </div>
-      <button class="btn btn-outline btn-sm" id="btn-importar" onclick="importarOdoo()" style="display:none;">Importar Odoo</button>
-      <button class="btn btn-primary btn-sm" id="btn-nuevo" onclick="abrirNuevo()" style="display:none;">+ Nuevo pedido</button>
-      <button class="btn btn-outline btn-sm" onclick="cargarPedidos()">Actualizar</button>
-      <span class="user-label" id="user-label"></span>
-      <button class="btn btn-outline btn-sm" onclick="logout()">Salir</button>
+      <div class="stats">
+        <div class="stat"><div class="stat-label">En producción</div><div class="stat-value" id="stat-total">—</div><div class="stat-sub">pedidos activos</div></div>
+        <div class="stat"><div class="stat-label">Pares pendientes</div><div class="stat-value" id="stat-lotes">—</div><div class="stat-sub">en producción</div></div>
+        <div class="stat"><div class="stat-label">En aparado</div><div class="stat-value" id="stat-aparado">—</div><div class="stat-sub">lotes</div></div>
+        <div class="stat"><div class="stat-label">En depósito</div><div class="stat-value" id="stat-deposito">—</div><div class="stat-sub">lotes</div></div>
+        <div class="stat"><div class="stat-label">Pares totales</div><div class="stat-value" id="stat-pares">—</div><div class="stat-sub">en sistema</div></div>
+      </div>
     </div>
+  </div>
 
-    <div class="stats">
-      <div class="stat"><div class="stat-label">En producción</div><div class="stat-value" id="stat-total">—</div><div class="stat-sub">pedidos activos</div></div>
-      <div class="stat-label">Pares pendientes</div><div class="stat-value" id="stat-lotes">—</div><div class="stat-sub">en producción</div>
-      <div class="stat"><div class="stat-label">En aparado</div><div class="stat-value" id="stat-aparado">—</div><div class="stat-sub">lotes</div></div>
-      <div class="stat"><div class="stat-label">En depósito</div><div class="stat-value" id="stat-deposito">—</div><div class="stat-sub">lotes</div></div>
-      <div class="stat"><div class="stat-label">Pares totales</div><div class="stat-value" id="stat-pares">—</div><div class="stat-sub">en producción</div></div>
-    </div>
-
-    <div id="vista-kanban">
-      <div class="kanban" id="kanban-board"></div>
-    </div>
-
-    <div id="vista-lista" style="display:none;">
-      <div class="lista-wrap">
-        <table class="lista-table">
-          <thead>
-            <tr>
-              <th>Nro</th><th>Cliente</th><th>Modelo</th><th>Empresa</th>
-              <th>Tipo</th><th>Lotes</th><th>Pares</th><th>Etapa</th><th>Monto</th><th>Días</th>
-            </tr>
-          </thead>
-          <tbody id="lista-body"></tbody>
-        </table>
+  <div class="container">
+    <div class="container-inner">
+      <div id="vista-kanban">
+        <div class="kanban-scroll-wrap">
+          <div class="kanban" id="kanban-board"></div>
+        </div>
+      </div>
+      <div id="vista-lista" style="display:none;">
+        <div class="lista-wrap">
+          <table class="lista-table">
+            <thead>
+              <tr>
+                <th>Nro</th><th>Cliente</th><th>Modelo</th><th>Empresa</th>
+                <th>Tipo</th><th>Lotes</th><th>Pares</th><th>Etapa</th><th>Monto</th><th>Días</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="lista-body"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -242,11 +258,17 @@
     </div>
     <input type="hidden" id="dividir-lote-id" />
     <p style="font-size:13px;color:#888;margin-bottom:1rem;" id="dividir-info"></p>
-    <div class="field">
-      <label>Cantidad a separar en nuevo lote</label>
-      <input type="number" id="dividir-cantidad" min="1" placeholder="0" />
+    <div class="modal-section">Detalle del nuevo lote</div>
+    <div style="display:grid;grid-template-columns:1fr 80px 80px 32px;gap:6px;margin-bottom:6px;">
+      <span style="font-size:11px;color:#aaa;">Modelo</span>
+      <span style="font-size:11px;color:#aaa;">Talle</span>
+      <span style="font-size:11px;color:#aaa;">Cant.</span>
+      <span></span>
     </div>
-    <div class="field"><label>Nota</label><textarea id="dividir-nota" placeholder="Ej: lote urgente para cliente X"></textarea></div>
+    <div class="dividir-lineas" id="dividir-lineas"></div>
+    <button class="btn btn-outline btn-sm" onclick="agregarLineaDividir()" style="margin-bottom:1rem;">+ agregar línea</button>
+    <div class="dividir-total" id="dividir-total">Total: 0 pares</div>
+    <div class="field" style="margin-top:1rem;"><label>Nota</label><textarea id="dividir-nota" placeholder="Ej: lote urgente para cliente X"></textarea></div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="cerrarModal('modal-dividir')">Cancelar</button>
       <button class="btn btn-primary" onclick="confirmarDividir()">Dividir</button>
@@ -273,7 +295,7 @@
 <div class="modal-bg" id="modal-nuevo-lote">
   <div class="modal">
     <div class="modal-title">
-      <span>Agregar lote</span>
+      <span id="nuevo-lote-titulo">Agregar lote</span>
       <button class="modal-close" onclick="cerrarModal('modal-nuevo-lote')">×</button>
     </div>
     <input type="hidden" id="nuevo-lote-pedido-id" />
@@ -362,27 +384,21 @@ const ETAPAS = [
   { key: 'cosedor',        label: 'Cosedor',            cls: 'etapa-cosedor' },
   { key: 'empaque',        label: 'Empaque',            cls: 'etapa-empaque' },
 ];
-  
 const TALLES = ['35','36','37','38','39','40','41','42','43','44','45','46'];
 
 let usuario = null;
 let pedidos = [];
 let vista = 'kanban';
+let dividirLineas = 1;
 
 function etapaCls(k) { return ETAPAS.find(e => e.key === k)?.cls || ''; }
 function etapaLabel(k) { return ETAPAS.find(e => e.key === k)?.label || k; }
-
-function diasDesde(fecha) {
-  if (!fecha) return 0;
-  return Math.floor((new Date() - new Date(fecha)) / (1000*60*60*24));
-}
-
+function diasDesde(f) { if (!f) return 0; return Math.floor((new Date() - new Date(f)) / (1000*60*60*24)); }
 function tipoBadge(tipo) {
   if (tipo === 'stock') return '<span class="badge-tipo tipo-stock">Stock</span>';
   if (tipo === 'mixto') return '<span class="badge-tipo tipo-mixto">Cli+Stock</span>';
   return '<span class="badge-tipo tipo-cliente">Cliente</span>';
 }
-
 function paresLabel(p) {
   const ped = parseInt(p.cantidad_pedida)||0;
   const stk = parseInt(p.cantidad_stock)||0;
@@ -390,7 +406,6 @@ function paresLabel(p) {
   if (p.tipo === 'mixto') return ped + '+' + stk + ' pares';
   return ped + ' pares';
 }
-
 function fmtPesos(n) {
   if (!n || n == 0) return '';
   return '$' + Math.round(n).toLocaleString('es-AR');
@@ -417,7 +432,7 @@ function logout() {
   document.getElementById('login-email').value = '';
   document.getElementById('login-pass').value = '';
 }
-  
+
 function setVista(v) {
   vista = v;
   document.getElementById('vista-kanban').style.display = v === 'kanban' ? 'block' : 'none';
@@ -440,7 +455,7 @@ function renderStats() {
   const lotesActivos = todosLotes.filter(l => l.etapa !== 'listo' && l.etapa !== 'stock' && l.etapa !== 'empaque');
   const enAparado = todosLotes.filter(l => l.etapa === 'aparado');
   const enDeposito = todosLotes.filter(l => l.etapa === 'deposito' || l.etapa === 'deposito_corte');
-  const paresPendientes = lotesActivos.reduce((a, l) => a + (parseInt(l.cantidad)||0), 0);
+  const paresPendientes = lotesActivos.reduce((a,l) => a + (parseInt(l.cantidad)||0), 0);
   const totalPares = pedidos.reduce((a,p) => a + (parseInt(p.cantidad_pedida)||0) + (parseInt(p.cantidad_stock)||0), 0);
   document.getElementById('stat-total').textContent = activos.length;
   document.getElementById('stat-lotes').textContent = paresPendientes.toLocaleString('es-AR');
@@ -451,17 +466,34 @@ function renderStats() {
 
 function renderKanbanCard(p, etapaFiltro) {
   const todosLotes = p.lotes || [];
-  const lotesMostrar = etapaFiltro
-    ? todosLotes.filter(l => l.etapa === etapaFiltro || (etapaFiltro === 'recibido' && todosLotes.length === 0))
-    : todosLotes;
+  const sinLotes = todosLotes.length === 0;
+  const lotesMostrar = sinLotes ? [] : todosLotes.filter(l => l.etapa === etapaFiltro);
   const diasTotal = diasDesde(p.created_at);
   const monto = fmtPesos(p.monto_total);
-  const sinLotes = todosLotes.length === 0;
+  const puedeEditar = usuario?.rol === 'produccion' || usuario?.rol === 'admin';
+
+  if (sinLotes) {
+    return `
+      <div class="kanban-pedido">
+        <div class="pedido-sin-lotes" onclick="abrirPrimerLote(${p.id})">
+          <div class="pedido-num">${p.numero} · sin lotes</div>
+          <div class="pedido-cliente">${p.tipo === 'stock' ? 'Stock propio' : (p.cliente || '—')}</div>
+          <div class="pedido-modelo">${p.producto}</div>
+          <div class="pedido-bottom">
+            ${tipoBadge(p.tipo)}
+            <span class="emp-badge ${p.empresa === 'El Resero' ? 'emp-r' : 'emp-b'}">${p.empresa}</span>
+            <span style="font-size:10px;color:#aaa;margin-left:auto;">${diasTotal}d</span>
+          </div>
+          ${monto ? `<div class="pedido-monto">${monto}</div>` : ''}
+          <div class="pedido-accion">Tap para crear lote y mover →</div>
+        </div>
+      </div>`;
+  }
 
   return `
     <div class="kanban-pedido">
       <div class="pedido-header" onclick="toggleLotes('lotes-${p.id}-${etapaFiltro}')">
-        <div class="pedido-num">${p.numero}${sinLotes ? ' · sin lotes' : ' · ' + lotesMostrar.length + ' lote' + (lotesMostrar.length !== 1 ? 's' : '')}</div>
+        <div class="pedido-num">${p.numero} · ${lotesMostrar.length} lote${lotesMostrar.length !== 1 ? 's' : ''}</div>
         <div class="pedido-cliente">${p.tipo === 'stock' ? 'Stock propio' : (p.cliente || '—')}</div>
         <div class="pedido-modelo">${p.producto}</div>
         <div class="pedido-bottom">
@@ -472,10 +504,8 @@ function renderKanbanCard(p, etapaFiltro) {
         ${monto ? `<div class="pedido-monto">${monto}</div>` : ''}
       </div>
       <div class="lotes-wrap" id="lotes-${p.id}-${etapaFiltro}">
-        ${sinLotes
-          ? `<div style="font-size:11px;color:#aaa;padding:4px 0;">Sin lotes — clic para agregar</div>`
-          : lotesMostrar.map(l => renderLoteCard(l, p)).join('')}
-        ${(usuario?.rol === 'produccion' || usuario?.rol === 'admin') ? `<button class="add-lote-btn" onclick="abrirNuevoLote(${p.id})">+ agregar lote</button>` : ''}
+        ${lotesMostrar.map(l => renderLoteCard(l, p)).join('')}
+        ${puedeEditar ? `<button class="add-lote-btn" onclick="abrirNuevoLote(${p.id})">+ agregar lote</button>` : ''}
       </div>
     </div>`;
 }
@@ -542,15 +572,17 @@ function renderKanban() {
 
 function renderLista() {
   const tbody = document.getElementById('lista-body');
-  if (!pedidos.length) { tbody.innerHTML = '<tr><td colspan="10" class="empty-state">Sin pedidos</td></tr>'; return; }
+  if (!pedidos.length) { tbody.innerHTML = '<tr><td colspan="11" class="empty-state">Sin pedidos</td></tr>'; return; }
+  const puedeEditar = usuario?.rol === 'produccion' || usuario?.rol === 'admin';
   tbody.innerHTML = pedidos.map(p => {
     const lotes = p.lotes || [];
     const dias = diasDesde(p.created_at);
+    const primerLote = lotes[0];
     return `
-      <tr onclick="abrirDetalle(${p.id})">
-        <td>${p.numero}</td>
-        <td><strong>${p.tipo === 'stock' ? 'Stock propio' : (p.cliente||'—')}</strong></td>
-        <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.producto}</td>
+      <tr>
+        <td onclick="abrirDetalle(${p.id})" style="cursor:pointer;">${p.numero}</td>
+        <td onclick="abrirDetalle(${p.id})" style="cursor:pointer;"><strong>${p.tipo === 'stock' ? 'Stock propio' : (p.cliente||'—')}</strong></td>
+        <td onclick="abrirDetalle(${p.id})" style="cursor:pointer;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.producto}</td>
         <td><span class="emp-badge ${p.empresa==='El Resero'?'emp-r':'emp-b'}">${p.empresa}</span></td>
         <td>${tipoBadge(p.tipo)}</td>
         <td>${lotes.length}</td>
@@ -558,6 +590,10 @@ function renderLista() {
         <td><span class="etapa-pill ${etapaCls(p.etapa)}">${etapaLabel(p.etapa)}</span></td>
         <td style="font-size:11px;color:#085041;">${fmtPesos(p.monto_total)}</td>
         <td style="font-size:11px;color:#888;">${dias}d</td>
+        <td>${puedeEditar ? (lotes.length === 0
+          ? `<button class="btn btn-primary btn-sm" onclick="abrirPrimerLote(${p.id})">Iniciar</button>`
+          : `<button class="btn btn-primary btn-sm" onclick="abrirMoverLote(${primerLote.id},'${primerLote.etapa}','${primerLote.aparador||''}')">Mover</button>`)
+          : ''}</td>
       </tr>`;
   }).join('');
 }
@@ -568,7 +604,7 @@ function abrirDetalle(id) {
   const lotes = p.lotes || [];
   const fecha = p.created_at ? new Date(p.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'}) : '—';
   const tallesHtml = p.talles?.length
-    ? `<div class="talles-resumen">${p.talles.map(t => `<span class="talle-pill">T${t.talle}: ${t.cantidad}</span>`).join('')}</div>`
+    ? `<div class="talles-resumen">${p.talles.map(t => `<span class="talle-pill-sm">T${t.talle}: ${t.cantidad}</span>`).join('')}</div>`
     : '<span style="color:#aaa;font-size:12px">Sin talles</span>';
   const histHtml = p.historial?.length
     ? p.historial.map(h => `
@@ -577,7 +613,6 @@ function abrirDetalle(id) {
           <span class="hist-texto"><strong>${h.usuario}</strong> → <strong>${etapaLabel(h.etapa_hasta)}</strong>${h.notas?' — '+h.notas:''}</span>
         </div>`).join('')
     : '<span style="color:#aaa;font-size:12px">Sin historial</span>';
-
   const lotesHtml = lotes.map(l => `
     <div style="background:#fafafa;border-radius:8px;padding:8px 10px;margin-bottom:6px;border:0.5px solid #f0f0f0;">
       <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -604,22 +639,31 @@ function abrirDetalle(id) {
     <div class="detalle-row"><span class="detalle-label">Fecha ingreso</span><span class="detalle-val">${fecha}</span></div>
     <div class="detalle-row"><span class="detalle-label">Días en sistema</span><span class="detalle-val">${diasDesde(p.created_at)} días</span></div>
     ${p.notas?`<div class="detalle-row"><span class="detalle-label">Notas</span><span class="detalle-val" style="font-size:12px;">${p.notas}</span></div>`:''}
-    <div class="modal-section">Talles</div>
-    ${tallesHtml}
+    <div class="modal-section">Talles</div>${tallesHtml}
     <div class="modal-section">Lotes (${lotes.length})</div>
     ${lotesHtml || '<span style="color:#aaa;font-size:12px">Sin lotes</span>'}
-    <div class="modal-section">Historial del pedido</div>
-    ${histHtml}
+    <div class="modal-section">Historial</div>${histHtml}
   `;
-
   const actions = document.getElementById('det-actions');
   if (usuario?.rol === 'produccion' || usuario?.rol === 'admin') {
     actions.innerHTML = `
       <button class="btn btn-danger btn-sm" onclick="eliminarPedido(${p.id})">Eliminar</button>
-      <button class="btn btn-outline btn-sm" onclick="abrirEditar(${p.id})">Editar pedido</button>
+      <button class="btn btn-outline btn-sm" onclick="abrirEditar(${p.id})">Editar</button>
+      ${lotes.length === 0 ? `<button class="btn btn-primary btn-sm" onclick="abrirPrimerLote(${p.id})">Crear lote</button>` : ''}
     `;
   } else { actions.innerHTML = ''; }
   document.getElementById('modal-detalle').classList.add('open');
+}
+
+function abrirPrimerLote(pedidoId) {
+  const p = pedidos.find(x => x.id === pedidoId);
+  const totalPares = (parseInt(p?.cantidad_pedida)||0) + (parseInt(p?.cantidad_stock)||0);
+  document.getElementById('nuevo-lote-pedido-id').value = pedidoId;
+  document.getElementById('nuevo-lote-cant').value = totalPares || '';
+  document.getElementById('nuevo-lote-notas').value = '';
+  document.getElementById('nuevo-lote-titulo').textContent = 'Crear primer lote';
+  cerrarModal('modal-detalle');
+  document.getElementById('modal-nuevo-lote').classList.add('open');
 }
 
 function toggleAparadorLote() {
@@ -650,22 +694,74 @@ async function confirmarEtapaLote() {
   cargarPedidos();
 }
 
+function agregarLineaDividir() {
+  dividirLineas++;
+  const wrap = document.getElementById('dividir-lineas');
+  const linea = document.createElement('div');
+  linea.className = 'dividir-linea';
+  linea.id = 'linea-' + dividirLineas;
+  linea.innerHTML = `
+    <input type="text" placeholder="Modelo" id="div-modelo-${dividirLineas}" />
+    <select id="div-talle-${dividirLineas}">
+      <option value="">T—</option>
+      ${TALLES.map(t => `<option value="${t}">T${t}</option>`).join('')}
+    </select>
+    <input type="number" min="1" placeholder="0" id="div-cant-${dividirLineas}" oninput="actualizarTotalDividir()" />
+    <button class="btn btn-danger btn-sm" onclick="eliminarLineaDividir(${dividirLineas})" style="padding:4px 8px;">×</button>
+  `;
+  wrap.appendChild(linea);
+}
+
+function eliminarLineaDividir(n) {
+  const el = document.getElementById('linea-' + n);
+  if (el) el.remove();
+  actualizarTotalDividir();
+}
+
+function actualizarTotalDividir() {
+  let total = 0;
+  document.querySelectorAll('[id^="div-cant-"]').forEach(el => {
+    total += parseInt(el.value) || 0;
+  });
+  document.getElementById('dividir-total').textContent = `Total: ${total} pares`;
+}
+
 function abrirDividirLote(id, cantidad, numero) {
   document.getElementById('dividir-lote-id').value = id;
-  document.getElementById('dividir-info').textContent = `Lote ${numero} tiene ${cantidad} pares. ¿Cuántos separar?`;
-  document.getElementById('dividir-cantidad').value = '';
+  document.getElementById('dividir-info').textContent = `Lote ${numero} · ${cantidad} pares disponibles`;
   document.getElementById('dividir-nota').value = '';
+  dividirLineas = 1;
+  document.getElementById('dividir-lineas').innerHTML = `
+    <div class="dividir-linea" id="linea-1">
+      <input type="text" placeholder="Modelo" id="div-modelo-1" />
+      <select id="div-talle-1">
+        <option value="">T—</option>
+        ${TALLES.map(t => `<option value="${t}">T${t}</option>`).join('')}
+      </select>
+      <input type="number" min="1" placeholder="0" id="div-cant-1" oninput="actualizarTotalDividir()" />
+      <span></span>
+    </div>`;
+  document.getElementById('dividir-total').textContent = 'Total: 0 pares';
   document.getElementById('modal-dividir').classList.add('open');
 }
 
 async function confirmarDividir() {
   const id = parseInt(document.getElementById('dividir-lote-id').value);
-  const cantidad = parseInt(document.getElementById('dividir-cantidad').value);
   const notas = document.getElementById('dividir-nota').value;
-  if (!cantidad || cantidad < 1) return alert('Ingresá una cantidad válida');
+  let total = 0;
+  const detalles = [];
+  document.querySelectorAll('[id^="div-cant-"]').forEach((el, i) => {
+    const n = el.id.replace('div-cant-','');
+    const cant = parseInt(el.value) || 0;
+    const modelo = document.getElementById('div-modelo-' + n)?.value || '';
+    const talle = document.getElementById('div-talle-' + n)?.value || '';
+    if (cant > 0) { total += cant; detalles.push({ modelo, talle, cant }); }
+  });
+  if (total < 1) return alert('Ingresá al menos una cantidad');
+  const notaFinal = detalles.map(d => `${d.modelo} T${d.talle} x${d.cant}`).join(', ') + (notas ? ' — ' + notas : '');
   const res = await fetch('/api/produccion?action=dividir-lote', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ lote_id: id, cantidad_nueva: cantidad, usuario: usuario.nombre, notas })
+    body: JSON.stringify({ lote_id: id, cantidad_nueva: total, usuario: usuario.nombre, notas: notaFinal })
   });
   const data = await res.json();
   if (data.error) { alert('Error: ' + data.error); return; }
@@ -696,6 +792,7 @@ function abrirNuevoLote(pedidoId) {
   document.getElementById('nuevo-lote-pedido-id').value = pedidoId;
   document.getElementById('nuevo-lote-cant').value = '';
   document.getElementById('nuevo-lote-notas').value = '';
+  document.getElementById('nuevo-lote-titulo').textContent = 'Agregar lote';
   document.getElementById('modal-nuevo-lote').classList.add('open');
 }
 
@@ -842,8 +939,9 @@ function cerrarModal(id) {
 document.getElementById('login-pass').addEventListener('keydown', e => {
   if (e.key === 'Enter') login();
 });
+
 function leerSesion() {
-  try { 
+  try {
     const s = localStorage.getItem('gx_usuario');
     return s ? JSON.parse(s) : null;
   } catch { return null; }
@@ -853,18 +951,12 @@ function iniciarConSesion(u) {
   usuario = u;
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
-  if (document.getElementById('user-label')) {
-    document.getElementById('user-label').textContent = u.nombre + ' · ' + u.rol;
-  }
+  if (document.getElementById('user-label')) document.getElementById('user-label').textContent = u.nombre + ' · ' + u.rol;
   if (u.rol === 'produccion' || u.rol === 'admin') {
     if (document.getElementById('btn-nuevo')) document.getElementById('btn-nuevo').style.display = 'inline-block';
     if (document.getElementById('btn-importar')) document.getElementById('btn-importar').style.display = 'inline-block';
   }
-  if (u.rol === 'empaque' || u.rol === 'admin' || u.rol === 'produccion') {
-    if (document.getElementById('btn-registrar')) document.getElementById('btn-registrar').style.display = 'inline-block';
-  }
   if (typeof cargarPedidos === 'function') cargarPedidos();
-  if (typeof cargarStock === 'function') cargarStock();
 }
 
 const sesionGuardada = leerSesion();
