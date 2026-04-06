@@ -755,6 +755,34 @@
 
   cargarDatos();
   setInterval(cargarDatos, 5 * 60 * 1000);
+
+    function leerSesion() {
+  try { 
+    const s = localStorage.getItem('gx_usuario');
+    return s ? JSON.parse(s) : null;
+  } catch { return null; }
+}
+
+function iniciarConSesion(u) {
+  usuario = u;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  if (document.getElementById('user-label')) {
+    document.getElementById('user-label').textContent = u.nombre + ' · ' + u.rol;
+  }
+  if (u.rol === 'produccion' || u.rol === 'admin') {
+    if (document.getElementById('btn-nuevo')) document.getElementById('btn-nuevo').style.display = 'inline-block';
+    if (document.getElementById('btn-importar')) document.getElementById('btn-importar').style.display = 'inline-block';
+  }
+  if (u.rol === 'empaque' || u.rol === 'admin' || u.rol === 'produccion') {
+    if (document.getElementById('btn-registrar')) document.getElementById('btn-registrar').style.display = 'inline-block';
+  }
+  if (typeof cargarPedidos === 'function') cargarPedidos();
+  if (typeof cargarStock === 'function') cargarStock();
+}
+
+const sesionGuardada = leerSesion();
+if (sesionGuardada) iniciarConSesion(sesionGuardada);
 </script>
 </body>
 </html>
