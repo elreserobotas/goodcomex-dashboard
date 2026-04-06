@@ -136,8 +136,8 @@ module.exports = async function handler(req, res) {
       const productos = moves.filter(m => m.picking_id === p.id);
       const totalPares = productos.reduce((a, m) => a + m.qty, 0);
       const productoNombre = productos.length === 1
-        ? productos[0].product
-        : productos.length + ' productos';
+      ? productos[0].product
+      : productos.map(pr => pr.product.replace(/\[.*?\]\s*/, '').split('(')[0].trim()).filter((v,i,a) => a.indexOf(v) === i).join(', ');
 
       const result = await sql`
         INSERT INTO pedidos (numero, cliente, producto, tipo, cantidad_pedida, cantidad_stock, empresa, notas)
