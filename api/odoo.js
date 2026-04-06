@@ -276,15 +276,6 @@ module.exports = async function handler(req, res) {
 
     const todasFacturas = ventasPorMes.flatMap(m => m.facturas);
 
-    const clienteMap = {};
-    todasFacturas.forEach(f => {
-      if (!f.partner_name) return;
-      if (!clienteMap[f.partner_name]) clienteMap[f.partner_name] = { nombre: f.partner_name, total: 0, cantidad: 0 };
-      clienteMap[f.partner_name].total += f.amount_total;
-      clienteMap[f.partner_name].cantidad++;
-    });
-    const clientesTop = Object.values(clienteMap).sort((a,b) => b.total - a.total).slice(0, 10);
-
     const hoyStr = hoy.toISOString().slice(0, 10);
     const xmlTodoPendiente = await odooCall(uid, 'account.move',
       [['move_type','=','out_invoice'],['state','=','posted'],['payment_state','in',['not_paid','partial']]],
@@ -313,27 +304,6 @@ module.exports = async function handler(req, res) {
       ivaNeto: ivaData[i].ivaNeto
     }));
 
-    const xmlLineas = await odooCall(uid, 'account.move.line',
-      [['move_id.move_type','=','out_invoice'],['move_id.state','=','posted'],
-       ['product_id','!=',false],['tax_line_id','=',false],
-       ['move_id.invoice_date','>=',desde],['move_id.invoice_date','<=',hasta]],
-      ['product_id','quantity','price_subtotal']
-    );
-    const lineas = parseLineasFactura(xmlLineas);
-    const productoMap = {};
-    lineas.forEach(l => {
-      const key = parsearModeloColor(l.producto);
-      if (!productoMap[key]) productoMap[key] = { nombre: key, cantidad: 0, total: 0 };
-      productoMap[key].cantidad += l.cantidad;
-      productoMap[key].total += l.total;
-    });
-    const productosBase = Object.values(productoMap).filter(p => p.cantidad > 0).map(p => ({
-      ...p,
-      promedio: p.cantidad > 0 ? Math.round(p.total / p.cantidad) : 0
-    }));
-    const productosPorCantidad = [...productosBase].sort((a,b) => b.cantidad - a.cantidad).slice(0, 10);
-    const productosPorMonto = [...productosBase].sort((a,b) => b.total - a.total).slice(0, 10);
-
     const [xmlPickings1, xmlPickings2] = await Promise.all([
       odooCall(uid, 'stock.picking',
         [['company_id','=',1],['state','in',['confirmed','assigned','waiting']],['picking_type_code','=','outgoing']],
@@ -361,7 +331,7 @@ module.exports = async function handler(req, res) {
       productos: moves.filter(m => m.picking_id === p.id)
     }));
 
-    const [xmlResero, xmlEmpresaB] = await Promise.all([
+  const [xmlResero, xmlEmpresaB] = await Promise.all([
       odooCall(uid, 'sale.order', [['company_id','=',1],['state','in',['sale','done']]], ['name','partner_id','amount_total','date_order'], { limit: 10, order: 'date_order desc' }),
       odooCall(uid, 'sale.order', [['company_id','=',2],['state','in',['sale','done']]], ['name','partner_id','amount_total','date_order'], { limit: 10, order: 'date_order desc' })
     ]);
@@ -374,50 +344,9 @@ module.exports = async function handler(req, res) {
     const totalResero = todasFacturas.filter(f => f.company_id[0] === 1).reduce((a,f) => a + f.amount_total, 0);
     const totalEmpresaB = todasFacturas.filter(f => f.company_id[0] === 2).reduce((a,f) => a + f.amount_total, 0);
 
-    const periodoAnteriorDesde = (() => {
-      const d = new Date(desde);
-      const h = new Date(hasta);
-      const diff = h - d;
-      const ant = new Date(d - diff - 86400000);
-      return ant.toISOString().slice(0,10);
-    })();
-    const periodoAnteriorHasta = (() => {
-      const d = new Date(desde);
-      return new Date(d - 86400000).toISOString().slice(0,10);
-    })();
-    const mismoAnioAnteriorDesde = desde.replace(/^\d{4}/, y => String(parseInt(y)-1));
-    const mismoAnioAnteriorHasta = hasta.replace(/^\d{4}/, y => String(parseInt(y)-1));
-
-    const [facturasAnteriores, facturasAnioAnterior] = await Promise.all([
-      getFacturasPeriodo(uid, periodoAnteriorDesde, periodoAnteriorHasta),
-      getFacturasPeriodo(uid, mismoAnioAnteriorDesde, mismoAnioAnteriorHasta)
-    ]);
-
-    const comparativa = {
-      periodoAnterior: {
-        total: facturasAnteriores.reduce((a,f) => a + f.amount_total, 0),
-        cantidad: facturasAnteriores.length,
-        resero: facturasAnteriores.filter(f => f.company_id[0] === 1).reduce((a,f) => a + f.amount_total, 0),
-        empresaB: facturasAnteriores.filter(f => f.company_id[0] === 2).reduce((a,f) => a + f.amount_total, 0),
-        desde: periodoAnteriorDesde,
-        hasta: periodoAnteriorHasta
-      },
-      anioAnterior: {
-        total: facturasAnioAnterior.reduce((a,f) => a + f.amount_total, 0),
-        cantidad: facturasAnioAnterior.length,
-        resero: facturasAnioAnterior.filter(f => f.company_id[0] === 1).reduce((a,f) => a + f.amount_total, 0),
-        empresaB: facturasAnioAnterior.filter(f => f.company_id[0] === 2).reduce((a,f) => a + f.amount_total, 0),
-        desde: mismoAnioAnteriorDesde,
-        hasta: mismoAnioAnteriorHasta
-      }
-    };
-
     res.json({
       ventasPorMes: ventasPorMes.map(m => ({ mes: m.mes, resero: m.resero, empresaB: m.empresaB })),
       ivaMeses,
-      clientesTop,
-      productosPorCantidad,
-      productosPorMonto,
       pendientes: {
         total: totalPendiente,
         cantidad: pendientesConDias.length,
@@ -432,10 +361,8 @@ module.exports = async function handler(req, res) {
       vencidas: { total: totalVencido, cantidad: todasVencidas.length, detalle: todasVencidas },
       pendientesEntrega,
       ordenesRecientes,
-      comparativa,
       resumen: { totalGeneral, totalResero, totalEmpresaB, totalFacturas: todasFacturas.length }
     });
-
   } catch (err) {
     console.error('ERROR:', err.message);
     res.status(500).json({ error: err.message });
