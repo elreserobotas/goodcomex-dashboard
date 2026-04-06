@@ -340,7 +340,6 @@ module.exports = async function handler(req, res) {
 
     res.json({
       ventasPorMes: ventasPorMes.map(m => ({ mes: m.mes, resero: m.resero, empresaB: m.empresaB })),
-      ivaMeses,
       pendientes: {
         total: totalPendiente,
         cantidad: pendientesConDias.length,
