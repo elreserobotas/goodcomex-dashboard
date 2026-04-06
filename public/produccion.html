@@ -657,13 +657,66 @@ function abrirDetalle(id) {
 
 function abrirPrimerLote(pedidoId) {
   const p = pedidos.find(x => x.id === pedidoId);
-  const totalPares = (parseInt(p?.cantidad_pedida)||0) + (parseInt(p?.cantidad_stock)||0);
-  document.getElementById('nuevo-lote-pedido-id').value = pedidoId;
-  document.getElementById('nuevo-lote-cant').value = totalPares || '';
-  document.getElementById('nuevo-lote-notas').value = '';
-  document.getElementById('nuevo-lote-titulo').textContent = 'Crear primer lote';
+  if (!p) return;
   cerrarModal('modal-detalle');
+
+  const totalPares = (parseInt(p.cantidad_pedida)||0) + (parseInt(p.cantidad_stock)||0);
+  document.getElementById('nuevo-lote-pedido-id').value = pedidoId;
+  document.getElementById('nuevo-lote-notas').value = '';
+  document.getElementById('nuevo-lote-titulo').textContent = 'Crear lote — ' + (p.cliente || p.producto);
+
+  const tallesDelPedido = p.talles || [];
+
+  if (tallesDelPedido.length > 0) {
+    const tallesHtml = `
+      <div style="margin-bottom:0.5rem;">
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:8px;">
+          ${tallesDelPedido.map(t => `
+            <div style="text-align:center;">
+              <div style="font-size:10px;color:#888;margin-bottom:3px;">T${t.talle}</div>
+              <input type="number" id="primer-lote-t-${t.talle}" min="0" value="${t.cantidad}" 
+                style="width:100%;padding:4px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;"
+                oninput="actualizarTotalPrimerLote()" />
+            </div>`).join('')}
+        </div>
+        <div style="font-size:13px;color:#085041;font-weight:500;margin-bottom:8px;" id="primer-lote-total">
+          Total: ${totalPares} pares
+        </div>
+      </div>`;
+
+    const cantField = document.querySelector('#modal-nuevo-lote .field:first-of-type');
+    if (cantField) cantField.style.display = 'none';
+
+    let tallesWrap = document.getElementById('primer-lote-talles-wrap');
+    if (!tallesWrap) {
+      tallesWrap = document.createElement('div');
+      tallesWrap.id = 'primer-lote-talles-wrap';
+      cantField.parentNode.insertBefore(tallesWrap, cantField);
+    }
+    tallesWrap.innerHTML = tallesHtml;
+    document.getElementById('nuevo-lote-cant').value = totalPares;
+
+    window._primerLoteTalles = tallesDelPedido.map(t => t.talle);
+  } else {
+    const cantField = document.querySelector('#modal-nuevo-lote .field:first-of-type');
+    if (cantField) cantField.style.display = 'block';
+    document.getElementById('nuevo-lote-cant').value = totalPares || '';
+    const wrap = document.getElementById('primer-lote-talles-wrap');
+    if (wrap) wrap.innerHTML = '';
+    window._primerLoteTalles = [];
+  }
+
   document.getElementById('modal-nuevo-lote').classList.add('open');
+}
+
+function actualizarTotalPrimerLote() {
+  let total = 0;
+  (window._primerLoteTalles || []).forEach(t => {
+    total += parseInt(document.getElementById('primer-lote-t-' + t)?.value) || 0;
+  });
+  const el = document.getElementById('primer-lote-total');
+  if (el) el.textContent = 'Total: ' + total + ' pares';
+  document.getElementById('nuevo-lote-cant').value = total;
 }
 
 function toggleAparadorLote() {
@@ -801,10 +854,18 @@ async function confirmarNuevoLote() {
   const cantidad = parseInt(document.getElementById('nuevo-lote-cant').value);
   const notas = document.getElementById('nuevo-lote-notas').value;
   if (!cantidad || cantidad < 1) return alert('Ingresá una cantidad válida');
+
   await fetch('/api/produccion?action=crear-lote', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ pedido_id, cantidad, usuario: usuario.nombre, notas })
   });
+
+  const wrap = document.getElementById('primer-lote-talles-wrap');
+  if (wrap) wrap.innerHTML = '';
+  const cantField = document.querySelector('#modal-nuevo-lote .field:first-of-type');
+  if (cantField) cantField.style.display = 'block';
+  window._primerLoteTalles = [];
+
   cerrarModal('modal-nuevo-lote');
   cargarPedidos();
 }
