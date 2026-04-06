@@ -137,17 +137,42 @@ module.exports = async function handler(req, res) {
       ? productos[0].product
       : productos.map(pr => pr.product.replace(/\[.*?\]\s*/, '').split('(')[0].trim()).filter((v,i,a) => a.indexOf(v) === i).join(', ');
 
-      const result = await sql`
-        INSERT INTO pedidos (numero, cliente, producto, tipo, cantidad_pedida, cantidad_stock, empresa, notas)
-        VALUES (${p.name}, ${p.partner}, ${productoNombre}, 'cliente', ${totalPares}, 0, ${empresa}, ${productos.map(pr => pr.product + ' x' + pr.qty).join(', ')})
-        RETURNING id
-      `;
-      const pedidoId = result[0].id;
+     const empresa = p.company_id === 1 ? 'El Resero' : 'Empresa B';
+const productos = moves.filter(m => m.picking_id === p.id);
+const { talles, total } = parsearTallesDeProductos(productos);
 
-      await sql`INSERT INTO historial (pedido_id, etapa_desde, etapa_hasta, usuario) VALUES (${pedidoId}, null, 'recibido', 'Sistema Odoo')`;
+const modelosUnicos = [...new Set(productos.map(pr => {
+  const m = pr.product.match(/\[(\d+)\./);
+  return m ? m[1] : pr.product;
+}))];
 
-      importados++;
-    }
+const productoNombre = modelosUnicos.length === 1
+  ? productos[0].product.replace(/\[.*?\]\s*/, '').split('(')[0].trim()
+  : 'Modelos: ' + modelosUnicos.join(', ');
+
+const notasDetalle = productos.map(pr => {
+  const m = pr.product.match(/\[(\d+)\.(\d+)[MNAV]?\]/);
+  return m ? `T${m[2]} x${Math.round(pr.qty)}` : pr.product + ' x' + pr.qty;
+}).join(' · ');
+
+const result = await sql`
+  INSERT INTO pedidos (numero, cliente, producto, tipo, cantidad_pedida, cantidad_stock, empresa, notas, monto_total)
+  VALUES (${p.name}, ${p.partner}, ${productoNombre}, 'cliente', ${total}, 0, ${empresa}, ${notasDetalle}, 0)
+  RETURNING id
+`;
+const pedidoId = result[0].id;
+
+if (talles.length > 0) {
+  for (const t of talles) {
+    await sql`INSERT INTO talles (pedido_id, talle, cantidad) VALUES (${pedidoId}, ${t.talle}, ${t.cantidad})`;
+  }
+}
+
+await sql`INSERT INTO historial_lotes (lote_id, pedido_id, etapa_desde, etapa_hasta, usuario) 
+  SELECT id, ${pedidoId}, null, 'recibido', 'Sistema Odoo' FROM lotes WHERE pedido_id=${pedidoId} LIMIT 1`;
+await sql`INSERT INTO historial (pedido_id, etapa_desde, etapa_hasta, usuario) VALUES (${pedidoId}, null, 'recibido', 'Sistema Odoo')`;
+
+importados++;   
 
     res.json({ importados, omitidos });
 
