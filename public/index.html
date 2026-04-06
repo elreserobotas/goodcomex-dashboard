@@ -406,7 +406,7 @@
   let productosTab = 'cantidad';
   let productosData = null;
   let ordenesVisibles = [];
-  let extrasLoaded = { clientes: false, productos: false, comparativa: false };
+  let extrasLoaded = { clientes: false, productos: false, comparativa: false, iva: false };
 
   document.getElementById('hasta').value = new Date().toISOString().slice(0,10);
 
@@ -416,9 +416,14 @@
   }
 
   function toggleIVA() {
-    document.getElementById('iva-body').classList.toggle('open');
-    document.getElementById('iva-arrow').classList.toggle('open');
+  const body = document.getElementById('iva-body');
+  const arrow = document.getElementById('iva-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+  if (body.classList.contains('open') && !extrasLoaded.iva) {
+    cargarExtra('iva');
   }
+}
 
   function toggleRecent() {
     document.getElementById('body-recent').classList.toggle('open');
@@ -489,6 +494,18 @@
             </div>`;
         }
       }
+      if (tipo === 'iva') {
+  const fmtL = n => '$' + Math.round(n).toLocaleString('es-AR');
+  document.getElementById('iva-resumen').textContent = `IVA ventas ${fmtL(data.ivaVentas)} · IVA compras ${fmtL(data.ivaCompras)} · A pagar ${fmtL(data.ivaNeto)}`;
+  document.getElementById('iva-rows').innerHTML = `
+    <div class="iva-row">
+      <span class="iva-mes">Total</span>
+      <span class="iva-ventas">${fmtL(data.ivaVentas)}</span>
+      <span class="iva-compras">${fmtL(data.ivaCompras)}</span>
+      <span class="iva-iibb">${fmtL(data.iibb)}</span>
+      <span class="iva-neto">${fmtL(data.ivaNeto)}</span>
+    </div>`;
+}
     } catch (err) {
       const el = document.getElementById(tipo === 'clientes' ? 'clientes-list' : tipo === 'productos' ? 'productos-list' : 'comparativa-content');
       if (el) el.innerHTML = `<p class="empty">Error: ${err.message}</p>`;
@@ -627,7 +644,7 @@
   async function cargarDatos() {
     const desde = document.getElementById('desde').value;
     const hasta = document.getElementById('hasta').value;
-    extrasLoaded = { clientes: false, productos: false, comparativa: false };
+    extrasLoaded = { clientes: false, productos: false, comparativa: false, iva: false };
     productosData = null;
     document.getElementById('loading').style.display = 'block';
     document.getElementById('loading').className = 'loading';
