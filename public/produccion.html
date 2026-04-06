@@ -452,15 +452,19 @@ function renderStats() {
   document.getElementById('stat-pares').textContent = totalPares.toLocaleString('es-AR');
 }
 
-function renderKanbanCard(p) {
-  const lotes = p.lotes || [];
+function renderKanbanCard(p, etapaFiltro) {
+  const todosLotes = p.lotes || [];
+  const lotesMostrar = etapaFiltro
+    ? todosLotes.filter(l => l.etapa === etapaFiltro || (etapaFiltro === 'recibido' && todosLotes.length === 0))
+    : todosLotes;
   const diasTotal = diasDesde(p.created_at);
   const monto = fmtPesos(p.monto_total);
+  const sinLotes = todosLotes.length === 0;
 
   return `
     <div class="kanban-pedido">
-      <div class="pedido-header" onclick="toggleLotes('lotes-${p.id}')">
-        <div class="pedido-num">${p.numero} · ${lotes.length} lote${lotes.length !== 1 ? 's' : ''}</div>
+      <div class="pedido-header" onclick="toggleLotes('lotes-${p.id}-${etapaFiltro}')">
+        <div class="pedido-num">${p.numero}${sinLotes ? ' · sin lotes' : ' · ' + lotesMostrar.length + ' lote' + (lotesMostrar.length !== 1 ? 's' : '')}</div>
         <div class="pedido-cliente">${p.tipo === 'stock' ? 'Stock propio' : (p.cliente || '—')}</div>
         <div class="pedido-modelo">${p.producto}</div>
         <div class="pedido-bottom">
@@ -470,8 +474,10 @@ function renderKanbanCard(p) {
         </div>
         ${monto ? `<div class="pedido-monto">${monto}</div>` : ''}
       </div>
-      <div class="lotes-wrap" id="lotes-${p.id}">
-        ${lotes.map(l => renderLoteCard(l, p)).join('')}
+      <div class="lotes-wrap" id="lotes-${p.id}-${etapaFiltro}">
+        ${sinLotes
+          ? `<div style="font-size:11px;color:#aaa;padding:4px 0;">Sin lotes — clic para agregar</div>`
+          : lotesMostrar.map(l => renderLoteCard(l, p)).join('')}
         ${(usuario?.rol === 'produccion' || usuario?.rol === 'admin') ? `<button class="add-lote-btn" onclick="abrirNuevoLote(${p.id})">+ agregar lote</button>` : ''}
       </div>
     </div>`;
