@@ -444,9 +444,10 @@ function renderStats() {
   const lotesActivos = todosLotes.filter(l => l.etapa !== 'listo' && l.etapa !== 'stock' && l.etapa !== 'empaque');
   const enAparado = todosLotes.filter(l => l.etapa === 'aparado');
   const enDeposito = todosLotes.filter(l => l.etapa === 'deposito' || l.etapa === 'deposito_corte');
+  const paresPendientes = lotesActivos.reduce((a, l) => a + (parseInt(l.cantidad)||0), 0);
   const totalPares = pedidos.reduce((a,p) => a + (parseInt(p.cantidad_pedida)||0) + (parseInt(p.cantidad_stock)||0), 0);
   document.getElementById('stat-total').textContent = activos.length;
-  document.getElementById('stat-lotes').textContent = lotesActivos.length;
+  document.getElementById('stat-lotes').textContent = paresPendientes.toLocaleString('es-AR');
   document.getElementById('stat-aparado').textContent = enAparado.length;
   document.getElementById('stat-deposito').textContent = enDeposito.length;
   document.getElementById('stat-pares').textContent = totalPares.toLocaleString('es-AR');
