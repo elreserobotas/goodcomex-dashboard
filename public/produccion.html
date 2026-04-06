@@ -404,27 +404,20 @@ function login() {
     body: JSON.stringify({ email, password: pass })
   }).then(r => r.json()).then(data => {
     if (data.error) { document.getElementById('login-err').style.display = 'block'; return; }
-    usuario = data.usuario;
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app-screen').style.display = 'block';
-    document.getElementById('user-label').textContent = usuario.nombre + ' · ' + usuario.rol;
-    if (usuario.rol === 'produccion' || usuario.rol === 'admin') {
-      document.getElementById('btn-nuevo').style.display = 'inline-block';
-      document.getElementById('btn-importar').style.display = 'inline-block';
-    }
-    cargarPedidos();
+    localStorage.setItem('gx_usuario', JSON.stringify(data.usuario));
+    iniciarConSesion(data.usuario);
   }).catch(() => { document.getElementById('login-err').style.display = 'block'; });
 }
 
 function logout() {
-  document.cookie = 'gx_session=; Path=/; Max-Age=0';
+  localStorage.removeItem('gx_usuario');
   usuario = null; pedidos = [];
   document.getElementById('login-screen').style.display = 'block';
   document.getElementById('app-screen').style.display = 'none';
   document.getElementById('login-email').value = '';
   document.getElementById('login-pass').value = '';
 }
-
+  
 function setVista(v) {
   vista = v;
   document.getElementById('vista-kanban').style.display = v === 'kanban' ? 'block' : 'none';
