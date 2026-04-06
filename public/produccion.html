@@ -417,6 +417,7 @@ function login() {
 }
 
 function logout() {
+  document.cookie = 'gx_session=; Path=/; Max-Age=0';
   usuario = null; pedidos = [];
   document.getElementById('login-screen').style.display = 'block';
   document.getElementById('app-screen').style.display = 'none';
