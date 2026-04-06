@@ -8,14 +8,14 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, sans-serif; background: #f5f5f3; color: #1a1a1a; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f3; color: #1a1a1a; padding-bottom: 60px; }
 
-    .topbar { background: #fff; border-bottom: 1px solid #e5e5e5; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 52px; }
+    .topbar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: #fff; border-top: 1px solid #e5e5e5; display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; height: 52px; }
     .topbar-title { font-size: 15px; font-weight: 500; }
     .topbar-nav { display: flex; height: 100%; }
-    .nav-tab { padding: 0 20px; font-size: 13px; color: #888; border-bottom: 2px solid transparent; display: flex; align-items: center; text-decoration: none; }
+    .nav-tab { padding: 0 20px; font-size: 13px; color: #888; border-top: 2px solid transparent; display: flex; align-items: center; text-decoration: none; }
     .nav-tab:hover { color: #1a1a1a; }
-    .nav-tab.active { color: #1a1a1a; border-bottom-color: #1a1a1a; font-weight: 500; }
+    .nav-tab.active { color: #1a1a1a; border-top-color: #1a1a1a; font-weight: 500; }
     .badge { font-size: 12px; padding: 3px 10px; border-radius: 20px; }
     .badge.ok { background: #eaf3de; color: #27500a; }
     .badge.err { background: #fcebeb; color: #a32d2d; }
@@ -122,26 +122,25 @@
     .sort-btn { padding: 3px 10px; border: 0.5px solid #e5e5e5; border-radius: 20px; font-size: 11px; cursor: pointer; background: #fff; color: #888; }
     .sort-btn.active { background: #f5f5f3; color: #1a1a1a; border-color: #ccc; font-weight: 500; }
 
-    .venc-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
+    .venc-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 0.5px solid #f0f0f0; }
     .venc-row:last-child { border-bottom: none; }
-    .venc-name { flex: 1; }
+    .venc-name { flex: 1; font-size: 13px; }
     .venc-meta { font-size: 11px; color: #aaa; margin-top: 2px; }
-    .venc-amount { font-weight: 500; color: #993c1d; white-space: nowrap; margin-left: 12px; }
+    .venc-amount { font-weight: 500; color: #993c1d; white-space: nowrap; margin-left: 12px; font-size: 13px; }
 
-    .entrega-row { padding: 10px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
+    .entrega-row { padding: 10px 0; border-bottom: 0.5px solid #f0f0f0; }
     .entrega-row:last-child { border-bottom: none; }
-    .entrega-cliente { font-weight: 500; color: #1a1a1a; }
+    .entrega-cliente { font-weight: 500; color: #1a1a1a; font-size: 13px; }
     .entrega-fecha { font-size: 11px; color: #378ADD; margin-top: 3px; }
-    .entrega-monto { font-size: 12px; color: #085041; font-weight: 500; margin-top: 2px; }
     .entrega-uds { font-size: 11px; color: #633806; margin-top: 2px; }
 
     .recent-wrap { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; margin-bottom: 1.5rem; overflow: hidden; }
     .recent-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
     .recent-header:hover { background: #fafafa; }
     .recent-title { font-size: 14px; font-weight: 500; }
-    .recent-body { display: none; border-top: 0.5px solid #f0f0f0; padding: 0 1.25rem; }
+    .recent-body { display: none; border-top: 0.5px solid #f0f0f0; }
     .recent-body.open { display: block; }
-    .row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
+    .row { display: flex; justify-content: space-between; align-items: center; padding: 10px 1.25rem; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
     .row:last-child { border-bottom: none; }
     .row-name { font-weight: 500; }
     .row-meta { font-size: 11px; color: #aaa; margin-top: 2px; }
@@ -149,14 +148,15 @@
     .emp-badge { font-size: 10px; padding: 2px 8px; border-radius: 20px; margin-left: 6px; vertical-align: middle; }
     .b1 { background: #e6f1fb; color: #0c447c; }
     .b2 { background: #e1f5ee; color: #085041; }
-    .row-remove { font-size: 16px; color: #ccc; cursor: pointer; padding: 0 8px; flex-shrink: 0; }
+    .row-remove { font-size: 16px; color: #ccc; cursor: pointer; padding: 0 4px; flex-shrink: 0; }
     .row-remove:hover { color: #a32d2d; }
 
     .loading { text-align: center; padding: 4rem; color: #888; font-size: 14px; }
     .error { text-align: center; padding: 4rem; color: #a32d2d; font-size: 14px; }
     .empty { font-size: 13px; color: #888; padding: 0.5rem 0; }
+    .cargando-extra { font-size: 12px; color: #aaa; padding: 0.5rem 0; }
 
-    .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+    .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: center; justify-content: center; }
     .modal-bg.open { display: flex; }
     .modal { background: #fff; border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
     .modal-title { font-size: 16px; font-weight: 500; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
@@ -168,15 +168,6 @@
   </style>
 </head>
 <body>
-
-<div class="topbar">
-  <span class="topbar-title">Goodcomex</span>
-  <nav class="topbar-nav">
-    <a class="nav-tab active" href="/index.html">Dashboard</a>
-    <a class="nav-tab" href="/produccion.html">Producción</a>
-  </nav>
-  <span class="badge" id="status">Cargando...</span>
-</div>
 
 <div class="container">
   <div class="filtros">
@@ -292,24 +283,24 @@
 
     <div class="section-label">Análisis</div>
 
-    <div class="expandible">
-      <div class="expandible-header" onclick="toggle('clientes')">
+    <div class="expandible" id="exp-clientes">
+      <div class="expandible-header" onclick="toggleExtra('clientes')">
         <div>
           <div class="expandible-title">Top 10 clientes</div>
-          <div class="expandible-meta" id="clientes-meta">Por monto facturado</div>
+          <div class="expandible-meta" id="clientes-meta">Clic para cargar</div>
         </div>
         <span class="expandible-arrow" id="arrow-clientes">▼</span>
       </div>
       <div class="expandible-body" id="body-clientes">
-        <div id="clientes-list"></div>
+        <div id="clientes-list"><p class="cargando-extra">Cargando...</p></div>
       </div>
     </div>
 
-    <div class="expandible">
-      <div class="expandible-header" onclick="toggle('productos')">
+    <div class="expandible" id="exp-productos">
+      <div class="expandible-header" onclick="toggleExtra('productos')">
         <div>
           <div class="expandible-title">Ranking de productos</div>
-          <div class="expandible-meta" id="productos-meta">Top 10 por cantidad y facturación</div>
+          <div class="expandible-meta" id="productos-meta">Clic para cargar</div>
         </div>
         <span class="expandible-arrow" id="arrow-productos">▼</span>
       </div>
@@ -318,7 +309,20 @@
           <button class="tab-btn active" id="tab-cant" onclick="setTabProductos('cantidad')">Por cantidad</button>
           <button class="tab-btn" id="tab-monto" onclick="setTabProductos('monto')">Por facturación</button>
         </div>
-        <div id="productos-list"></div>
+        <div id="productos-list"><p class="cargando-extra">Cargando...</p></div>
+      </div>
+    </div>
+
+    <div class="expandible" id="exp-comparativa">
+      <div class="expandible-header" onclick="toggleExtra('comparativa')">
+        <div>
+          <div class="expandible-title">Comparativa de períodos</div>
+          <div class="expandible-meta" id="comparativa-meta">Clic para cargar</div>
+        </div>
+        <span class="expandible-arrow" id="arrow-comparativa">▼</span>
+      </div>
+      <div class="expandible-body" id="body-comparativa">
+        <div id="comparativa-content"><p class="cargando-extra">Cargando...</p></div>
       </div>
     </div>
 
@@ -367,11 +371,21 @@
         <span class="expandible-arrow" id="arrow-recent">▼</span>
       </div>
       <div class="recent-body" id="body-recent">
-        <div id="ordenes-list" style="padding-bottom:0.5rem;"></div>
+        <div id="ordenes-list"></div>
       </div>
     </div>
 
   </div>
+</div>
+
+<div class="topbar">
+  <span class="topbar-title">Goodcomex</span>
+  <nav class="topbar-nav">
+    <a class="nav-tab active" href="/index.html">Dashboard</a>
+    <a class="nav-tab" href="/produccion.html">Producción</a>
+    <a class="nav-tab" href="/stock.html">Stock</a>
+  </nav>
+  <span class="badge" id="status">Cargando...</span>
 </div>
 
 <div class="modal-bg" id="modal-bg" onclick="cerrarModal(event)">
@@ -385,12 +399,14 @@
 </div>
 
 <script>
-  const fmt = (n) => '$' + Math.round(n).toLocaleString('es-AR');
-  const fmtM = (n) => '$' + (n / 1000000).toFixed(1) + 'M';
+  const fmt = n => '$' + Math.round(n).toLocaleString('es-AR');
+  const fmtM = n => '$' + (n/1000000).toFixed(1) + 'M';
   let chartBar = null, datosGlobales = null;
   let vencidasOrden = 'fecha';
   let productosTab = 'cantidad';
+  let productosData = null;
   let ordenesVisibles = [];
+  let extrasLoaded = { clientes: false, productos: false, comparativa: false };
 
   document.getElementById('hasta').value = new Date().toISOString().slice(0,10);
 
@@ -409,8 +425,75 @@
     document.getElementById('arrow-recent').classList.toggle('open');
   }
 
-  function cerrarModal(e) {
-    if (e.target === document.getElementById('modal-bg')) document.getElementById('modal-bg').classList.remove('open');
+  function toggleExtra(id) {
+    const body = document.getElementById('body-' + id);
+    const arrow = document.getElementById('arrow-' + id);
+    body.classList.toggle('open');
+    arrow.classList.toggle('open');
+    if (body.classList.contains('open') && !extrasLoaded[id]) {
+      cargarExtra(id);
+    }
+  }
+
+  async function cargarExtra(tipo) {
+    const desde = document.getElementById('desde').value;
+    const hasta = document.getElementById('hasta').value;
+    extrasLoaded[tipo] = true;
+    try {
+      const res = await fetch(`/api/odoo-extra?desde=${desde}&hasta=${hasta}&tipo=${tipo}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      if (tipo === 'clientes') {
+        const max = data.clientesTop[0]?.total || 1;
+        document.getElementById('clientes-meta').textContent = `${data.clientesTop.length} clientes`;
+        document.getElementById('clientes-list').innerHTML = data.clientesTop.map((c,i) => `
+          <div class="rank-row">
+            <span class="rank-num">${i+1}</span>
+            <span class="rank-name" title="${c.nombre}">${c.nombre}</span>
+            <div class="rank-bar-wrap"><div class="rank-bar" style="width:${Math.round(c.total/max*100)}%;background:#378ADD;"></div></div>
+            <span class="rank-amount">${fmtM(c.total)}</span>
+            <span class="rank-sub" style="margin-left:6px;">${c.cantidad} fact.</span>
+          </div>`).join('') || '<p class="empty">Sin datos</p>';
+      }
+
+      if (tipo === 'productos') {
+        productosData = data;
+        document.getElementById('productos-meta').textContent = `${data.productosPorCantidad.length} productos`;
+        renderProductos();
+      }
+
+      if (tipo === 'comparativa') {
+        const cp = data.comparativa.periodoAnterior;
+        const ca = data.comparativa.anioAnterior;
+        const r = datosGlobales?.resumen;
+        if (r) {
+          renderComparativas(r, cp, ca);
+          document.getElementById('comparativa-meta').textContent = `vs período anterior y año anterior`;
+          document.getElementById('comparativa-content').innerHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <div style="font-size:11px;color:#aaa;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">Período anterior (${cp.desde} → ${cp.hasta})</div>
+                <div class="rank-row"><span style="flex:1;font-size:13px;">Total</span><span class="rank-amount">${fmtM(cp.total)}</span></div>
+                <div class="rank-row"><span style="flex:1;font-size:13px;">El Resero</span><span class="rank-amount">${fmtM(cp.resero)}</span></div>
+                <div class="rank-row"><span style="flex:1;font-size:13px;">Empresa B</span><span class="rank-amount">${fmtM(cp.empresaB)}</span></div>
+                <div class="rank-row"><span style="flex:1;font-size:13px;">Facturas</span><span class="rank-amount">${cp.cantidad}</span></div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:#aaa;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">Mismo período año anterior</div>
+                <div class="rank-row"><span style="flex:1;font-size:13px;">Total</span><span class="rank-amount">${fmtM(ca.total)}</span></div>
+                <div class="rank-row"><span style="flex:1;font-size:13px;">El Resero</span><span class="rank-amount">${fmtM(ca.resero)}</span></div>
+                <div class="rank-row"><span style="flex:1;font-size:13px;">Empresa B</span><span class="rank-amount">${fmtM(ca.empresaB)}</span></div>
+                <div class="rank-row"><span style="flex:1;font-size:13px;">Facturas</span><span class="rank-amount">${ca.cantidad}</span></div>
+              </div>
+            </div>`;
+        }
+      }
+    } catch (err) {
+      const el = document.getElementById(tipo === 'clientes' ? 'clientes-list' : tipo === 'productos' ? 'productos-list' : 'comparativa-content');
+      if (el) el.innerHTML = `<p class="empty">Error: ${err.message}</p>`;
+      extrasLoaded[tipo] = false;
+    }
   }
 
   function pctFlecha(actual, anterior) {
@@ -421,34 +504,34 @@
     return `<span class="${cls}">${sym} ${Math.abs(pct)}%</span>`;
   }
 
-  function renderComparativa(containerId, actual, anterior, anio, labelAnt, labelAnio) {
-    const el = document.getElementById(containerId);
-    if (!el) return;
-    const fAnt = pctFlecha(actual, anterior);
-    const fAnio = pctFlecha(actual, anio);
-    el.innerHTML = `
-      ${fAnt ? `<div class="comp-item">${fAnt} <span class="comp-label">vs ${labelAnt}</span></div>` : ''}
-      ${fAnio ? `<div class="comp-item">${fAnio} <span class="comp-label">vs ${labelAnio}</span></div>` : ''}
-    `;
-  }
-
-  function sortVencidas(orden) {
-    vencidasOrden = orden;
-    document.getElementById('sort-venc-fecha').classList.toggle('active', orden === 'fecha');
-    document.getElementById('sort-venc-monto').classList.toggle('active', orden === 'monto');
-    if (datosGlobales) renderVencidas(datosGlobales.vencidas.detalle);
+  function renderComparativas(r, cp, ca) {
+    const sets = [
+      { id: 'comp-total', actual: r.totalGeneral, ant: cp.total, anio: ca.total },
+      { id: 'comp-facturas', actual: r.totalFacturas, ant: cp.cantidad, anio: ca.cantidad },
+      { id: 'comp-resero', actual: r.totalResero, ant: cp.resero, anio: ca.resero },
+      { id: 'comp-empresab', actual: r.totalEmpresaB, ant: cp.empresaB, anio: ca.empresaB },
+    ];
+    sets.forEach(({ id, actual, ant, anio }) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const fAnt = pctFlecha(actual, ant);
+      const fAnio = pctFlecha(actual, anio);
+      el.innerHTML = `
+        ${fAnt ? `<div class="comp-item">${fAnt} <span class="comp-label">vs per. ant.</span></div>` : ''}
+        ${fAnio ? `<div class="comp-item">${fAnio} <span class="comp-label">vs año ant.</span></div>` : ''}`;
+    });
   }
 
   function setTabProductos(tab) {
     productosTab = tab;
     document.getElementById('tab-cant').classList.toggle('active', tab === 'cantidad');
     document.getElementById('tab-monto').classList.toggle('active', tab === 'monto');
-    if (datosGlobales) renderProductos();
+    if (productosData) renderProductos();
   }
 
   function renderProductos() {
-    const lista = productosTab === 'cantidad' ? datosGlobales.productosPorCantidad : datosGlobales.productosPorMonto;
-    const max = lista[0]?.cantidad || lista[0]?.total || 1;
+    if (!productosData) return;
+    const lista = productosTab === 'cantidad' ? productosData.productosPorCantidad : productosData.productosPorMonto;
     document.getElementById('productos-list').innerHTML = lista.map((p,i) => {
       const barVal = productosTab === 'cantidad' ? p.cantidad / (lista[0]?.cantidad||1) : p.total / (lista[0]?.total||1);
       return `
@@ -462,11 +545,15 @@
     }).join('') || '<p class="empty">Sin datos</p>';
   }
 
+  function sortVencidas(orden) {
+    vencidasOrden = orden;
+    document.getElementById('sort-venc-fecha').classList.toggle('active', orden === 'fecha');
+    document.getElementById('sort-venc-monto').classList.toggle('active', orden === 'monto');
+    if (datosGlobales) renderVencidas(datosGlobales.vencidas.detalle);
+  }
+
   function renderVencidas(detalle) {
-    const ordenadas = [...detalle].sort((a,b) => {
-      if (vencidasOrden === 'monto') return b.amount_residual - a.amount_residual;
-      return a.dias - b.dias;
-    });
+    const ordenadas = [...detalle].sort((a,b) => vencidasOrden === 'monto' ? b.amount_residual - a.amount_residual : a.dias - b.dias);
     document.getElementById('vencidas-list').innerHTML = ordenadas.length === 0
       ? '<p class="empty">Sin facturas vencidas</p>'
       : ordenadas.map(f => `
@@ -507,7 +594,6 @@
       const esResero = o.empresa === 'El Resero';
       const div = document.createElement('div');
       div.className = 'row';
-      div.style.cursor = 'default';
       div.innerHTML = `
         <div style="flex:1;">
           <div class="row-name">${o.partner_id[1]}<span class="emp-badge ${esResero?'b1':'b2'}">${o.empresa}</span></div>
@@ -519,15 +605,8 @@
     });
   }
 
-  function abrirDetalle(orden) {
-    document.getElementById('modal-titulo').textContent = orden.name;
-    document.getElementById('modal-body').innerHTML = `
-      <div class="modal-row"><span class="modal-label">Empresa</span><span class="modal-val">${orden.empresa}</span></div>
-      <div class="modal-row"><span class="modal-label">Cliente</span><span class="modal-val">${orden.partner_id[1]}</span></div>
-      <div class="modal-row"><span class="modal-label">Fecha</span><span class="modal-val">${new Date(orden.date_order).toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})}</span></div>
-      <div class="modal-row"><span class="modal-label">Monto</span><span class="modal-val">${fmt(orden.amount_total)}</span></div>
-    `;
-    document.getElementById('modal-bg').classList.add('open');
+  function cerrarModal(e) {
+    if (e.target === document.getElementById('modal-bg')) document.getElementById('modal-bg').classList.remove('open');
   }
 
   function exportarExcel() {
@@ -535,26 +614,21 @@
     const wb = XLSX.utils.book_new();
     const resumen = datosGlobales.ventasPorMes.map(m => ({
       Mes: m.mes, 'El Resero': m.resero.total, 'Empresa B': m.empresaB.total,
-      Total: m.resero.total + m.empresaB.total,
-      'Fact. Resero': m.resero.cantidad, 'Fact. Empresa B': m.empresaB.cantidad
+      Total: m.resero.total + m.empresaB.total
     }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resumen), 'Resumen');
     if (datosGlobales.ivaMeses?.length) {
-      const iva = datosGlobales.ivaMeses.map(m => ({
-        Mes: m.mes, 'IVA Ventas': m.ivaVentas, 'IVA Compras': m.ivaCompras, 'IIBB': m.iibb, 'A Pagar AFIP': m.ivaNeto
-      }));
+      const iva = datosGlobales.ivaMeses.map(m => ({ Mes: m.mes, 'IVA Ventas': m.ivaVentas, 'IVA Compras': m.ivaCompras, 'IIBB': m.iibb, 'A Pagar': m.ivaNeto }));
       XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(iva), 'IVA');
     }
-    const clientes = datosGlobales.clientesTop.map(c => ({ Cliente: c.nombre, Total: c.total, Facturas: c.cantidad }));
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(clientes), 'Top Clientes');
-    const prodC = datosGlobales.productosPorCantidad.map(p => ({ Producto: p.nombre, Cantidad: p.cantidad, Total: p.total, 'Precio promedio': p.promedio }));
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(prodC), 'Productos x cant.');
     XLSX.writeFile(wb, `goodcomex-${new Date().toISOString().slice(0,10)}.xlsx`);
   }
 
   async function cargarDatos() {
     const desde = document.getElementById('desde').value;
     const hasta = document.getElementById('hasta').value;
+    extrasLoaded = { clientes: false, productos: false, comparativa: false };
+    productosData = null;
     document.getElementById('loading').style.display = 'block';
     document.getElementById('loading').className = 'loading';
     document.getElementById('loading').textContent = 'Cargando datos...';
@@ -580,15 +654,9 @@
       document.getElementById('total-pendiente').textContent = fmtM(data.pendientes.total);
       document.getElementById('cant-pendiente').textContent = data.pendientes.cantidad + ' facturas · total en sistema';
 
-      const cp = data.comparativa.periodoAnterior;
-      const ca = data.comparativa.anioAnterior;
-      const labelAnt = `per. ant. (${cp.desde} → ${cp.hasta})`;
-      const labelAnio = `mismo per. 2025`;
-
-      renderComparativa('comp-total', r.totalGeneral, cp.total, ca.total, labelAnt, labelAnio);
-      renderComparativa('comp-facturas', r.totalFacturas, cp.cantidad, ca.cantidad, labelAnt, labelAnio);
-      renderComparativa('comp-resero', r.totalResero, cp.resero, ca.resero, labelAnt, labelAnio);
-      renderComparativa('comp-empresab', r.totalEmpresaB, cp.empresaB, ca.empresaB, labelAnt, labelAnio);
+      ['comp-total','comp-facturas','comp-resero','comp-empresab'].forEach(id => {
+        document.getElementById(id).innerHTML = '<span style="font-size:11px;color:#ccc;">Expandí "Comparativa" para ver</span>';
+      });
 
       const tr = data.pendientes.tramos;
       document.getElementById('tramo-ok').textContent = fmtM(tr.noVencidas.total);
@@ -603,11 +671,11 @@
       document.getElementById('tramo-90-cant').textContent = tr.d90.cantidad + ' facturas';
 
       if (data.ivaMeses?.length) {
-        const totalV = data.ivaMeses.reduce((a,m) => a+m.ivaVentas, 0);
-        const totalC = data.ivaMeses.reduce((a,m) => a+m.ivaCompras, 0);
-        const totalIIBB = data.ivaMeses.reduce((a,m) => a+(m.iibb||0), 0);
-        const totalN = data.ivaMeses.reduce((a,m) => a+m.ivaNeto, 0);
-        document.getElementById('iva-resumen').textContent = `IVA ventas ${fmt(totalV)} · IVA compras ${fmt(totalC)} · A pagar AFIP ${fmt(totalN)}`;
+        const totalV = data.ivaMeses.reduce((a,m) => a+m.ivaVentas,0);
+        const totalC = data.ivaMeses.reduce((a,m) => a+m.ivaCompras,0);
+        const totalIIBB = data.ivaMeses.reduce((a,m) => a+(m.iibb||0),0);
+        const totalN = data.ivaMeses.reduce((a,m) => a+m.ivaNeto,0);
+        document.getElementById('iva-resumen').textContent = `IVA ventas ${fmt(totalV)} · IVA compras ${fmt(totalC)} · A pagar ${fmt(totalN)}`;
         document.getElementById('iva-rows').innerHTML = data.ivaMeses.map(m => `
           <div class="iva-row">
             <span class="iva-mes">${m.mes}</span>
@@ -659,20 +727,6 @@
           }
         }
       });
-
-      const maxCliente = data.clientesTop[0]?.total || 1;
-      document.getElementById('clientes-meta').textContent = `${data.clientesTop.length} clientes · ${fmtM(data.clientesTop.reduce((a,c)=>a+c.total,0))} facturado`;
-      document.getElementById('clientes-list').innerHTML = data.clientesTop.map((c,i) => `
-        <div class="rank-row">
-          <span class="rank-num">${i+1}</span>
-          <span class="rank-name" title="${c.nombre}">${c.nombre}</span>
-          <div class="rank-bar-wrap"><div class="rank-bar" style="width:${Math.round(c.total/maxCliente*100)}%;background:#378ADD;"></div></div>
-          <span class="rank-amount">${fmtM(c.total)}</span>
-          <span class="rank-sub" style="margin-left:6px;">${c.cantidad} fact.</span>
-        </div>`).join('');
-
-      document.getElementById('productos-meta').textContent = `${data.productosPorCantidad.length} productos en el período`;
-      renderProductos();
 
       document.getElementById('vencidas-meta').textContent = `${data.vencidas.cantidad} facturas · ${fmtM(data.vencidas.total)} sin cobrar`;
       renderVencidas(data.vencidas.detalle);
