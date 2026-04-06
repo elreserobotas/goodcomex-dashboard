@@ -13,7 +13,7 @@
     .topbar { background: #fff; border-bottom: 1px solid #e5e5e5; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 52px; }
     .topbar-title { font-size: 15px; font-weight: 500; }
     .topbar-nav { display: flex; height: 100%; }
-    .nav-tab { padding: 0 20px; font-size: 13px; color: #888; border-bottom: 2px solid transparent; display: flex; align-items: center; text-decoration: none; transition: color 0.15s; }
+    .nav-tab { padding: 0 20px; font-size: 13px; color: #888; border-bottom: 2px solid transparent; display: flex; align-items: center; text-decoration: none; }
     .nav-tab:hover { color: #1a1a1a; }
     .nav-tab.active { color: #1a1a1a; border-bottom-color: #1a1a1a; font-weight: 500; }
     .badge { font-size: 12px; padding: 3px 10px; border-radius: 20px; }
@@ -24,7 +24,7 @@
 
     .filtros { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap; background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 12px 16px; }
     .filtros label { font-size: 12px; color: #888; }
-    .filtros select { padding: 6px 10px; border: 0.5px solid #e5e5e5; border-radius: 8px; font-size: 13px; background: #fff; color: #1a1a1a; cursor: pointer; }
+    .filtros input[type="date"] { padding: 6px 10px; border: 0.5px solid #e5e5e5; border-radius: 8px; font-size: 13px; background: #fff; color: #1a1a1a; cursor: pointer; }
     .btn { padding: 6px 16px; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; }
     .btn-primary { background: #1a1a1a; color: #fff; }
     .btn-primary:hover { background: #333; }
@@ -37,8 +37,15 @@
     .metrics { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
     .metric { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1rem 1.25rem; }
     .metric-label { font-size: 12px; color: #888; margin-bottom: 6px; }
-    .metric-value { font-size: 24px; font-weight: 500; }
+    .metric-value { font-size: 22px; font-weight: 500; }
     .metric-sub { font-size: 11px; color: #aaa; margin-top: 4px; }
+
+    .comparativa { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+    .comp-item { font-size: 11px; display: flex; align-items: center; gap: 3px; }
+    .arrow-up { color: #27500a; }
+    .arrow-down { color: #a32d2d; }
+    .arrow-eq { color: #888; }
+    .comp-label { color: #aaa; }
 
     .cards { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
     .card { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1rem 1.25rem; }
@@ -58,8 +65,8 @@
     .tramo-label { font-size: 11px; color: #888; margin-bottom: 4px; }
     .tramo-value { font-size: 15px; font-weight: 500; }
     .tramo-cant { font-size: 11px; color: #aaa; margin-top: 2px; }
-    .tramo.t-ok .tramo-value { color: #085041; }
     .tramo.t-ok { border-color: #9FE1CB; }
+    .tramo.t-ok .tramo-value { color: #085041; }
     .tramo.t0 { border-color: #FAC775; }
     .tramo.t0 .tramo-value { color: #633806; }
     .tramo.t1 { border-color: #F0997B; }
@@ -68,39 +75,6 @@
     .tramo.t2 .tramo-value { color: #501313; }
     .tramo.t3 { border-color: #A32D2D; background: #fcebeb; }
     .tramo.t3 .tramo-value { color: #501313; }
-
-    .expandible { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
-    .expandible-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
-    .expandible-header:hover { background: #fafafa; }
-    .expandible-title { font-size: 14px; font-weight: 500; }
-    .expandible-meta { font-size: 12px; color: #888; margin-top: 2px; }
-    .expandible-arrow { font-size: 11px; color: #aaa; transition: transform 0.2s; }
-    .expandible-arrow.open { transform: rotate(180deg); }
-    .expandible-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 0.5px solid #f0f0f0; }
-    .expandible-body.open { display: block; padding-top: 1rem; }
-
-    .rank-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
-    .rank-row:last-child { border-bottom: none; }
-    .rank-num { font-size: 11px; color: #aaa; width: 18px; text-align: right; flex-shrink: 0; }
-    .rank-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .rank-bar-wrap { width: 80px; height: 6px; background: #f0f0f0; border-radius: 3px; flex-shrink: 0; }
-    .rank-bar { height: 6px; border-radius: 3px; }
-    .rank-amount { font-weight: 500; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
-    .rank-sub { font-size: 11px; color: #aaa; }
-
-    .venc-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
-    .venc-row:last-child { border-bottom: none; }
-    .venc-name { flex: 1; }
-    .venc-meta { font-size: 11px; color: #aaa; margin-top: 2px; }
-    .venc-amount { font-weight: 500; color: #993c1d; white-space: nowrap; margin-left: 12px; }
-
-    .entrega-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
-    .entrega-row:last-child { border-bottom: none; }
-    .entrega-info { flex: 1; }
-    .entrega-cliente { font-weight: 500; }
-    .entrega-fecha { font-size: 11px; color: #aaa; margin-top: 2px; }
-    .entrega-monto { font-weight: 500; white-space: nowrap; margin-left: 12px; }
-    .emp-col { font-size: 11px; margin-top: 2px; }
 
     .iva-wrap { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; margin-bottom: 1.5rem; overflow: hidden; }
     .iva-toggle { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
@@ -121,10 +95,53 @@
     .iva-neto { flex: 1; text-align: right; font-weight: 500; color: #993c1d; }
     .iva-total-row { display: flex; padding: 8px 0 0; border-top: 0.5px solid #e5e5e5; margin-top: 4px; font-size: 13px; font-weight: 500; }
 
-    .recent { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; }
-    .recent-title { font-size: 14px; font-weight: 500; margin-bottom: 12px; }
-    .row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; cursor: pointer; }
-    .row:hover { background: #fafafa; }
+    .expandible { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+    .expandible-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+    .expandible-header:hover { background: #fafafa; }
+    .expandible-title { font-size: 14px; font-weight: 500; }
+    .expandible-meta { font-size: 12px; color: #888; margin-top: 2px; }
+    .expandible-arrow { font-size: 11px; color: #aaa; transition: transform 0.2s; }
+    .expandible-arrow.open { transform: rotate(180deg); }
+    .expandible-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 0.5px solid #f0f0f0; }
+    .expandible-body.open { display: block; padding-top: 1rem; }
+
+    .tab-row { display: flex; gap: 4px; margin-bottom: 1rem; }
+    .tab-btn { padding: 4px 12px; border: 0.5px solid #e5e5e5; border-radius: 20px; font-size: 12px; cursor: pointer; background: #fff; color: #888; }
+    .tab-btn.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+
+    .rank-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
+    .rank-row:last-child { border-bottom: none; }
+    .rank-num { font-size: 11px; color: #aaa; width: 18px; text-align: right; flex-shrink: 0; }
+    .rank-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
+    .rank-bar-wrap { width: 60px; height: 5px; background: #f0f0f0; border-radius: 3px; flex-shrink: 0; }
+    .rank-bar { height: 5px; border-radius: 3px; }
+    .rank-amount { font-weight: 500; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
+    .rank-sub { font-size: 11px; color: #aaa; white-space: nowrap; flex-shrink: 0; }
+
+    .sort-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    .sort-btn { padding: 3px 10px; border: 0.5px solid #e5e5e5; border-radius: 20px; font-size: 11px; cursor: pointer; background: #fff; color: #888; }
+    .sort-btn.active { background: #f5f5f3; color: #1a1a1a; border-color: #ccc; font-weight: 500; }
+
+    .venc-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
+    .venc-row:last-child { border-bottom: none; }
+    .venc-name { flex: 1; }
+    .venc-meta { font-size: 11px; color: #aaa; margin-top: 2px; }
+    .venc-amount { font-weight: 500; color: #993c1d; white-space: nowrap; margin-left: 12px; }
+
+    .entrega-row { padding: 10px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
+    .entrega-row:last-child { border-bottom: none; }
+    .entrega-cliente { font-weight: 500; color: #1a1a1a; }
+    .entrega-fecha { font-size: 11px; color: #378ADD; margin-top: 3px; }
+    .entrega-monto { font-size: 12px; color: #085041; font-weight: 500; margin-top: 2px; }
+    .entrega-uds { font-size: 11px; color: #633806; margin-top: 2px; }
+
+    .recent-wrap { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; margin-bottom: 1.5rem; overflow: hidden; }
+    .recent-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+    .recent-header:hover { background: #fafafa; }
+    .recent-title { font-size: 14px; font-weight: 500; }
+    .recent-body { display: none; border-top: 0.5px solid #f0f0f0; padding: 0 1.25rem; }
+    .recent-body.open { display: block; }
+    .row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
     .row:last-child { border-bottom: none; }
     .row-name { font-weight: 500; }
     .row-meta { font-size: 11px; color: #aaa; margin-top: 2px; }
@@ -132,6 +149,8 @@
     .emp-badge { font-size: 10px; padding: 2px 8px; border-radius: 20px; margin-left: 6px; vertical-align: middle; }
     .b1 { background: #e6f1fb; color: #0c447c; }
     .b2 { background: #e1f5ee; color: #085041; }
+    .row-remove { font-size: 16px; color: #ccc; cursor: pointer; padding: 0 8px; flex-shrink: 0; }
+    .row-remove:hover { color: #a32d2d; }
 
     .loading { text-align: center; padding: 4rem; color: #888; font-size: 14px; }
     .error { text-align: center; padding: 4rem; color: #a32d2d; font-size: 14px; }
@@ -162,28 +181,10 @@
 <div class="container">
   <div class="filtros">
     <label>Desde</label>
-    <select id="desde-mes">
-      <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
-      <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
-      <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
-      <option value="10">Octubre</option><option value="11" selected>Noviembre</option><option value="12">Diciembre</option>
-    </select>
-    <select id="desde-anio">
-      <option value="2025" selected>2025</option>
-      <option value="2026">2026</option>
-    </select>
+    <input type="date" id="desde" value="2025-11-01" />
     <span class="sep">→</span>
     <label>Hasta</label>
-    <select id="hasta-mes">
-      <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
-      <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
-      <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
-      <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
-    </select>
-    <select id="hasta-anio">
-      <option value="2025">2025</option>
-      <option value="2026" selected>2026</option>
-    </select>
+    <input type="date" id="hasta" />
     <button class="btn btn-primary" onclick="cargarDatos()">Aplicar</button>
     <button class="btn btn-excel" onclick="exportarExcel()">Exportar Excel</button>
   </div>
@@ -196,11 +197,13 @@
       <div class="metric">
         <div class="metric-label">Total acumulado</div>
         <div class="metric-value" id="total-general">—</div>
+        <div class="comparativa" id="comp-total"></div>
         <div class="metric-sub" id="periodo-label">—</div>
       </div>
       <div class="metric">
         <div class="metric-label">Total facturas</div>
         <div class="metric-value" id="total-facturas">—</div>
+        <div class="comparativa" id="comp-facturas"></div>
         <div class="metric-sub">Ambas empresas</div>
       </div>
       <div class="metric">
@@ -214,11 +217,13 @@
       <div class="card">
         <div class="card-label">El Resero</div>
         <div class="card-value" id="total-resero">—</div>
+        <div class="comparativa" id="comp-resero"></div>
         <div class="card-sub" id="facturas-resero">—</div>
       </div>
       <div class="card">
         <div class="card-label">Empresa B</div>
         <div class="card-value" id="total-empresab">—</div>
+        <div class="comparativa" id="comp-empresab"></div>
         <div class="card-sub" id="facturas-empresab">—</div>
       </div>
     </div>
@@ -268,7 +273,7 @@
     <div class="iva-wrap">
       <div class="iva-toggle" onclick="toggleIVA()">
         <div>
-          <div class="iva-toggle-title">IVA por mes</div>
+          <div class="iva-toggle-title">IVA mensual</div>
           <div class="iva-toggle-sub" id="iva-resumen">Clic para ver detalle</div>
         </div>
         <span class="iva-arrow" id="iva-arrow">▼</span>
@@ -291,7 +296,7 @@
       <div class="expandible-header" onclick="toggle('clientes')">
         <div>
           <div class="expandible-title">Top 10 clientes</div>
-          <div class="expandible-meta" id="clientes-meta">Por monto facturado en el período</div>
+          <div class="expandible-meta" id="clientes-meta">Por monto facturado</div>
         </div>
         <span class="expandible-arrow" id="arrow-clientes">▼</span>
       </div>
@@ -303,12 +308,16 @@
     <div class="expandible">
       <div class="expandible-header" onclick="toggle('productos')">
         <div>
-          <div class="expandible-title">Top 10 productos más vendidos</div>
-          <div class="expandible-meta" id="productos-meta">Por cantidad de unidades en el período</div>
+          <div class="expandible-title">Ranking de productos</div>
+          <div class="expandible-meta" id="productos-meta">Top 10 por cantidad y facturación</div>
         </div>
         <span class="expandible-arrow" id="arrow-productos">▼</span>
       </div>
       <div class="expandible-body" id="body-productos">
+        <div class="tab-row">
+          <button class="tab-btn active" id="tab-cant" onclick="setTabProductos('cantidad')">Por cantidad</button>
+          <button class="tab-btn" id="tab-monto" onclick="setTabProductos('monto')">Por facturación</button>
+        </div>
         <div id="productos-list"></div>
       </div>
     </div>
@@ -322,6 +331,10 @@
         <span class="expandible-arrow" id="arrow-vencidas">▼</span>
       </div>
       <div class="expandible-body" id="body-vencidas">
+        <div class="sort-row">
+          <button class="sort-btn active" id="sort-venc-fecha" onclick="sortVencidas('fecha')">Por vencimiento</button>
+          <button class="sort-btn" id="sort-venc-monto" onclick="sortVencidas('monto')">Por monto</button>
+        </div>
         <div id="vencidas-list"></div>
       </div>
     </div>
@@ -348,9 +361,14 @@
       </div>
     </div>
 
-    <div class="recent">
-      <div class="recent-title">Últimas órdenes de venta <span style="font-size:11px;color:#aaa;font-weight:400">(clic para ver detalle)</span></div>
-      <div id="ordenes-list"></div>
+    <div class="recent-wrap">
+      <div class="recent-header" onclick="toggleRecent()">
+        <div class="recent-title">Últimas órdenes de venta</div>
+        <span class="expandible-arrow" id="arrow-recent">▼</span>
+      </div>
+      <div class="recent-body" id="body-recent">
+        <div id="ordenes-list" style="padding-bottom:0.5rem;"></div>
+      </div>
     </div>
 
   </div>
@@ -370,26 +388,15 @@
   const fmt = (n) => '$' + Math.round(n).toLocaleString('es-AR');
   const fmtM = (n) => '$' + (n / 1000000).toFixed(1) + 'M';
   let chartBar = null, datosGlobales = null;
+  let vencidasOrden = 'fecha';
+  let productosTab = 'cantidad';
+  let ordenesVisibles = [];
 
-  function setHastaPorDefecto() {
-    const hoy = new Date();
-    document.getElementById('hasta-mes').value = hoy.getMonth() + 1;
-    document.getElementById('hasta-anio').value = hoy.getFullYear();
-  }
-
-  function getFiltros() {
-    const dM = String(document.getElementById('desde-mes').value).padStart(2,'0');
-    const dA = document.getElementById('desde-anio').value;
-    const hM = String(document.getElementById('hasta-mes').value).padStart(2,'0');
-    const hA = document.getElementById('hasta-anio').value;
-    return { desde: `${dA}-${dM}-01`, hasta: `${hA}-${hM}-01` };
-  }
+  document.getElementById('hasta').value = new Date().toISOString().slice(0,10);
 
   function toggle(id) {
-    const body = document.getElementById('body-' + id);
-    const arrow = document.getElementById('arrow-' + id);
-    body.classList.toggle('open');
-    arrow.classList.toggle('open');
+    document.getElementById('body-' + id).classList.toggle('open');
+    document.getElementById('arrow-' + id).classList.toggle('open');
   }
 
   function toggleIVA() {
@@ -397,19 +404,128 @@
     document.getElementById('iva-arrow').classList.toggle('open');
   }
 
+  function toggleRecent() {
+    document.getElementById('body-recent').classList.toggle('open');
+    document.getElementById('arrow-recent').classList.toggle('open');
+  }
+
   function cerrarModal(e) {
-    if (e.target === document.getElementById('modal-bg')) {
-      document.getElementById('modal-bg').classList.remove('open');
-    }
+    if (e.target === document.getElementById('modal-bg')) document.getElementById('modal-bg').classList.remove('open');
+  }
+
+  function pctFlecha(actual, anterior) {
+    if (!anterior || anterior === 0) return null;
+    const pct = ((actual - anterior) / anterior * 100).toFixed(1);
+    const cls = pct > 0 ? 'arrow-up' : pct < 0 ? 'arrow-down' : 'arrow-eq';
+    const sym = pct > 0 ? '▲' : pct < 0 ? '▼' : '—';
+    return `<span class="${cls}">${sym} ${Math.abs(pct)}%</span>`;
+  }
+
+  function renderComparativa(containerId, actual, anterior, anio, labelAnt, labelAnio) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    const fAnt = pctFlecha(actual, anterior);
+    const fAnio = pctFlecha(actual, anio);
+    el.innerHTML = `
+      ${fAnt ? `<div class="comp-item">${fAnt} <span class="comp-label">vs ${labelAnt}</span></div>` : ''}
+      ${fAnio ? `<div class="comp-item">${fAnio} <span class="comp-label">vs ${labelAnio}</span></div>` : ''}
+    `;
+  }
+
+  function sortVencidas(orden) {
+    vencidasOrden = orden;
+    document.getElementById('sort-venc-fecha').classList.toggle('active', orden === 'fecha');
+    document.getElementById('sort-venc-monto').classList.toggle('active', orden === 'monto');
+    if (datosGlobales) renderVencidas(datosGlobales.vencidas.detalle);
+  }
+
+  function setTabProductos(tab) {
+    productosTab = tab;
+    document.getElementById('tab-cant').classList.toggle('active', tab === 'cantidad');
+    document.getElementById('tab-monto').classList.toggle('active', tab === 'monto');
+    if (datosGlobales) renderProductos();
+  }
+
+  function renderProductos() {
+    const lista = productosTab === 'cantidad' ? datosGlobales.productosPorCantidad : datosGlobales.productosPorMonto;
+    const max = lista[0]?.cantidad || lista[0]?.total || 1;
+    document.getElementById('productos-list').innerHTML = lista.map((p,i) => {
+      const barVal = productosTab === 'cantidad' ? p.cantidad / (lista[0]?.cantidad||1) : p.total / (lista[0]?.total||1);
+      return `
+        <div class="rank-row">
+          <span class="rank-num">${i+1}</span>
+          <span class="rank-name" title="${p.nombre}">${p.nombre}</span>
+          <div class="rank-bar-wrap"><div class="rank-bar" style="width:${Math.round(barVal*100)}%;background:#1D9E75;"></div></div>
+          <span class="rank-amount">${productosTab === 'cantidad' ? p.cantidad + ' uds' : fmtM(p.total)}</span>
+          <span class="rank-sub" style="margin-left:6px;">prom. ${fmt(p.promedio)}</span>
+        </div>`;
+    }).join('') || '<p class="empty">Sin datos</p>';
+  }
+
+  function renderVencidas(detalle) {
+    const ordenadas = [...detalle].sort((a,b) => {
+      if (vencidasOrden === 'monto') return b.amount_residual - a.amount_residual;
+      return a.dias - b.dias;
+    });
+    document.getElementById('vencidas-list').innerHTML = ordenadas.length === 0
+      ? '<p class="empty">Sin facturas vencidas</p>'
+      : ordenadas.map(f => `
+        <div class="venc-row">
+          <div class="venc-name">
+            <div style="font-weight:500;">${f.partner_name || '—'}</div>
+            <div class="venc-meta">${f.name} · vence ${f.invoice_date_due} · ${f.dias} días</div>
+          </div>
+          <div class="venc-amount">${fmt(f.amount_residual)}</div>
+        </div>`).join('');
+  }
+
+  function renderEntregas(pickings, containerId) {
+    const el = document.getElementById(containerId);
+    if (!pickings.length) { el.innerHTML = '<p class="empty">Sin entregas pendientes</p>'; return; }
+    el.innerHTML = pickings.map(p => {
+      const fecha = p.scheduled_date ? new Date(p.scheduled_date).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '—';
+      const totalUds = p.productos.reduce((a,pr) => a + pr.qty, 0);
+      return `
+        <div class="entrega-row">
+          <div class="entrega-cliente">${p.partner}</div>
+          <div class="entrega-fecha">${fecha}</div>
+          <div class="entrega-uds">${totalUds} unidades · ${p.productos.length} productos</div>
+        </div>`;
+    }).join('');
+  }
+
+  function removeOrden(name) {
+    ordenesVisibles = ordenesVisibles.filter(o => o.name !== name);
+    renderOrdenes();
+  }
+
+  function renderOrdenes() {
+    const lista = document.getElementById('ordenes-list');
+    lista.innerHTML = '';
+    ordenesVisibles.forEach(o => {
+      const fecha = new Date(o.date_order).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'});
+      const esResero = o.empresa === 'El Resero';
+      const div = document.createElement('div');
+      div.className = 'row';
+      div.style.cursor = 'default';
+      div.innerHTML = `
+        <div style="flex:1;">
+          <div class="row-name">${o.partner_id[1]}<span class="emp-badge ${esResero?'b1':'b2'}">${o.empresa}</span></div>
+          <div class="row-meta">${o.name} · ${fecha}</div>
+        </div>
+        <div class="row-amount">${fmt(o.amount_total)}</div>
+        <span class="row-remove" onclick="removeOrden('${o.name}')" title="Quitar">×</span>`;
+      lista.appendChild(div);
+    });
   }
 
   function abrirDetalle(orden) {
-    document.getElementById('modal-titulo').textContent = orden.name + ' — ' + orden.partner_id[1];
+    document.getElementById('modal-titulo').textContent = orden.name;
     document.getElementById('modal-body').innerHTML = `
       <div class="modal-row"><span class="modal-label">Empresa</span><span class="modal-val">${orden.empresa}</span></div>
       <div class="modal-row"><span class="modal-label">Cliente</span><span class="modal-val">${orden.partner_id[1]}</span></div>
       <div class="modal-row"><span class="modal-label">Fecha</span><span class="modal-val">${new Date(orden.date_order).toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})}</span></div>
-      <div class="modal-row"><span class="modal-label">Monto total</span><span class="modal-val">${fmt(orden.amount_total)}</span></div>
+      <div class="modal-row"><span class="modal-label">Monto</span><span class="modal-val">${fmt(orden.amount_total)}</span></div>
     `;
     document.getElementById('modal-bg').classList.add('open');
   }
@@ -420,23 +536,25 @@
     const resumen = datosGlobales.ventasPorMes.map(m => ({
       Mes: m.mes, 'El Resero': m.resero.total, 'Empresa B': m.empresaB.total,
       Total: m.resero.total + m.empresaB.total,
-      'Facturas Resero': m.resero.cantidad, 'Facturas Empresa B': m.empresaB.cantidad
+      'Fact. Resero': m.resero.cantidad, 'Fact. Empresa B': m.empresaB.cantidad
     }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resumen), 'Resumen');
     if (datosGlobales.ivaMeses?.length) {
       const iva = datosGlobales.ivaMeses.map(m => ({
-        Mes: m.mes, 'IVA Ventas': m.ivaVentas, 'IVA Compras': m.ivaCompras,
-        'IIBB': m.iibb, 'A Pagar AFIP': m.ivaNeto
+        Mes: m.mes, 'IVA Ventas': m.ivaVentas, 'IVA Compras': m.ivaCompras, 'IIBB': m.iibb, 'A Pagar AFIP': m.ivaNeto
       }));
       XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(iva), 'IVA');
     }
     const clientes = datosGlobales.clientesTop.map(c => ({ Cliente: c.nombre, Total: c.total, Facturas: c.cantidad }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(clientes), 'Top Clientes');
+    const prodC = datosGlobales.productosPorCantidad.map(p => ({ Producto: p.nombre, Cantidad: p.cantidad, Total: p.total, 'Precio promedio': p.promedio }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(prodC), 'Productos x cant.');
     XLSX.writeFile(wb, `goodcomex-${new Date().toISOString().slice(0,10)}.xlsx`);
   }
 
   async function cargarDatos() {
-    const { desde, hasta } = getFiltros();
+    const desde = document.getElementById('desde').value;
+    const hasta = document.getElementById('hasta').value;
     document.getElementById('loading').style.display = 'block';
     document.getElementById('loading').className = 'loading';
     document.getElementById('loading').textContent = 'Cargando datos...';
@@ -450,22 +568,27 @@
       datosGlobales = data;
 
       const meses = data.ventasPorMes;
-      const totalResero = meses.reduce((a,m) => a + m.resero.total, 0);
-      const totalEmpresaB = meses.reduce((a,m) => a + m.empresaB.total, 0);
-      const totalGeneral = totalResero + totalEmpresaB;
-      const totalFacturas = meses.reduce((a,m) => a + m.resero.cantidad + m.empresaB.cantidad, 0);
-      const totalFacturasResero = meses.reduce((a,m) => a + m.resero.cantidad, 0);
-      const totalFacturasEmpresaB = meses.reduce((a,m) => a + m.empresaB.cantidad, 0);
+      const r = data.resumen;
 
-      document.getElementById('total-general').textContent = fmtM(totalGeneral);
-      document.getElementById('periodo-label').textContent = `${meses[0]?.mes} → ${meses[meses.length-1]?.mes}`;
-      document.getElementById('total-facturas').textContent = totalFacturas.toLocaleString('es-AR');
-      document.getElementById('total-resero').textContent = fmtM(totalResero);
-      document.getElementById('facturas-resero').textContent = totalFacturasResero.toLocaleString('es-AR') + ' facturas';
-      document.getElementById('total-empresab').textContent = fmtM(totalEmpresaB);
-      document.getElementById('facturas-empresab').textContent = totalFacturasEmpresaB.toLocaleString('es-AR') + ' facturas';
+      document.getElementById('total-general').textContent = fmtM(r.totalGeneral);
+      document.getElementById('periodo-label').textContent = `${desde} → ${hasta}`;
+      document.getElementById('total-facturas').textContent = r.totalFacturas.toLocaleString('es-AR');
+      document.getElementById('total-resero').textContent = fmtM(r.totalResero);
+      document.getElementById('facturas-resero').textContent = meses.reduce((a,m)=>a+m.resero.cantidad,0) + ' facturas';
+      document.getElementById('total-empresab').textContent = fmtM(r.totalEmpresaB);
+      document.getElementById('facturas-empresab').textContent = meses.reduce((a,m)=>a+m.empresaB.cantidad,0) + ' facturas';
       document.getElementById('total-pendiente').textContent = fmtM(data.pendientes.total);
       document.getElementById('cant-pendiente').textContent = data.pendientes.cantidad + ' facturas · total en sistema';
+
+      const cp = data.comparativa.periodoAnterior;
+      const ca = data.comparativa.anioAnterior;
+      const labelAnt = `per. ant. (${cp.desde} → ${cp.hasta})`;
+      const labelAnio = `mismo per. 2025`;
+
+      renderComparativa('comp-total', r.totalGeneral, cp.total, ca.total, labelAnt, labelAnio);
+      renderComparativa('comp-facturas', r.totalFacturas, cp.cantidad, ca.cantidad, labelAnt, labelAnio);
+      renderComparativa('comp-resero', r.totalResero, cp.resero, ca.resero, labelAnt, labelAnio);
+      renderComparativa('comp-empresab', r.totalEmpresaB, cp.empresaB, ca.empresaB, labelAnt, labelAnio);
 
       const tr = data.pendientes.tramos;
       document.getElementById('tramo-ok').textContent = fmtM(tr.noVencidas.total);
@@ -480,11 +603,11 @@
       document.getElementById('tramo-90-cant').textContent = tr.d90.cantidad + ' facturas';
 
       if (data.ivaMeses?.length) {
-        const totalV = data.ivaMeses.reduce((a,m) => a + m.ivaVentas, 0);
-        const totalC = data.ivaMeses.reduce((a,m) => a + m.ivaCompras, 0);
-        const totalIIBB = data.ivaMeses.reduce((a,m) => a + (m.iibb||0), 0);
-        const totalN = data.ivaMeses.reduce((a,m) => a + m.ivaNeto, 0);
-        document.getElementById('iva-resumen').textContent = `A pagar AFIP en período: ${fmt(totalN)}`;
+        const totalV = data.ivaMeses.reduce((a,m) => a+m.ivaVentas, 0);
+        const totalC = data.ivaMeses.reduce((a,m) => a+m.ivaCompras, 0);
+        const totalIIBB = data.ivaMeses.reduce((a,m) => a+(m.iibb||0), 0);
+        const totalN = data.ivaMeses.reduce((a,m) => a+m.ivaNeto, 0);
+        document.getElementById('iva-resumen').textContent = `IVA ventas ${fmt(totalV)} · IVA compras ${fmt(totalC)} · A pagar AFIP ${fmt(totalN)}`;
         document.getElementById('iva-rows').innerHTML = data.ivaMeses.map(m => `
           <div class="iva-row">
             <span class="iva-mes">${m.mes}</span>
@@ -514,7 +637,7 @@
         },
         options: {
           responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ' ' + fmt(ctx.raw) } } },
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + fmt(ctx.raw) } } },
           scales: {
             x: { grid: { display: false }, ticks: { color: '#888', font: { size: 12 } } },
             y: { grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { color: '#888', font: { size: 11 }, callback: v => '$' + (v/1000000).toFixed(0) + 'M' } }
@@ -524,11 +647,11 @@
               const chart = this; const ctx = chart.ctx;
               ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
               const m0 = chart.getDatasetMeta(0); const m1 = chart.getDatasetMeta(1);
-              meses.forEach((m, i) => {
+              meses.forEach((m,i) => {
                 const v0 = m.resero.total; const v1 = m.empresaB.total;
                 const b0 = m0.data[i]; const b1 = m1.data[i];
-                if (v0 > 0) { ctx.font = '500 9px system-ui'; ctx.fillStyle = '#0c447c'; ctx.fillText(fmtM(v0), b0.x, b0.y - 2); }
-                if (v1 > 0) { ctx.font = '500 9px system-ui'; ctx.fillStyle = '#085041'; ctx.fillText(fmtM(v1), b1.x, b1.y - 2); }
+                if (v0 > 0) { ctx.font = '500 9px system-ui'; ctx.fillStyle = '#0c447c'; ctx.fillText(fmtM(v0), b0.x, b0.y-2); }
+                if (v1 > 0) { ctx.font = '500 9px system-ui'; ctx.fillStyle = '#085041'; ctx.fillText(fmtM(v1), b1.x, b1.y-2); }
                 if (v0+v1 > 0) { ctx.font = '500 11px system-ui'; ctx.fillStyle = '#333'; ctx.fillText(fmtM(v0+v1), (b0.x+b1.x)/2, Math.min(b0.y,b1.y)-16); }
               });
               ctx.restore();
@@ -538,7 +661,7 @@
       });
 
       const maxCliente = data.clientesTop[0]?.total || 1;
-      document.getElementById('clientes-meta').textContent = `${data.clientesTop.length} clientes · total ${fmtM(data.clientesTop.reduce((a,c)=>a+c.total,0))}`;
+      document.getElementById('clientes-meta').textContent = `${data.clientesTop.length} clientes · ${fmtM(data.clientesTop.reduce((a,c)=>a+c.total,0))} facturado`;
       document.getElementById('clientes-list').innerHTML = data.clientesTop.map((c,i) => `
         <div class="rank-row">
           <span class="rank-num">${i+1}</span>
@@ -548,74 +671,20 @@
           <span class="rank-sub" style="margin-left:6px;">${c.cantidad} fact.</span>
         </div>`).join('');
 
-      if (data.productosTop?.length) {
-        const maxProd = data.productosTop[0]?.cantidad || 1;
-        document.getElementById('productos-meta').textContent = `${data.productosTop.length} productos más vendidos en el período`;
-        document.getElementById('productos-list').innerHTML = data.productosTop.map((p,i) => `
-          <div class="rank-row">
-            <span class="rank-num">${i+1}</span>
-            <span class="rank-name" title="${p.nombre}">${p.nombre}</span>
-            <div class="rank-bar-wrap"><div class="rank-bar" style="width:${Math.round(p.cantidad/maxProd*100)}%;background:#1D9E75;"></div></div>
-            <span class="rank-amount">${p.cantidad} uds</span>
-            <span class="rank-sub" style="margin-left:6px;">${fmtM(p.total)}</span>
-          </div>`).join('');
-      } else {
-        document.getElementById('productos-list').innerHTML = '<p class="empty">Sin datos de productos</p>';
-      }
+      document.getElementById('productos-meta').textContent = `${data.productosPorCantidad.length} productos en el período`;
+      renderProductos();
 
-      const totalVencido = data.vencidas.total;
-      const cantVencidas = data.vencidas.cantidad;
-      document.getElementById('vencidas-meta').textContent = `${cantVencidas} facturas · ${fmtM(totalVencido)} sin cobrar`;
-      const todasVencidas = data.vencidas.detalle || [];
-      document.getElementById('vencidas-list').innerHTML = todasVencidas.length === 0
-        ? '<p class="empty">Sin facturas vencidas</p>'
-        : todasVencidas.sort((a,b) => b.amount_residual - a.amount_residual).map(f => `
-          <div class="venc-row">
-            <div class="venc-name">
-              <div style="font-weight:500;">${f.partner_name || '—'}</div>
-              <div class="venc-meta">${f.name} · vence ${f.invoice_date_due} · ${Math.floor((new Date()-new Date(f.invoice_date_due))/(1000*60*60*24))} días</div>
-            </div>
-            <div class="venc-amount">${fmt(f.amount_residual)}</div>
-          </div>`).join('');
+      document.getElementById('vencidas-meta').textContent = `${data.vencidas.cantidad} facturas · ${fmtM(data.vencidas.total)} sin cobrar`;
+      renderVencidas(data.vencidas.detalle);
 
       const remitoResero = data.pendientesEntrega.filter(p => p.empresa === 'El Resero');
       const remitoEmpresaB = data.pendientesEntrega.filter(p => p.empresa === 'Empresa B');
       document.getElementById('entregas-meta').textContent = `${data.pendientesEntrega.length} remitos pendientes`;
+      renderEntregas(remitoResero, 'entregas-resero');
+      renderEntregas(remitoEmpresaB, 'entregas-empresab');
 
-      const renderEntregasSimple = (pickings, containerId) => {
-        const el = document.getElementById(containerId);
-        if (!pickings.length) { el.innerHTML = '<p class="empty">Sin entregas pendientes</p>'; return; }
-        el.innerHTML = pickings.map(p => {
-          const fecha = p.scheduled_date ? new Date(p.scheduled_date).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '—';
-          const totalMonto = p.productos.reduce((a,pr) => a + (pr.qty * 0), 0);
-          return `
-            <div class="entrega-row">
-              <div class="entrega-info">
-                <div class="entrega-cliente">${p.partner}</div>
-                <div class="entrega-fecha">${p.name} · ${fecha}</div>
-                <div class="entrega-fecha">${p.productos.length} productos · ${p.productos.reduce((a,pr)=>a+pr.qty,0)} uds</div>
-              </div>
-            </div>`;
-        }).join('');
-      };
-      renderEntregasSimple(remitoResero, 'entregas-resero');
-      renderEntregasSimple(remitoEmpresaB, 'entregas-empresab');
-
-      document.getElementById('ordenes-list').innerHTML = '';
-      data.ordenesRecientes.forEach(o => {
-        const fecha = new Date(o.date_order).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'});
-        const esResero = o.empresa === 'El Resero';
-        const div = document.createElement('div');
-        div.className = 'row';
-        div.innerHTML = `
-          <div>
-            <div class="row-name">${o.partner_id[1]}<span class="emp-badge ${esResero?'b1':'b2'}">${o.empresa}</span></div>
-            <div class="row-meta">${o.name} · ${fecha}</div>
-          </div>
-          <div class="row-amount">${fmt(o.amount_total)}</div>`;
-        div.onclick = () => abrirDetalle(o);
-        document.getElementById('ordenes-list').appendChild(div);
-      });
+      ordenesVisibles = [...data.ordenesRecientes];
+      renderOrdenes();
 
       document.getElementById('status').textContent = 'Odoo conectado';
       document.getElementById('status').className = 'badge ok';
@@ -630,7 +699,6 @@
     }
   }
 
-  setHastaPorDefecto();
   cargarDatos();
   setInterval(cargarDatos, 5 * 60 * 1000);
 </script>
