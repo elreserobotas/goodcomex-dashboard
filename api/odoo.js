@@ -293,11 +293,19 @@ module.exports = async function handler(req, res) {
     };
     const totalPendiente = pendientesConDias.reduce((a,f) => a + f.amount_residual, 0);
     const tiempoPromedioCobro = (() => {
-  const pagadas = todasFacturas.filter(f => f.payment_state === 'paid' && f.invoice_date && f.invoice_date_due);
+  const pagadas = todasFacturas.filter(f => 
+    f.payment_state === 'paid' && 
+    f.invoice_date && 
+    f.invoice_date_due &&
+    (
+      f.company_id[0] === 2 ||
+      (f.company_id[0] === 1 && f.name && f.name.startsWith('FA-A'))
+    )
+  );
   if (!pagadas.length) return null;
   const dias = pagadas.map(f => Math.max(0, Math.floor((new Date(f.invoice_date_due) - new Date(f.invoice_date)) / (1000*60*60*24))));
   return Math.round(dias.reduce((a,b) => a+b, 0) / dias.length);
-})();
+})(); 
     const totalVencido = pendientesConDias.filter(f => f.dias >= 0).reduce((a,f) => a + f.amount_residual, 0);
     const todasVencidas = pendientesConDias.filter(f => f.dias >= 0);
 
