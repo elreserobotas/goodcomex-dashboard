@@ -181,7 +181,7 @@ module.exports = async function handler(req, res) {
 
       if (talles.length > 0) {
         for (const t of talles) {
-          await sql`INSERT INTO talles (pedido_id, talle, cantidad) VALUES (${pedidoId}, ${t.talle}, ${t.cantidad})`;
+        await sql`INSERT INTO talles (pedido_id, talle, cantidad, modelo, nombre_producto) VALUES (${pedidoId}, ${t.talle}, ${t.cantidad}, ${t.modelo}, ${t.nombre})`;
         }
       }
 
