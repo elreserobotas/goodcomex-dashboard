@@ -645,13 +645,13 @@ function abrirDetalle(id) {
     <div class="modal-section">Historial</div>${histHtml}
   `;
   const actions = document.getElementById('det-actions');
-  if (usuario?.rol === 'produccion' || usuario?.rol === 'admin') {
-    actions.innerHTML = `
-      <button class="btn btn-danger btn-sm" onclick="eliminarPedido(${p.id})">Eliminar</button>
-      <button class="btn btn-outline btn-sm" onclick="abrirEditar(${p.id})">Editar</button>
-      ${lotes.length === 0 ? `<button class="btn btn-primary btn-sm" onclick="abrirPrimerLote(${p.id})">Crear lote</button>` : ''}
-    `;
-  } else { actions.innerHTML = ''; }
+  actions.innerHTML = `
+  <button class="btn btn-danger btn-sm" onclick="eliminarPedido(${p.id})">Eliminar</button>
+  ${(usuario?.rol === 'produccion' || usuario?.rol === 'admin') ? `
+    <button class="btn btn-outline btn-sm" onclick="abrirEditar(${p.id})">Editar</button>
+    ${lotes.length === 0 ? `<button class="btn btn-primary btn-sm" onclick="abrirPrimerLote(${p.id})">Crear lote</button>` : ''}
+  ` : ''}
+`;
   document.getElementById('modal-detalle').classList.add('open');
 }
 
