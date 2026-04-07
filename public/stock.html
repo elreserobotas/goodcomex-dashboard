@@ -19,6 +19,7 @@
     .btn-primary { background: #1a1a1a; color: #fff; }
     .btn-outline { background: #fff; color: #1a1a1a; border: 0.5px solid #e5e5e5; }
     .btn-outline:hover { background: #f5f5f3; }
+    .btn-danger { background: #fcebeb; color: #a32d2d; border: none; }
     .btn-sm { padding: 4px 10px; font-size: 11px; }
 
     .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
@@ -61,12 +62,6 @@
 
     .item-card { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 10px; padding: 10px 12px; }
     .item-cliente { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
-    .item-modelos { margin-bottom: 6px; }
-    .item-modelo-row { display: flex; align-items: baseline; gap: 6px; margin-bottom: 3px; }
-    .item-modelo-num { font-size: 11px; font-weight: 600; color: #1a1a1a; min-width: 35px; }
-    .item-modelo-nombre { font-size: 10px; color: #888; }
-    .item-talles-row { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 2px; margin-bottom: 4px; }
-    .item-talle { background: #f5f5f3; border-radius: 4px; padding: 1px 6px; font-size: 10px; color: #555; }
     .item-total { font-size: 12px; font-weight: 500; color: #1a1a1a; margin-bottom: 2px; }
     .item-fecha { font-size: 10px; color: #aaa; margin-bottom: 6px; }
     .item-actions { display: flex; gap: 4px; flex-wrap: wrap; }
@@ -131,21 +126,9 @@
         <button class="btn btn-outline btn-sm" onclick="logout()">Salir</button>
       </div>
       <div class="stats">
-        <div class="stat">
-          <div class="stat-label">En empaque</div>
-          <div class="stat-value" id="stat-empaque">—</div>
-          <div class="stat-sub">pares pendientes</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">En stock</div>
-          <div class="stat-value" id="stat-stock">—</div>
-          <div class="stat-sub">pares disponibles</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Listos para entregar</div>
-          <div class="stat-value" id="stat-listo">—</div>
-          <div class="stat-sub">pares</div>
-        </div>
+        <div class="stat"><div class="stat-label">En empaque</div><div class="stat-value" id="stat-empaque">—</div><div class="stat-sub">pares pendientes</div></div>
+        <div class="stat"><div class="stat-label">En stock</div><div class="stat-value" id="stat-stock">—</div><div class="stat-sub">pares disponibles</div></div>
+        <div class="stat"><div class="stat-label">Listos para entregar</div><div class="stat-value" id="stat-listo">—</div><div class="stat-sub">pares</div></div>
       </div>
       <div class="flujo">
         <div class="flujo-etapa flujo-empaque">Empaque</div>
@@ -178,7 +161,6 @@
   </div>
 </div>
 
-<!-- Modal mover desde empaque -->
 <div class="modal-bg" id="modal-mover">
   <div class="modal">
     <div class="modal-title">
@@ -186,28 +168,14 @@
       <button class="modal-close" onclick="cerrarModal('modal-mover')">×</button>
     </div>
     <div class="modal-sub" id="mover-sub"></div>
-
     <div class="modal-section">Todo el lote a un destino</div>
     <div class="destino-btns">
-      <div class="destino-btn destino-stock" onclick="seleccionarDestinoTotal('stock')">
-        📦 Todo a Stock<br><span style="font-size:10px;font-weight:400;">Para reponer más adelante</span>
-      </div>
-      <div class="destino-btn destino-listo" onclick="seleccionarDestinoTotal('listo')">
-        ✓ Todo a Listo<br><span style="font-size:10px;font-weight:400;">Pedido confirmado</span>
-      </div>
+      <div class="destino-btn destino-stock" onclick="seleccionarDestinoTotal('stock')">📦 Todo a Stock<br><span style="font-size:10px;font-weight:400;">Para reponer más adelante</span></div>
+      <div class="destino-btn destino-listo" onclick="seleccionarDestinoTotal('listo')">✓ Todo a Listo<br><span style="font-size:10px;font-weight:400;">Pedido confirmado</span></div>
     </div>
-
     <div class="modal-section">O distribuir por modelo y talle</div>
     <table class="lineas-tabla">
-      <thead>
-        <tr>
-          <th>Modelo</th>
-          <th>Talle</th>
-          <th>Disponible</th>
-          <th style="color:#0c447c;">→ Stock</th>
-          <th style="color:#27500a;">→ Listo</th>
-        </tr>
-      </thead>
+      <thead><tr><th>Modelo</th><th>Talle</th><th>Disponible</th><th style="color:#0c447c;">→ Stock</th><th style="color:#27500a;">→ Listo</th></tr></thead>
       <tbody id="lineas-body"></tbody>
     </table>
     <div class="total-row">
@@ -215,15 +183,12 @@
       <span class="total-listo">Listo: <span id="total-listo-val">0</span> pares</span>
     </div>
     <div class="total-err" id="total-err">Alguna línea supera la cantidad disponible</div>
-    <div style="margin-top:1rem;">
-      <button class="btn btn-primary" style="width:100%;" onclick="confirmarDistribucion()">Confirmar distribución</button>
-    </div>
+    <div style="margin-top:1rem;"><button class="btn btn-primary" style="width:100%;" onclick="confirmarDistribucion()">Confirmar distribución</button></div>
     <input type="hidden" id="mover-lote-id" />
     <input type="hidden" id="mover-cantidad-total" />
   </div>
 </div>
 
-<!-- Modal mover desde stock/listo -->
 <div class="modal-bg" id="modal-mover-stock">
   <div class="modal">
     <div class="modal-title">
@@ -257,6 +222,9 @@
 </div>
 
 <script>
+  const COLORES_MODELO = ['#e6f1fb','#eaf3de','#faeeda','#fbeaf0','#eeedfe','#fcebeb','#e1f5ee','#f1efe8'];
+  const COLORES_TEXTO  = ['#0c447c','#27500a','#633806','#72243e','#3c3489','#a32d2d','#085041','#444'];
+
   let usuario = null;
   let pedidos = [];
   let loteActual = null;
@@ -266,62 +234,77 @@
     return Math.floor((new Date() - new Date(f)) / (1000*60*60*24));
   }
 
-  // Parsea el nombre del producto Odoo → { modelo, talle, nombre }
-  function parsearProducto(nombre) {
-    // Correaje: [7.650] → modelo 650
-    const correaje = nombre.match(/\[7\.(\d+)[MNAV]?\]/);
-    if (correaje) return { modelo: correaje[1], talle: null, nombre: nombre.replace(/\[.*?\]\s*/, '').split('(')[0].trim(), tipo: 'correaje' };
-    // Medias: [MN] o [MG]
-    const medias = nombre.match(/\[(M[NG])\]/);
-    if (medias) return { modelo: medias[1], talle: null, nombre: 'Medias', tipo: 'medias' };
-    // Normal: [500.42]
-    const normal = nombre.match(/\[(\d+)\.(\d+)[MNAV]?\]/);
-    if (normal) return { modelo: normal[1], talle: normal[2], nombre: nombre.replace(/\[.*?\]\s*/, '').split('(')[0].trim(), tipo: 'normal' };
-    return { modelo: '?', talle: null, nombre: nombre, tipo: 'otro' };
+  function buildModelosHtml(fuenteTalles, notas) {
+    if (fuenteTalles?.length) {
+      const grupos = {};
+      fuenteTalles.forEach(t => {
+        const m = t.modelo || '?';
+        if (!grupos[m]) grupos[m] = { nombre: t.nombre_producto || '', talles: [] };
+        grupos[m].talles.push(t);
+      });
+      const modelosOrdenados = Object.entries(grupos).sort((a,b) => (parseInt(a[0])||0)-(parseInt(b[0])||0));
+      return modelosOrdenados.map(([modelo, data], idx) => {
+        const bg = COLORES_MODELO[idx % COLORES_MODELO.length];
+        const color = COLORES_TEXTO[idx % COLORES_TEXTO.length];
+        const ts = data.talles.sort((a,b) => (parseInt(a.talle)||0)-(parseInt(b.talle)||0));
+        return `<div style="margin-bottom:6px;border-radius:7px;padding:5px 8px;background:${bg};">
+          <div style="font-size:10px;font-weight:700;color:${color};margin-bottom:3px;">Mod. ${modelo} <span style="font-weight:400;opacity:0.7;">${data.nombre}</span></div>
+          <div style="display:flex;flex-wrap:wrap;gap:3px;">${ts.map(t => `<span style="background:rgba(255,255,255,0.7);border-radius:4px;padding:1px 6px;font-size:10px;color:#333;">${t.talle?'T'+t.talle:'—'}: ${t.cantidad}</span>`).join('')}</div>
+        </div>`;
+      }).join('');
+    }
+    if (notas) return `<div style="font-size:10px;color:#888;margin-bottom:4px;">${notas}</div>`;
+    return '';
   }
 
-  // Agrupa talles por modelo ordenados de menor a mayor
-  function agruparPorModelo(talles) {
-    const grupos = {};
-    talles.forEach(t => {
-      const modelo = t.modelo || t.talle; // fallback
-      if (!grupos[modelo]) grupos[modelo] = { nombre: t.nombre || '', talles: [] };
-      grupos[modelo].talles.push({ talle: t.talle, cantidad: t.cantidad });
+  function renderItemCard(lote, pedido, etapa) {
+    const fecha = lote.updated_at ? new Date(lote.updated_at).toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : '—';
+    const dias = diasDesde(lote.updated_at);
+    const cliente = pedido.tipo === 'stock' ? 'Stock propio' : (pedido.cliente || '—');
+    const fuenteTalles = lote.talles_detalle || pedido.talles;
+    const modelosHtml = buildModelosHtml(fuenteTalles, lote.notas);
+
+    let actionsHtml = etapa === 'empaque'
+      ? `<button class="btn btn-primary btn-sm" onclick="abrirMoverEmpaque(${lote.id},${lote.cantidad},${pedido.id})">Distribuir →</button>`
+      : `<button class="btn btn-outline btn-sm" onclick="abrirMoverStock(${lote.id},'${etapa}','${cliente.replace(/'/g,"\\'")}')">Mover</button>
+         <button class="btn btn-danger btn-sm" onclick="eliminarLoteStock(${lote.id})">Eliminar</button>`;
+
+    return `<div class="item-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+        <div class="item-cliente">${cliente}</div>
+        <span class="emp-badge ${pedido.empresa==='El Resero'?'emp-r':'emp-b'}">${pedido.empresa}</span>
+      </div>
+      <div style="font-size:11px;color:#555;margin-bottom:6px;">${pedido.producto}</div>
+      ${modelosHtml}
+      <div class="item-total">${lote.cantidad} pares · ${lote.numero}</div>
+      <div class="item-fecha">${fecha} · ${dias}d en esta etapa</div>
+      <div class="item-actions" style="margin-top:6px;">${actionsHtml}</div>
+    </div>`;
+  }
+
+  function renderStock() {
+    const empaque = [], stock = [], listo = [];
+    pedidos.forEach(p => {
+      (p.lotes||[]).forEach(l => {
+        if (l.etapa==='empaque') empaque.push({lote:l,pedido:p});
+        else if (l.etapa==='stock') stock.push({lote:l,pedido:p});
+        else if (l.etapa==='listo') listo.push({lote:l,pedido:p});
+      });
     });
-    // Ordenar modelos numéricamente
-    return Object.entries(grupos)
-      .sort((a, b) => {
-        const na = parseInt(a[0]) || 0;
-        const nb = parseInt(b[0]) || 0;
-        return na - nb;
-      })
-      .map(([modelo, data]) => ({
-        modelo,
-        nombre: data.nombre,
-        talles: data.talles.sort((a, b) => (parseInt(a.talle)||0) - (parseInt(b.talle)||0))
-      }));
+    document.getElementById('cnt-empaque').textContent = empaque.length;
+    document.getElementById('cnt-stock').textContent = stock.length;
+    document.getElementById('cnt-listo').textContent = listo.length;
+    document.getElementById('col-empaque-body').innerHTML = empaque.length===0?'<div class="empty-state">Sin lotes en empaque</div>':empaque.map(({lote,pedido})=>renderItemCard(lote,pedido,'empaque')).join('');
+    document.getElementById('col-stock-body').innerHTML = stock.length===0?'<div class="empty-state">Sin items en stock</div>':stock.map(({lote,pedido})=>renderItemCard(lote,pedido,'stock')).join('');
+    document.getElementById('col-listo-body').innerHTML = listo.length===0?'<div class="empty-state">Sin items listos</div>':listo.map(({lote,pedido})=>renderItemCard(lote,pedido,'listo')).join('');
   }
 
-  function login() {
-    const email = document.getElementById('login-email').value.trim();
-    const pass = document.getElementById('login-pass').value;
-    fetch('/api/produccion?action=login', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password: pass })
-    }).then(r => r.json()).then(data => {
-      if (data.error) { document.getElementById('login-err').style.display = 'block'; return; }
-      localStorage.setItem('gx_usuario', JSON.stringify(data.usuario));
-      iniciarConSesion(data.usuario);
-    }).catch(() => { document.getElementById('login-err').style.display = 'block'; });
-  }
-
-  function logout() {
-    localStorage.removeItem('gx_usuario');
-    usuario = null;
-    document.getElementById('login-screen').style.display = 'block';
-    document.getElementById('app-screen').style.display = 'none';
-    document.getElementById('login-email').value = '';
-    document.getElementById('login-pass').value = '';
+  function renderStats() {
+    const todosLotes = pedidos.flatMap(p=>p.lotes||[]);
+    const sumar = e => todosLotes.filter(l=>l.etapa===e).reduce((a,l)=>a+(parseInt(l.cantidad)||0),0);
+    document.getElementById('stat-empaque').textContent = sumar('empaque').toLocaleString('es-AR');
+    document.getElementById('stat-stock').textContent = sumar('stock').toLocaleString('es-AR');
+    document.getElementById('stat-listo').textContent = sumar('listo').toLocaleString('es-AR');
   }
 
   async function cargarStock() {
@@ -331,212 +314,68 @@
     renderStats();
   }
 
-  function renderStats() {
-    const todosLotes = pedidos.flatMap(p => p.lotes || []);
-    const sumar = etapa => todosLotes.filter(l => l.etapa === etapa).reduce((a,l) => a+(parseInt(l.cantidad)||0), 0);
-    document.getElementById('stat-empaque').textContent = sumar('empaque').toLocaleString('es-AR');
-    document.getElementById('stat-stock').textContent = sumar('stock').toLocaleString('es-AR');
-    document.getElementById('stat-listo').textContent = sumar('listo').toLocaleString('es-AR');
-  }
-
-  function buildModelosHtml(talles) {
-    if (!talles?.length) return '';
-    // Construir estructura agrupada desde tabla talles
-    const grupos = {};
-    talles.forEach(t => {
-      const tStr = String(t.talle);
-      let modelo, talle, nombre;
-      // Intentar interpretar talle como número de talle simple
-      modelo = 'General';
-      talle = tStr;
-      nombre = '';
-      if (!grupos[modelo]) grupos[modelo] = [];
-      grupos[modelo].push({ talle, cantidad: t.cantidad });
-    });
-    return Object.entries(grupos).map(([m, ts]) => `
-      <div class="item-modelo-row">
-        <span class="item-modelo-num">${m === 'General' ? '' : 'Mod. ' + m}</span>
-      </div>
-      <div class="item-talles-row">
-        ${ts.sort((a,b) => (parseInt(a.talle)||0)-(parseInt(b.talle)||0)).map(t => `<span class="item-talle">T${t.talle}: ${t.cantidad}</span>`).join('')}
-      </div>`).join('');
-  }
-
-  function buildModelosDesdeNotas(notas, totalPares) {
-    // notas = "T42 x2 · T43 x1 · ..." o similar
-    if (!notas) return `<div class="item-total">${totalPares} pares</div>`;
-    return `<div style="font-size:10px;color:#666;margin-bottom:4px;">${notas}</div>`;
-  }
-
-function renderItemCard(lote, pedido, etapa) {
-    const fecha = lote.updated_at ? new Date(lote.updated_at).toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : '—';
-    const dias = diasDesde(lote.updated_at);
-    const cliente = pedido.tipo === 'stock' ? 'Stock propio' : (pedido.cliente || '—');
-
-    // Agrupar talles por modelo
-   let modelosHtml = '';
-    const COLORES_MODELO = ['#e6f1fb','#eaf3de','#faeeda','#fbeaf0','#eeedfe','#fcebeb','#e1f5ee','#f1efe8'];
-    const COLORES_TEXTO = ['#0c447c','#27500a','#633806','#72243e','#3c3489','#a32d2d','#085041','#444'];
-
-    // Usar talles_detalle del lote si existe, sino usar talles del pedido
-    const fuenteTalles = lote.talles_detalle || pedido.talles;
-
-    if (fuenteTalles?.length) {
-      const grupos = {};
-      fuenteTalles.forEach(t => {
-        const m = t.modelo || '?';
-        if (!grupos[m]) grupos[m] = { nombre: t.nombre_producto || '', talles: [] };
-        grupos[m].talles.push(t);
-      });
-      const modelosOrdenados = Object.entries(grupos).sort((a,b) => (parseInt(a[0])||0)-(parseInt(b[0])||0));
-      modelosHtml = modelosOrdenados.map(([modelo, data], idx) => {
-        const bg = COLORES_MODELO[idx % COLORES_MODELO.length];
-        const color = COLORES_TEXTO[idx % COLORES_TEXTO.length];
-        const tallesOrdenados = data.talles.sort((a,b) => (parseInt(a.talle)||0)-(parseInt(b.talle)||0));
-        return `
-          <div style="margin-bottom:6px;border-radius:7px;padding:5px 8px;background:${bg};">
-            <div style="font-size:10px;font-weight:700;color:${color};margin-bottom:3px;">Mod. ${modelo} <span style="font-weight:400;opacity:0.7;">${data.nombre}</span></div>
-            <div style="display:flex;flex-wrap:wrap;gap:3px;">
-              ${tallesOrdenados.map(t => `<span style="background:rgba(255,255,255,0.7);border-radius:4px;padding:1px 6px;font-size:10px;color:#333;">${t.talle?'T'+t.talle:'—'}: ${t.cantidad}</span>`).join('')}
-            </div>
-          </div>`;
-      }).join('');
-    } else if (lote.notas) {
-      modelosHtml = `<div style="font-size:10px;color:#888;margin-bottom:4px;">${lote.notas}</div>`;
-    }
-      const modelosOrdenados = Object.entries(grupos).sort((a,b) => (parseInt(a[0])||0)-(parseInt(b[0])||0));
-      modelosHtml = modelosOrdenados.map(([modelo, data], idx) => {
-        const bg = COLORES_MODELO[idx % COLORES_MODELO.length];
-        const color = COLORES_TEXTO[idx % COLORES_TEXTO.length];
-        const tallesOrdenados = data.talles.sort((a,b) => (parseInt(a.talle)||0)-(parseInt(b.talle)||0));
-        return `
-          <div style="margin-bottom:6px;border-radius:7px;padding:5px 8px;background:${bg};">
-            <div style="font-size:10px;font-weight:700;color:${color};margin-bottom:3px;">Mod. ${modelo} <span style="font-weight:400;opacity:0.7;">${data.nombre}</span></div>
-            <div style="display:flex;flex-wrap:wrap;gap:3px;">
-              ${tallesOrdenados.map(t => `<span style="background:rgba(255,255,255,0.7);border-radius:4px;padding:1px 6px;font-size:10px;color:#333;">${t.talle ? 'T'+t.talle : '—'}: ${t.cantidad}</span>`).join('')}
-            </div>
-          </div>`;
-      }).join('');
-    } else if (lote.notas) {
-      modelosHtml = `<div style="font-size:10px;color:#888;margin-bottom:4px;">${lote.notas}</div>`;
-    }
-
-    let actionsHtml = '';
-    if (etapa === 'empaque') {
-      actionsHtml = `<button class="btn btn-primary btn-sm" onclick="abrirMoverEmpaque(${lote.id}, ${lote.cantidad}, ${pedido.id})">Distribuir →</button>`;
-    } else {
-      actionsHtml = `
-        <button class="btn btn-outline btn-sm" onclick="abrirMoverStock(${lote.id}, '${etapa}', '${cliente.replace(/'/g,"\\'")}')">Mover</button>
-        <button class="btn btn-danger btn-sm" onclick="eliminarLoteStock(${lote.id})">Eliminar</button>`;
-    }
-
-    return `
-      <div class="item-card">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
-          <div class="item-cliente">${cliente}</div>
-          <span class="emp-badge ${pedido.empresa === 'El Resero' ? 'emp-r' : 'emp-b'}">${pedido.empresa}</span>
-        </div>
-        <div style="font-size:11px;color:#555;margin-bottom:6px;">${pedido.producto}</div>
-        ${modelosHtml}
-        <div class="item-total">${lote.cantidad} pares · ${lote.numero}</div>
-        <div class="item-fecha">${fecha} · ${dias}d en esta etapa</div>
-        <div class="item-actions" style="margin-top:6px;">${actionsHtml}</div>
-      </div>`;
-  }   
-
-  function renderStock() {
-    const empaque = [], stock = [], listo = [];
-    pedidos.forEach(p => {
-      (p.lotes || []).forEach(l => {
-        if (l.etapa === 'empaque') empaque.push({ lote: l, pedido: p });
-        else if (l.etapa === 'stock') stock.push({ lote: l, pedido: p });
-        else if (l.etapa === 'listo') listo.push({ lote: l, pedido: p });
-      });
-    });
-    document.getElementById('cnt-empaque').textContent = empaque.length;
-    document.getElementById('cnt-stock').textContent = stock.length;
-    document.getElementById('cnt-listo').textContent = listo.length;
-    document.getElementById('col-empaque-body').innerHTML = empaque.length === 0 ? '<div class="empty-state">Sin lotes en empaque</div>' : empaque.map(({lote,pedido}) => renderItemCard(lote,pedido,'empaque')).join('');
-    document.getElementById('col-stock-body').innerHTML = stock.length === 0 ? '<div class="empty-state">Sin items en stock</div>' : stock.map(({lote,pedido}) => renderItemCard(lote,pedido,'stock')).join('');
-    document.getElementById('col-listo-body').innerHTML = listo.length === 0 ? '<div class="empty-state">Sin items listos</div>' : listo.map(({lote,pedido}) => renderItemCard(lote,pedido,'listo')).join('');
-  }
-
- function abrirMoverEmpaque(loteId, cantidad, pedidoId) {
-    const pedido = pedidos.find(p => p.id === pedidoId);
-    const lote = pedido?.lotes?.find(l => l.id === loteId);
-    loteActual = { loteId, cantidad, pedido, lote };
+  function abrirMoverEmpaque(loteId, cantidad, pedidoId) {
+    const pedido = pedidos.find(p=>p.id===pedidoId);
+    loteActual = { loteId, cantidad, pedido };
     document.getElementById('mover-lote-id').value = loteId;
     document.getElementById('mover-cantidad-total').value = cantidad;
     document.getElementById('mover-titulo').textContent = 'Distribuir desde Empaque';
-    const cliente = pedido?.tipo === 'stock' ? 'Stock propio' : (pedido?.cliente || '—');
+    const cliente = pedido?.tipo==='stock'?'Stock propio':(pedido?.cliente||'—');
     document.getElementById('mover-sub').textContent = `${cliente} · ${cantidad} pares`;
 
-    const talles = pedido?.talles || [];
+    const talles = pedido?.talles||[];
     const tbody = document.getElementById('lineas-body');
 
-    if (talles.length > 0) {
-      // Agrupar por modelo usando t.modelo
+    if (talles.length>0) {
       const grupos = {};
       talles.forEach(t => {
-        const modelo = t.modelo || '?';
-        const nombre = t.nombre_producto || '';
-        if (!grupos[modelo]) grupos[modelo] = { nombre, talles: [] };
-        grupos[modelo].talles.push({ talle: t.talle || null, cantidad: t.cantidad });
+        const modelo = t.modelo||'?';
+        if (!grupos[modelo]) grupos[modelo]={nombre:t.nombre_producto||'',talles:[]};
+        grupos[modelo].talles.push({talle:t.talle||null,cantidad:t.cantidad});
       });
-
-      // Ordenar modelos de menor a mayor
-      const modelosOrdenados = Object.entries(grupos).sort((a, b) => {
-        return (parseInt(a[0]) || 0) - (parseInt(b[0]) || 0);
-      });
-
-      // Construir filas — una por modelo+talle
+      const modelosOrdenados = Object.entries(grupos).sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0));
       const filas = [];
-      modelosOrdenados.forEach(([modelo, data]) => {
-        const tallesOrdenados = data.talles.sort((a, b) => (parseInt(a.talle)||0) - (parseInt(b.talle)||0));
-        tallesOrdenados.forEach(t => {
-          filas.push({ modelo, nombre: data.nombre, talle: t.talle, cantidad: t.cantidad });
+      modelosOrdenados.forEach(([modelo,data])=>{
+        data.talles.sort((a,b)=>(parseInt(a.talle)||0)-(parseInt(b.talle)||0)).forEach(t=>{
+          filas.push({modelo,nombre:data.nombre,talle:t.talle,cantidad:t.cantidad});
         });
       });
-
-      window._lineasCantidades = filas.map(f => f.cantidad);
-
-      tbody.innerHTML = filas.map((f, i) => `
+      window._lineasCantidades = filas.map(f=>f.cantidad);
+      window._lineasFilas = filas;
+      tbody.innerHTML = filas.map((f,i)=>`
         <tr>
           <td class="modelo-label" title="${f.nombre}">${f.modelo}</td>
-          <td class="talle-label">${f.talle ? 'T' + f.talle : '—'}</td>
+          <td class="talle-label">${f.talle?'T'+f.talle:'—'}</td>
           <td class="cant-label">${f.cantidad}</td>
-          <td><input type="number" class="col-stock-input" id="ls-${i}" min="0" max="${f.cantidad}" value="0" oninput="actualizarTotalesLineas()" data-max="${f.cantidad}" /></td>
-          <td><input type="number" class="col-listo-input" id="ll-${i}" min="0" max="${f.cantidad}" value="0" oninput="actualizarTotalesLineas()" data-max="${f.cantidad}" /></td>
+          <td><input type="number" class="col-stock-input" id="ls-${i}" min="0" max="${f.cantidad}" value="0" oninput="actualizarTotalesLineas()" /></td>
+          <td><input type="number" class="col-listo-input" id="ll-${i}" min="0" max="${f.cantidad}" value="0" oninput="actualizarTotalesLineas()" /></td>
         </tr>`).join('');
     } else {
       window._lineasCantidades = [cantidad];
-      tbody.innerHTML = `
-        <tr>
-          <td class="modelo-label">—</td>
-          <td class="talle-label">—</td>
-          <td class="cant-label">${cantidad}</td>
-          <td><input type="number" class="col-stock-input" id="ls-0" min="0" max="${cantidad}" value="0" oninput="actualizarTotalesLineas()" data-max="${cantidad}" /></td>
-          <td><input type="number" class="col-listo-input" id="ll-0" min="0" max="${cantidad}" value="0" oninput="actualizarTotalesLineas()" data-max="${cantidad}" /></td>
-        </tr>`;
+      window._lineasFilas = [{modelo:'—',talle:null,cantidad,nombre:''}];
+      tbody.innerHTML = `<tr>
+        <td class="modelo-label">—</td><td class="talle-label">—</td><td class="cant-label">${cantidad}</td>
+        <td><input type="number" class="col-stock-input" id="ls-0" min="0" max="${cantidad}" value="0" oninput="actualizarTotalesLineas()" /></td>
+        <td><input type="number" class="col-listo-input" id="ll-0" min="0" max="${cantidad}" value="0" oninput="actualizarTotalesLineas()" /></td>
+      </tr>`;
     }
-
     actualizarTotalesLineas();
     document.getElementById('modal-mover').classList.add('open');
   }
+
   function actualizarTotalesLineas() {
-    let totalStock = 0, totalListo = 0, hayError = false;
-    const n = window._lineasCantidades?.length || 0;
-    for (let i = 0; i < n; i++) {
-      const s = parseInt(document.getElementById('ls-' + i)?.value) || 0;
-      const l = parseInt(document.getElementById('ll-' + i)?.value) || 0;
-      const max = window._lineasCantidades[i] || 0;
-      totalStock += s;
-      totalListo += l;
-      if (s + l > max) hayError = true;
+    let ts=0, tl=0, err=false;
+    const n = window._lineasCantidades?.length||0;
+    for (let i=0;i<n;i++) {
+      const s=parseInt(document.getElementById('ls-'+i)?.value)||0;
+      const l=parseInt(document.getElementById('ll-'+i)?.value)||0;
+      const max=window._lineasCantidades[i]||0;
+      ts+=s; tl+=l;
+      if (s+l>max) err=true;
     }
-    document.getElementById('total-stock-val').textContent = totalStock;
-    document.getElementById('total-listo-val').textContent = totalListo;
-    document.getElementById('total-err').style.display = hayError ? 'block' : 'none';
+    document.getElementById('total-stock-val').textContent=ts;
+    document.getElementById('total-listo-val').textContent=tl;
+    document.getElementById('total-err').style.display=err?'block':'none';
   }
 
   async function seleccionarDestinoTotal(destino) {
@@ -547,116 +386,109 @@ function renderItemCard(lote, pedido, etapa) {
 
   async function confirmarDistribucion() {
     const loteId = parseInt(document.getElementById('mover-lote-id').value);
-    const cantTotal = parseInt(document.getElementById('mover-cantidad-total').value) || 0;
-    const n = window._lineasCantidades?.length || 0;
-    const filas = window._lineasFilas || [];
+    const cantTotal = parseInt(document.getElementById('mover-cantidad-total').value)||0;
+    const n = window._lineasCantidades?.length||0;
+    const filas = window._lineasFilas||[];
+    let ts=0, tl=0, err=false;
+    const tallesStock=[], tallesListo=[];
 
-    let totalStock = 0, totalListo = 0, hayError = false;
-    const tallesStock = [], tallesListo = [];
-
-    for (let i = 0; i < n; i++) {
-      const s = parseInt(document.getElementById('ls-' + i)?.value) || 0;
-      const l = parseInt(document.getElementById('ll-' + i)?.value) || 0;
-      const max = window._lineasCantidades[i] || 0;
-      const fila = filas[i];
-      totalStock += s;
-      totalListo += l;
-      if (s + l > max) hayError = true;
-      if (s > 0) tallesStock.push({ modelo: fila.modelo, talle: fila.talle, cantidad: s, nombre_producto: fila.nombre });
-      if (l > 0) tallesListo.push({ modelo: fila.modelo, talle: fila.talle, cantidad: l, nombre_producto: fila.nombre });
+    for (let i=0;i<n;i++) {
+      const s=parseInt(document.getElementById('ls-'+i)?.value)||0;
+      const l=parseInt(document.getElementById('ll-'+i)?.value)||0;
+      const max=window._lineasCantidades[i]||0;
+      const f=filas[i];
+      ts+=s; tl+=l;
+      if (s+l>max) err=true;
+      if (s>0) tallesStock.push({modelo:f.modelo,talle:f.talle,cantidad:s,nombre_producto:f.nombre});
+      if (l>0) tallesListo.push({modelo:f.modelo,talle:f.talle,cantidad:l,nombre_producto:f.nombre});
     }
 
-    if (hayError) return alert('Alguna línea supera la cantidad disponible');
-    if (totalStock + totalListo === 0) return alert('Ingresá al menos una cantidad');
-    if (totalStock + totalListo > cantTotal) return alert('El total supera los pares disponibles');
+    if (err) return alert('Alguna línea supera la cantidad disponible');
+    if (ts+tl===0) return alert('Ingresá al menos una cantidad');
+    if (ts+tl>cantTotal) return alert('El total supera los pares disponibles');
 
-    if (totalStock > 0 && totalListo > 0) {
+    if (ts>0 && tl>0) {
       const res = await fetch('/api/produccion?action=dividir-lote', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          lote_id: loteId,
-          cantidad_nueva: totalListo,
-          usuario: usuario.nombre,
-          notas: 'Split empaque: ' + totalListo + ' a Listo',
-          talles_nuevo: tallesListo,
-          talles_original: tallesStock
-        })
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({lote_id:loteId,cantidad_nueva:tl,usuario:usuario.nombre,notas:'Split empaque: '+tl+' a Listo',talles_nuevo:tallesListo,talles_original:tallesStock})
       });
       const data = await res.json();
-      if (data.error) return alert('Error: ' + data.error);
-      await fetch('/api/produccion?action=etapa-lote', {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lote_id: data.nuevoLote.id, etapa: 'listo', usuario: usuario.nombre })
-      });
-      await fetch('/api/produccion?action=etapa-lote', {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lote_id: loteId, etapa: 'stock', usuario: usuario.nombre })
-      });
-    } else if (totalStock > 0) {
-      await moverLote(loteId, 'stock');
+      if (data.error) return alert('Error: '+data.error);
+      await fetch('/api/produccion?action=etapa-lote',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({lote_id:data.nuevoLote.id,etapa:'listo',usuario:usuario.nombre})});
+      await fetch('/api/produccion?action=etapa-lote',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({lote_id:loteId,etapa:'stock',usuario:usuario.nombre})});
+    } else if (ts>0) {
+      await moverLote(loteId,'stock');
     } else {
-      await moverLote(loteId, 'listo');
+      await moverLote(loteId,'listo');
     }
-
     cerrarModal('modal-mover');
     cargarStock();
   }
 
   async function moverLote(loteId, etapa) {
-    await fetch('/api/produccion?action=etapa-lote', {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lote_id: loteId, etapa, usuario: usuario.nombre })
-    });
+    await fetch('/api/produccion?action=etapa-lote',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({lote_id:loteId,etapa,usuario:usuario.nombre})});
     cargarStock();
   }
 
   function abrirMoverStock(loteId, etapaActual, cliente) {
     document.getElementById('mover-stock-lote-id').value = loteId;
-    document.getElementById('mover-stock-titulo').textContent = 'Mover — ' + cliente;
-    document.getElementById('mover-stock-info').textContent = etapaActual === 'stock' ? 'Actualmente en Stock' : 'Actualmente en Listo para entregar';
-    document.getElementById('mover-stock-destino').value = etapaActual === 'stock' ? 'listo' : 'stock';
+    document.getElementById('mover-stock-titulo').textContent = 'Mover — '+cliente;
+    document.getElementById('mover-stock-info').textContent = etapaActual==='stock'?'Actualmente en Stock':'Actualmente en Listo para entregar';
+    document.getElementById('mover-stock-destino').value = etapaActual==='stock'?'listo':'stock';
     document.getElementById('modal-mover-stock').classList.add('open');
   }
 
   async function confirmarMoverStock() {
     const loteId = parseInt(document.getElementById('mover-stock-lote-id').value);
     const destino = document.getElementById('mover-stock-destino').value;
-    await fetch('/api/produccion?action=etapa-lote', {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lote_id: loteId, etapa: destino, usuario: usuario.nombre })
-    });
+    await fetch('/api/produccion?action=etapa-lote',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({lote_id:loteId,etapa:destino,usuario:usuario.nombre})});
     cerrarModal('modal-mover-stock');
     cargarStock();
   }
 
-async function eliminarLoteStock(loteId) {
-    if (!confirm('¿Eliminar este item? Esta acción no se puede deshacer.')) return;
-    await fetch('/api/produccion?action=eliminar-lote', {
-      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: loteId })
-    });
+  async function eliminarLoteStock(loteId) {
+    if (!confirm('¿Eliminar este item?')) return;
+    await fetch('/api/produccion?action=eliminar-lote',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:loteId})});
     cargarStock();
   }
-  
-  function cerrarModal(id) {
-    document.getElementById(id).classList.remove('open');
+
+  function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  function login() {
+    const email = document.getElementById('login-email').value.trim();
+    const pass = document.getElementById('login-pass').value;
+    fetch('/api/produccion?action=login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})})
+      .then(r=>r.json()).then(data=>{
+        if (data.error){document.getElementById('login-err').style.display='block';return;}
+        localStorage.setItem('gx_usuario',JSON.stringify(data.usuario));
+        iniciarConSesion(data.usuario);
+      }).catch(()=>{document.getElementById('login-err').style.display='block';});
+  }
+
+  function logout() {
+    localStorage.removeItem('gx_usuario');
+    usuario=null;
+    document.getElementById('login-screen').style.display='block';
+    document.getElementById('app-screen').style.display='none';
+    document.getElementById('login-email').value='';
+    document.getElementById('login-pass').value='';
   }
 
   function leerSesion() {
-    try { const s = localStorage.getItem('gx_usuario'); return s ? JSON.parse(s) : null; } catch { return null; }
+    try{const s=localStorage.getItem('gx_usuario');return s?JSON.parse(s):null;}catch{return null;}
   }
 
   function iniciarConSesion(u) {
-    usuario = u;
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app-screen').style.display = 'block';
-    if (document.getElementById('user-label')) document.getElementById('user-label').textContent = u.nombre;
+    usuario=u;
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app-screen').style.display='block';
+    if(document.getElementById('user-label')) document.getElementById('user-label').textContent=u.nombre;
     cargarStock();
   }
 
-  document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
-  const sesionGuardada = leerSesion();
-  if (sesionGuardada) iniciarConSesion(sesionGuardada);
+  document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+  const sesionGuardada=leerSesion();
+  if(sesionGuardada) iniciarConSesion(sesionGuardada);
 </script>
 </body>
 </html>
