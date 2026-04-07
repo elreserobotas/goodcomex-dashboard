@@ -190,7 +190,7 @@ return res.json({ ok: true, usuario: { id: u.id, nombre: u.nombre, email: u.emai
       await sql`INSERT INTO historial_lotes (lote_id, pedido_id, etapa_desde, etapa_hasta, usuario, aparador, notas) VALUES (${lote_id}, ${actual[0].pedido_id}, ${actual[0].etapa}, ${etapa}, ${usuario}, ${aparador||null}, ${notas||null})`;
       const todoLotes = await sql`SELECT etapa FROM lotes WHERE pedido_id=${actual[0].pedido_id}`;
       const etapas = todoLotes.map(l => l.etapa);
-      const etapaOrden = ['recibido','corte','deposito_corte','deposito','aparado','armado','fabrica','empaque','stock','listo'];
+      const etapaOrden = ['recibido','corte','deposito_corte','deposito','aparado','armado','fabrica','cosedor','empaque','stock','listo'];
       const minEtapa = etapas.reduce((min, e) => etapaOrden.indexOf(e) < etapaOrden.indexOf(min) ? e : min, etapas[0]);
       await sql`UPDATE pedidos SET etapa=${minEtapa}, updated_at=NOW() WHERE id=${actual[0].pedido_id}`;
       return res.json({ ok: true });
