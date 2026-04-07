@@ -447,6 +447,10 @@
   async function cargarExtra(tipo) {
     const desde = document.getElementById('desde').value;
     const hasta = document.getElementById('hasta').value;
+    if (!desde || !hasta) {
+  extrasLoaded[tipo] = false;
+  return;
+}
     extrasLoaded[tipo] = true;
     try {
       const res = await fetch(`/api/odoo-extra?desde=${desde}&hasta=${hasta}&tipo=${tipo}`);
