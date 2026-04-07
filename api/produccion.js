@@ -127,7 +127,7 @@ return res.json({ ok: true, usuario: { id: u.id, nombre: u.nombre, email: u.emai
       for (const p of pedidos) {
         p.talles = await sql`SELECT * FROM talles WHERE pedido_id=${p.id} ORDER BY talle`;
         p.historial = await sql`SELECT * FROM historial WHERE pedido_id=${p.id} ORDER BY fecha DESC LIMIT 10`;
-        p.lotes = await sql`SELECT * FROM lotes WHERE pedido_id=${p.id} ORDER BY created_at ASC`;
+        p.lotes = await sql`SELECT id, pedido_id, numero, cantidad, etapa, aparador, notas, talles_detalle, created_at, updated_at FROM lotes WHERE pedido_id=${p.id} ORDER BY created_at ASC`;
         for (const l of p.lotes) {
           l.historial = await sql`SELECT * FROM historial_lotes WHERE lote_id=${l.id} ORDER BY fecha DESC LIMIT 5`;
         }
@@ -203,23 +203,27 @@ return res.json({ ok: true, usuario: { id: u.id, nombre: u.nombre, email: u.emai
     }
 
     if (req.method === 'POST' && action === 'dividir-lote') {
-      const { lote_id, cantidad_nueva, usuario, notas } = req.body;
-      const lote = await sql`SELECT * FROM lotes WHERE id=${lote_id}`;
-      if (!lote.length) return res.status(404).json({ error: 'Lote no encontrado' });
-      const l = lote[0];
-      if (cantidad_nueva >= l.cantidad) return res.status(400).json({ error: 'La cantidad nueva debe ser menor al lote original' });
-      await sql`UPDATE lotes SET cantidad=${l.cantidad - cantidad_nueva}, updated_at=NOW() WHERE id=${lote_id}`;
-      const existentes = await sql`SELECT COUNT(*) FROM lotes WHERE pedido_id=${l.pedido_id}`;
-      const num = parseInt(existentes[0].count) + 1;
-      const pedido = await sql`SELECT numero FROM pedidos WHERE id=${l.pedido_id}`;
-      const nuevoLote = await sql`
-        INSERT INTO lotes (pedido_id, numero, cantidad, etapa, aparador, notas)
-        VALUES (${l.pedido_id}, ${pedido[0].numero + '-L' + num}, ${cantidad_nueva}, ${l.etapa}, ${l.aparador||null}, ${notas||null})
-        RETURNING *
-      `;
-      await sql`INSERT INTO historial_lotes (lote_id, pedido_id, etapa_desde, etapa_hasta, usuario, notas) VALUES (${nuevoLote[0].id}, ${l.pedido_id}, null, ${l.etapa}, ${usuario}, ${'Dividido de ' + l.numero})`;
-      return res.json({ ok: true, nuevoLote: nuevoLote[0] });
-    }
+  const { lote_id, cantidad_nueva, usuario, notas, talles_nuevo, talles_original } = req.body;
+  const lote = await sql`SELECT * FROM lotes WHERE id=${lote_id}`;
+  if (!lote.length) return res.status(404).json({ error: 'Lote no encontrado' });
+  const l = lote[0];
+  if (cantidad_nueva >= l.cantidad) return res.status(400).json({ error: 'La cantidad nueva debe ser menor al lote original' });
+  
+  const tallesNuevoJson = talles_nuevo ? JSON.stringify(talles_nuevo) : null;
+  const tallesOriginalJson = talles_original ? JSON.stringify(talles_original) : null;
+  
+  await sql`UPDATE lotes SET cantidad=${l.cantidad - cantidad_nueva}, talles_detalle=${tallesOriginalJson}, updated_at=NOW() WHERE id=${lote_id}`;
+  const existentes = await sql`SELECT COUNT(*) FROM lotes WHERE pedido_id=${l.pedido_id}`;
+  const num = parseInt(existentes[0].count) + 1;
+  const pedido = await sql`SELECT numero FROM pedidos WHERE id=${l.pedido_id}`;
+  const nuevoLote = await sql`
+    INSERT INTO lotes (pedido_id, numero, cantidad, etapa, aparador, notas, talles_detalle)
+    VALUES (${l.pedido_id}, ${pedido[0].numero + '-L' + num}, ${cantidad_nueva}, ${l.etapa}, ${l.aparador||null}, ${notas||null}, ${tallesNuevoJson})
+    RETURNING *
+  `;
+  await sql`INSERT INTO historial_lotes (lote_id, pedido_id, etapa_desde, etapa_hasta, usuario, notas) VALUES (${nuevoLote[0].id}, ${l.pedido_id}, null, ${l.etapa}, ${usuario}, ${'Dividido de ' + l.numero})`;
+  return res.json({ ok: true, nuevoLote: nuevoLote[0] });
+}
 
     if (req.method === 'PUT' && action === 'etapa') {
       const { id, etapa, aparador, usuario, notas } = req.body;
