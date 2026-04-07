@@ -505,7 +505,7 @@ function renderKanbanCard(p, etapaFiltro) {
         </div>
         ${monto ? `<div class="pedido-monto">${monto}</div>` : ''}
       </div>
-      <div class="lotes-wrap" id="lotes-${p.id}-${etapaFiltro}">
+      <div class="lotes-wrap open" id="lotes-${p.id}-${etapaFiltro}">
         ${lotesMostrar.map(l => renderLoteCard(l, p)).join('')}
         ${puedeEditar ? `<button class="add-lote-btn" onclick="abrirNuevoLote(${p.id})">+ agregar lote</button>` : ''}
       </div>
