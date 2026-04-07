@@ -76,6 +76,25 @@ function parsePickings(xml) {
   return results;
 }
 
+function parseMoves(xml) {
+  const results = [];
+  const memberRegex = /<struct>([\s\S]*?)<\/struct>/g;
+  let struct;
+  while ((struct = memberRegex.exec(xml)) !== null) {
+    const pickingMatch = struct[1].match(/<name>picking_id<\/name>\s*<value><array><data>\s*<value><int>(\d+)<\/int>/);
+    const productMatch = struct[1].match(/<name>product_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
+    const qtyMatch = struct[1].match(/<name>product_uom_qty<\/name>\s*<value><double>([\d.]+)<\/double>/);
+    if (pickingMatch && productMatch) {
+      results.push({
+        picking_id: parseInt(pickingMatch[1]),
+        product: productMatch[1],
+        qty: parseFloat(qtyMatch?.[1] || 0)
+      });
+    }
+  }
+  return results;
+}
+
 function parsearTallesDeProductos(productos) {
   const talles = [];
   let total = 0;
@@ -114,7 +133,6 @@ module.exports = async function handler(req, res) {
     ]);
 
     const pickings = [...parsePickings(xmlP1), ...parsePickings(xmlP2)];
-
     if (!pickings.length) return res.json({ importados: 0, omitidos: 0 });
 
     const movesXml = await odooCall(uid, 'stock.move',
@@ -132,47 +150,46 @@ module.exports = async function handler(req, res) {
 
       const empresa = p.company_id === 1 ? 'El Resero' : 'Empresa B';
       const productos = moves.filter(m => m.picking_id === p.id);
-      const totalPares = productos.reduce((a, m) => a + m.qty, 0);
-      const productoNombre = productos.length === 1
-      ? productos[0].product
-      : productos.map(pr => pr.product.replace(/\[.*?\]\s*/, '').split('(')[0].trim()).filter((v,i,a) => a.indexOf(v) === i).join(', ');
+      const { talles, total } = parsearTallesDeProductos(productos);
 
-     const empresa = p.company_id === 1 ? 'El Resero' : 'Empresa B';
-const productos = moves.filter(m => m.picking_id === p.id);
-const { talles, total } = parsearTallesDeProductos(productos);
+      const modelosUnicos = [...new Set(productos.map(pr => {
+        const m = pr.product.match(/\[(\d+)\./);
+        return m ? m[1] : pr.product;
+      }))];
 
-const modelosUnicos = [...new Set(productos.map(pr => {
-  const m = pr.product.match(/\[(\d+)\./);
-  return m ? m[1] : pr.product;
-}))];
+      const productoNombre = modelosUnicos.length === 1
+        ? productos[0].product.replace(/\[.*?\]\s*/, '').split('(')[0].trim()
+        : 'Modelos: ' + modelosUnicos.join(', ');
 
-const productoNombre = modelosUnicos.length === 1
-  ? productos[0].product.replace(/\[.*?\]\s*/, '').split('(')[0].trim()
-  : 'Modelos: ' + modelosUnicos.join(', ');
+      const notasDetalle = productos.map(pr => {
+        const m = pr.product.match(/\[(\d+)\.(\d+)[MNAV]?\]/);
+        return m ? `T${m[2]} x${Math.round(pr.qty)}` : pr.product + ' x' + pr.qty;
+      }).join(' · ');
 
-const notasDetalle = productos.map(pr => {
-  const m = pr.product.match(/\[(\d+)\.(\d+)[MNAV]?\]/);
-  return m ? `T${m[2]} x${Math.round(pr.qty)}` : pr.product + ' x' + pr.qty;
-}).join(' · ');
+      const result = await sql`
+        INSERT INTO pedidos (numero, cliente, producto, tipo, cantidad_pedida, cantidad_stock, empresa, notas, monto_total)
+        VALUES (${p.name}, ${p.partner}, ${productoNombre}, 'cliente', ${total}, 0, ${empresa}, ${notasDetalle}, 0)
+        RETURNING id
+      `;
+      const pedidoId = result[0].id;
 
-const result = await sql`
-  INSERT INTO pedidos (numero, cliente, producto, tipo, cantidad_pedida, cantidad_stock, empresa, notas, monto_total)
-  VALUES (${p.name}, ${p.partner}, ${productoNombre}, 'cliente', ${total}, 0, ${empresa}, ${notasDetalle}, 0)
-  RETURNING id
-`;
-const pedidoId = result[0].id;
+      const lote = await sql`
+        INSERT INTO lotes (pedido_id, numero, cantidad, etapa)
+        VALUES (${pedidoId}, ${p.name + '-L1'}, ${total}, 'recibido')
+        RETURNING id
+      `;
 
-if (talles.length > 0) {
-  for (const t of talles) {
-    await sql`INSERT INTO talles (pedido_id, talle, cantidad) VALUES (${pedidoId}, ${t.talle}, ${t.cantidad})`;
-  }
-}
+      if (talles.length > 0) {
+        for (const t of talles) {
+          await sql`INSERT INTO talles (pedido_id, talle, cantidad) VALUES (${pedidoId}, ${t.talle}, ${t.cantidad})`;
+        }
+      }
 
-await sql`INSERT INTO historial_lotes (lote_id, pedido_id, etapa_desde, etapa_hasta, usuario) 
-  SELECT id, ${pedidoId}, null, 'recibido', 'Sistema Odoo' FROM lotes WHERE pedido_id=${pedidoId} LIMIT 1`;
-await sql`INSERT INTO historial (pedido_id, etapa_desde, etapa_hasta, usuario) VALUES (${pedidoId}, null, 'recibido', 'Sistema Odoo')`;
+      await sql`INSERT INTO historial (pedido_id, etapa_desde, etapa_hasta, usuario) VALUES (${pedidoId}, null, 'recibido', 'Sistema Odoo')`;
+      await sql`INSERT INTO historial_lotes (lote_id, pedido_id, etapa_desde, etapa_hasta, usuario) VALUES (${lote[0].id}, ${pedidoId}, null, 'recibido', 'Sistema Odoo')`;
 
-importados++;   
+      importados++;
+    }
 
     res.json({ importados, omitidos });
 
