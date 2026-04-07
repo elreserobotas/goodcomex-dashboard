@@ -202,18 +202,38 @@ return res.json({ ok: true, usuario: { id: u.id, nombre: u.nombre, email: u.emai
       return res.json({ ok: true });
     }
 
-    if (req.method === 'POST' && action === 'dividir-lote') {
+  if (req.method === 'POST' && action === 'dividir-lote') {
   const { lote_id, cantidad_nueva, usuario, notas, talles_nuevo, talles_original } = req.body;
   const lote = await sql`SELECT * FROM lotes WHERE id=${lote_id}`;
   if (!lote.length) return res.status(404).json({ error: 'Lote no encontrado' });
   const l = lote[0];
   if (cantidad_nueva > l.cantidad) return res.status(400).json({ error: 'La cantidad nueva supera el lote original' });
-if (cantidad_nueva === l.cantidad) {
-  // Mover todo al nuevo lote — actualizar talles_detalle y devolver el mismo lote
+
   const tallesNuevoJson = talles_nuevo ? JSON.stringify(talles_nuevo) : null;
-  await sql`UPDATE lotes SET talles_detalle=${tallesNuevoJson}, updated_at=NOW() WHERE id=${lote_id}`;
-  return res.json({ ok: true, nuevoLote: lote[0] });
-}
+  const tallesOriginalJson = talles_original ? JSON.stringify(talles_original) : null;
+
+  if (cantidad_nueva === l.cantidad) {
+    // Todo va al nuevo lote — actualizar talles del lote actual y devolver
+    await sql`UPDATE lotes SET talles_detalle=${tallesNuevoJson}, updated_at=NOW() WHERE id=${lote_id}`;
+    return res.json({ ok: true, nuevoLote: l });
+  }
+
+  // Actualizar lote original con sus talles restantes
+  await sql`UPDATE lotes SET cantidad=${l.cantidad - cantidad_nueva}, talles_detalle=${tallesOriginalJson}, updated_at=NOW() WHERE id=${lote_id}`;
+
+  // Crear nuevo lote
+  const existentes = await sql`SELECT COUNT(*) FROM lotes WHERE pedido_id=${l.pedido_id}`;
+  const num = parseInt(existentes[0].count) + 1;
+  const pedido = await sql`SELECT numero FROM pedidos WHERE id=${l.pedido_id}`;
+  const nuevoLote = await sql`
+    INSERT INTO lotes (pedido_id, numero, cantidad, etapa, aparador, notas, talles_detalle)
+    VALUES (${l.pedido_id}, ${pedido[0].numero + '-L' + num}, ${cantidad_nueva}, ${l.etapa}, ${l.aparador||null}, ${notas||null}, ${tallesNuevoJson})
+    RETURNING *
+  `;
+  await sql`INSERT INTO historial_lotes (lote_id, pedido_id, etapa_desde, etapa_hasta, usuario, notas) 
+    VALUES (${nuevoLote[0].id}, ${l.pedido_id}, null, ${l.etapa}, ${usuario}, ${'Dividido de ' + l.numero})`;
+  return res.json({ ok: true, nuevoLote: nuevoLote[0] });
+}  
       
   const tallesNuevoJson = talles_nuevo ? JSON.stringify(talles_nuevo) : null;
   const tallesOriginalJson = talles_original ? JSON.stringify(talles_original) : null;
