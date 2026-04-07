@@ -374,17 +374,36 @@ function renderItemCard(lote, pedido, etapa) {
     const cliente = pedido.tipo === 'stock' ? 'Stock propio' : (pedido.cliente || '—');
 
     // Agrupar talles por modelo
-    let modelosHtml = '';
+   let modelosHtml = '';
     const COLORES_MODELO = ['#e6f1fb','#eaf3de','#faeeda','#fbeaf0','#eeedfe','#fcebeb','#e1f5ee','#f1efe8'];
     const COLORES_TEXTO = ['#0c447c','#27500a','#633806','#72243e','#3c3489','#a32d2d','#085041','#444'];
 
-    if (pedido.talles?.length) {
+    // Usar talles_detalle del lote si existe, sino usar talles del pedido
+    const fuenteTalles = lote.talles_detalle || pedido.talles;
+
+    if (fuenteTalles?.length) {
       const grupos = {};
-      pedido.talles.forEach(t => {
+      fuenteTalles.forEach(t => {
         const m = t.modelo || '?';
         if (!grupos[m]) grupos[m] = { nombre: t.nombre_producto || '', talles: [] };
         grupos[m].talles.push(t);
       });
+      const modelosOrdenados = Object.entries(grupos).sort((a,b) => (parseInt(a[0])||0)-(parseInt(b[0])||0));
+      modelosHtml = modelosOrdenados.map(([modelo, data], idx) => {
+        const bg = COLORES_MODELO[idx % COLORES_MODELO.length];
+        const color = COLORES_TEXTO[idx % COLORES_TEXTO.length];
+        const tallesOrdenados = data.talles.sort((a,b) => (parseInt(a.talle)||0)-(parseInt(b.talle)||0));
+        return `
+          <div style="margin-bottom:6px;border-radius:7px;padding:5px 8px;background:${bg};">
+            <div style="font-size:10px;font-weight:700;color:${color};margin-bottom:3px;">Mod. ${modelo} <span style="font-weight:400;opacity:0.7;">${data.nombre}</span></div>
+            <div style="display:flex;flex-wrap:wrap;gap:3px;">
+              ${tallesOrdenados.map(t => `<span style="background:rgba(255,255,255,0.7);border-radius:4px;padding:1px 6px;font-size:10px;color:#333;">${t.talle?'T'+t.talle:'—'}: ${t.cantidad}</span>`).join('')}
+            </div>
+          </div>`;
+      }).join('');
+    } else if (lote.notas) {
+      modelosHtml = `<div style="font-size:10px;color:#888;margin-bottom:4px;">${lote.notas}</div>`;
+    }
       const modelosOrdenados = Object.entries(grupos).sort((a,b) => (parseInt(a[0])||0)-(parseInt(b[0])||0));
       modelosHtml = modelosOrdenados.map(([modelo, data], idx) => {
         const bg = COLORES_MODELO[idx % COLORES_MODELO.length];
@@ -530,25 +549,38 @@ function renderItemCard(lote, pedido, etapa) {
     const loteId = parseInt(document.getElementById('mover-lote-id').value);
     const cantTotal = parseInt(document.getElementById('mover-cantidad-total').value) || 0;
     const n = window._lineasCantidades?.length || 0;
+    const filas = window._lineasFilas || [];
 
     let totalStock = 0, totalListo = 0, hayError = false;
+    const tallesStock = [], tallesListo = [];
+
     for (let i = 0; i < n; i++) {
       const s = parseInt(document.getElementById('ls-' + i)?.value) || 0;
       const l = parseInt(document.getElementById('ll-' + i)?.value) || 0;
       const max = window._lineasCantidades[i] || 0;
+      const fila = filas[i];
       totalStock += s;
       totalListo += l;
       if (s + l > max) hayError = true;
+      if (s > 0) tallesStock.push({ modelo: fila.modelo, talle: fila.talle, cantidad: s, nombre_producto: fila.nombre });
+      if (l > 0) tallesListo.push({ modelo: fila.modelo, talle: fila.talle, cantidad: l, nombre_producto: fila.nombre });
     }
+
     if (hayError) return alert('Alguna línea supera la cantidad disponible');
     if (totalStock + totalListo === 0) return alert('Ingresá al menos una cantidad');
     if (totalStock + totalListo > cantTotal) return alert('El total supera los pares disponibles');
 
     if (totalStock > 0 && totalListo > 0) {
-      // Dividir lote y mover cada parte
       const res = await fetch('/api/produccion?action=dividir-lote', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lote_id: loteId, cantidad_nueva: totalListo, usuario: usuario.nombre, notas: 'Split empaque: ' + totalListo + ' a Listo' })
+        body: JSON.stringify({
+          lote_id: loteId,
+          cantidad_nueva: totalListo,
+          usuario: usuario.nombre,
+          notas: 'Split empaque: ' + totalListo + ' a Listo',
+          talles_nuevo: tallesListo,
+          talles_original: tallesStock
+        })
       });
       const data = await res.json();
       if (data.error) return alert('Error: ' + data.error);
