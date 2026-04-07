@@ -515,19 +515,48 @@ function renderKanbanCard(p, etapaFiltro) {
 function renderLoteCard(l, p) {
   const diasEtapa = diasDesde(l.updated_at);
   const puedeEditar = usuario?.rol === 'produccion' || usuario?.rol === 'admin';
+  const COLORES_MODELO = ['#e6f1fb','#eaf3de','#faeeda','#fbeaf0','#eeedfe','#fcebeb','#e1f5ee','#f1efe8'];
+  const COLORES_TEXTO = ['#0c447c','#27500a','#633806','#72243e','#3c3489','#a32d2d','#085041','#444'];
+
+  // Agrupar talles por modelo
+  let modelosHtml = '';
+  if (p.talles?.length) {
+    const grupos = {};
+    p.talles.forEach(t => {
+      const m = t.modelo || '?';
+      if (!grupos[m]) grupos[m] = { nombre: t.nombre_producto || '', talles: [] };
+      grupos[m].talles.push(t);
+    });
+    const modelosOrdenados = Object.entries(grupos).sort((a,b) => (parseInt(a[0])||0)-(parseInt(b[0])||0));
+    modelosHtml = modelosOrdenados.map(([modelo, data], idx) => {
+      const bg = COLORES_MODELO[idx % COLORES_MODELO.length];
+      const color = COLORES_TEXTO[idx % COLORES_TEXTO.length];
+      const tallesOrdenados = data.talles.sort((a,b) => (parseInt(a.talle)||0)-(parseInt(b.talle)||0));
+      return `
+        <div style="margin-bottom:4px;border-radius:6px;padding:4px 7px;background:${bg};">
+          <div style="font-size:10px;font-weight:700;color:${color};margin-bottom:2px;">Mod. ${modelo} <span style="font-weight:400;opacity:0.7;">${data.nombre}</span></div>
+          <div style="display:flex;flex-wrap:wrap;gap:2px;">
+            ${tallesOrdenados.map(t => `<span style="background:rgba(255,255,255,0.7);border-radius:3px;padding:1px 5px;font-size:9px;color:#333;">${t.talle?'T'+t.talle:'—'}: ${t.cantidad}</span>`).join('')}
+          </div>
+        </div>`;
+    }).join('');
+  } else if (l.notas) {
+    modelosHtml = `<div style="font-size:10px;color:#888;margin-bottom:3px;">${l.notas}</div>`;
+  }
+
   return `
     <div class="lote-card">
       <div class="lote-num">${l.numero}</div>
-      <div class="lote-info">${l.cantidad} pares · <span class="etapa-pill ${etapaCls(l.etapa)}">${etapaLabel(l.etapa)}</span></div>
+      ${modelosHtml}
+      <div class="lote-info" style="margin-top:3px;">${l.cantidad} pares · <span class="etapa-pill ${etapaCls(l.etapa)}">${etapaLabel(l.etapa)}</span></div>
       ${l.aparador ? `<div><span class="lote-aparador">${l.aparador}</span></div>` : ''}
       <div style="font-size:10px;color:#aaa;margin-top:2px;">${diasEtapa}d en esta etapa</div>
-      ${l.notas ? `<div style="font-size:10px;color:#888;margin-top:2px;">${l.notas}</div>` : ''}
       ${puedeEditar ? `
         <div class="lote-actions">
           <button class="btn btn-primary btn-sm" onclick="abrirMoverLote(${l.id},'${l.etapa}','${l.aparador||''}')">Mover</button>
           <button class="btn btn-warn btn-sm" onclick="abrirDividirLote(${l.id},${l.cantidad},'${l.numero}')">Dividir</button>
           <button class="btn btn-outline btn-sm" onclick="abrirEditarLote(${l.id},${l.cantidad},'${(l.notas||'').replace(/'/g,"\\'")}')">Editar</button>
-          <button class="btn btn-danger btn-sm" onclick="eliminarLote(${l.id})">×</button>
+          <button class="btn btn-danger btn-sm" onclick="eliminarLote(${l.id})" style="padding:4px 10px;border-radius:8px;">Eliminar</button>
         </div>` : ''}
     </div>`;
 }
