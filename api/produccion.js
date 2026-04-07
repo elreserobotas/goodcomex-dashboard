@@ -170,13 +170,14 @@ return res.json({ ok: true, usuario: { id: u.id, nombre: u.nombre, email: u.emai
     }
 
     if (req.method === 'POST' && action === 'crear-lote') {
-      const { pedido_id, cantidad, usuario, notas } = req.body;
+      const { pedido_id, cantidad, usuario, notas, talles_detalle } = req.body;
       const existentes = await sql`SELECT COUNT(*) FROM lotes WHERE pedido_id=${pedido_id}`;
       const num = parseInt(existentes[0].count) + 1;
       const pedido = await sql`SELECT numero FROM pedidos WHERE id=${pedido_id}`;
+      const tallesJson = talles_detalle ? JSON.stringify(talles_detalle) : null;
       const lote = await sql`
-        INSERT INTO lotes (pedido_id, numero, cantidad, etapa, notas)
-        VALUES (${pedido_id}, ${pedido[0].numero + '-L' + num}, ${cantidad}, 'recibido', ${notas||null})
+        INSERT INTO lotes (pedido_id, numero, cantidad, etapa, notas, talles_detalle)
+        VALUES (${pedido_id}, ${pedido[0].numero + '-L' + num}, ${cantidad}, 'recibido', ${notas||null}, ${tallesJson})
         RETURNING *
       `;
       await sql`INSERT INTO historial_lotes (lote_id, pedido_id, etapa_desde, etapa_hasta, usuario, notas) VALUES (${lote[0].id}, ${pedido_id}, null, 'recibido', ${usuario}, ${notas||null})`;
