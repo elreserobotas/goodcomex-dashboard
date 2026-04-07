@@ -160,7 +160,11 @@ module.exports = async function handler(req, res) {
         .filter(p => !EXCLUIR.some(ex => p.nombre.toLowerCase().includes(ex)))
         .map(p => ({ ...p, promedio: p.cantidad > 0 ? Math.round(p.total / p.cantidad) : 0 }));
       });
-      const productosBase = Object.values(productoMap).filter(p => p.cantidad > 0).map(p => ({
+      const EXCLUIR = ['ajuste', 'redondeo', 'descuento'];
+      const productosBase = Object.values(productoMap)
+      .filter(p => p.cantidad > 0)
+      .filter(p => !EXCLUIR.some(ex => p.nombre.toLowerCase().includes(ex)))
+      .map(p => ({
         ...p, promedio: p.cantidad > 0 ? Math.round(p.total / p.cantidad) : 0
       }));
       return res.json({
