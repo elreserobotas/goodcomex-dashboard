@@ -292,6 +292,12 @@ module.exports = async function handler(req, res) {
       d90: pendientesConDias.filter(f => f.dias > 90)
     };
     const totalPendiente = pendientesConDias.reduce((a,f) => a + f.amount_residual, 0);
+    const tiempoPromedioCobro = (() => {
+  const pagadas = todasFacturas.filter(f => f.payment_state === 'paid' && f.invoice_date && f.invoice_date_due);
+  if (!pagadas.length) return null;
+  const dias = pagadas.map(f => Math.max(0, Math.floor((new Date(f.invoice_date_due) - new Date(f.invoice_date)) / (1000*60*60*24))));
+  return Math.round(dias.reduce((a,b) => a+b, 0) / dias.length);
+})();
     const totalVencido = pendientesConDias.filter(f => f.dias >= 0).reduce((a,f) => a + f.amount_residual, 0);
     const todasVencidas = pendientesConDias.filter(f => f.dias >= 0);
 
@@ -342,6 +348,7 @@ module.exports = async function handler(req, res) {
       ventasPorMes: ventasPorMes.map(m => ({ mes: m.mes, resero: m.resero, empresaB: m.empresaB })),
       pendientes: {
         total: totalPendiente,
+        tiempoPromedioCobro,
         cantidad: pendientesConDias.length,
         tramos: {
           noVencidas: { total: tramos.noVencidas.reduce((a,f) => a+f.amount_residual,0), cantidad: tramos.noVencidas.length },
