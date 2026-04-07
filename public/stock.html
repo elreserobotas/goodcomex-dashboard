@@ -417,51 +417,68 @@
     document.getElementById('col-listo-body').innerHTML = listo.length === 0 ? '<div class="empty-state">Sin items listos</div>' : listo.map(({lote,pedido}) => renderItemCard(lote,pedido,'listo')).join('');
   }
 
-  function abrirMoverEmpaque(loteId, cantidad, pedidoId) {
+ function abrirMoverEmpaque(loteId, cantidad, pedidoId) {
     const pedido = pedidos.find(p => p.id === pedidoId);
     const lote = pedido?.lotes?.find(l => l.id === loteId);
     loteActual = { loteId, cantidad, pedido, lote };
-
     document.getElementById('mover-lote-id').value = loteId;
     document.getElementById('mover-cantidad-total').value = cantidad;
     document.getElementById('mover-titulo').textContent = 'Distribuir desde Empaque';
     const cliente = pedido?.tipo === 'stock' ? 'Stock propio' : (pedido?.cliente || '—');
-    document.getElementById('mover-sub').textContent = `${cliente} · ${pedido?.producto} · ${cantidad} pares`;
+    document.getElementById('mover-sub').textContent = `${cliente} · ${cantidad} pares`;
 
-    // Construir tabla de líneas por modelo/talle
     const talles = pedido?.talles || [];
     const tbody = document.getElementById('lineas-body');
 
     if (talles.length > 0) {
-      // Agrupar por modelo parseando el nombre del producto
-      // Como los talles vienen de la tabla talles (solo talle+cantidad), los mostramos directamente
-      const tallesOrdenados = [...talles].sort((a,b) => (parseInt(a.talle)||0)-(parseInt(b.talle)||0));
-      tbody.innerHTML = tallesOrdenados.map((t, i) => `
+      // Agrupar por modelo usando t.modelo
+      const grupos = {};
+      talles.forEach(t => {
+        const modelo = t.modelo || '?';
+        const nombre = t.nombre_producto || '';
+        if (!grupos[modelo]) grupos[modelo] = { nombre, talles: [] };
+        grupos[modelo].talles.push({ talle: t.talle || null, cantidad: t.cantidad });
+      });
+
+      // Ordenar modelos de menor a mayor
+      const modelosOrdenados = Object.entries(grupos).sort((a, b) => {
+        return (parseInt(a[0]) || 0) - (parseInt(b[0]) || 0);
+      });
+
+      // Construir filas — una por modelo+talle
+      const filas = [];
+      modelosOrdenados.forEach(([modelo, data]) => {
+        const tallesOrdenados = data.talles.sort((a, b) => (parseInt(a.talle)||0) - (parseInt(b.talle)||0));
+        tallesOrdenados.forEach(t => {
+          filas.push({ modelo, nombre: data.nombre, talle: t.talle, cantidad: t.cantidad });
+        });
+      });
+
+      window._lineasCantidades = filas.map(f => f.cantidad);
+
+      tbody.innerHTML = filas.map((f, i) => `
         <tr>
-          <td class="modelo-label">${pedido.producto.replace(/\[.*?\]\s*/,'').split('(')[0].trim()}</td>
-          <td class="talle-label">T${t.talle}</td>
-          <td class="cant-label">${t.cantidad}</td>
-          <td><input type="number" class="col-stock-input" id="ls-${i}" min="0" max="${t.cantidad}" value="0" oninput="actualizarTotalesLineas()" data-max="${t.cantidad}" /></td>
-          <td><input type="number" class="col-listo-input" id="ll-${i}" min="0" max="${t.cantidad}" value="0" oninput="actualizarTotalesLineas()" data-max="${t.cantidad}" data-idx="${i}" /></td>
+          <td class="modelo-label" title="${f.nombre}">${f.modelo}</td>
+          <td class="talle-label">${f.talle ? 'T' + f.talle : '—'}</td>
+          <td class="cant-label">${f.cantidad}</td>
+          <td><input type="number" class="col-stock-input" id="ls-${i}" min="0" max="${f.cantidad}" value="0" oninput="actualizarTotalesLineas()" data-max="${f.cantidad}" /></td>
+          <td><input type="number" class="col-listo-input" id="ll-${i}" min="0" max="${f.cantidad}" value="0" oninput="actualizarTotalesLineas()" data-max="${f.cantidad}" /></td>
         </tr>`).join('');
-      window._lineasCantidades = tallesOrdenados.map(t => t.cantidad);
     } else {
-      // Sin talles: una sola fila con total
+      window._lineasCantidades = [cantidad];
       tbody.innerHTML = `
         <tr>
-          <td class="modelo-label">${pedido?.producto?.replace(/\[.*?\]\s*/,'').split('(')[0].trim() || '—'}</td>
+          <td class="modelo-label">—</td>
           <td class="talle-label">—</td>
           <td class="cant-label">${cantidad}</td>
           <td><input type="number" class="col-stock-input" id="ls-0" min="0" max="${cantidad}" value="0" oninput="actualizarTotalesLineas()" data-max="${cantidad}" /></td>
-          <td><input type="number" class="col-listo-input" id="ll-0" min="0" max="${cantidad}" value="0" oninput="actualizarTotalesLineas()" data-max="${cantidad}" data-idx="0" /></td>
+          <td><input type="number" class="col-listo-input" id="ll-0" min="0" max="${cantidad}" value="0" oninput="actualizarTotalesLineas()" data-max="${cantidad}" /></td>
         </tr>`;
-      window._lineasCantidades = [cantidad];
     }
 
     actualizarTotalesLineas();
     document.getElementById('modal-mover').classList.add('open');
   }
-
   function actualizarTotalesLineas() {
     let totalStock = 0, totalListo = 0, hayError = false;
     const n = window._lineasCantidades?.length || 0;
