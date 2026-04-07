@@ -99,14 +99,32 @@ function parsearTallesDeProductos(productos) {
   const talles = [];
   let total = 0;
   productos.forEach(pr => {
-    const match = pr.product.match(/\[(\d+)\.(\d+)[MNAV]?\]/);
-    if (match) {
-      const talle = match[2];
+    // Correaje: [7.650]
+    const correaje = pr.product.match(/\[7\.(\d+)[MNAV]?\]/);
+    if (correaje) {
+      const modelo = correaje[1];
       const cantidad = Math.round(pr.qty);
-      if (cantidad > 0) {
-        talles.push({ talle, cantidad });
-        total += cantidad;
-      }
+      const nombre = pr.product.replace(/\[.*?\]\s*/, '').split('(')[0].trim();
+      if (cantidad > 0) { talles.push({ modelo, talle: null, cantidad, nombre }); total += cantidad; }
+      return;
+    }
+    // Medias: [MN] [MG]
+    const medias = pr.product.match(/\[(M[NG])\]/);
+    if (medias) {
+      const modelo = medias[1];
+      const cantidad = Math.round(pr.qty);
+      if (cantidad > 0) { talles.push({ modelo, talle: null, cantidad, nombre: 'Medias' }); total += cantidad; }
+      return;
+    }
+    // Normal: [500.42]
+    const normal = pr.product.match(/\[(\d+)\.(\d+)[MNAV]?\]/);
+    if (normal) {
+      const modelo = normal[1];
+      const talle = normal[2];
+      const cantidad = Math.round(pr.qty);
+      const nombre = pr.product.replace(/\[.*?\]\s*/, '').split('(')[0].trim();
+      if (cantidad > 0) { talles.push({ modelo, talle, cantidad, nombre }); total += cantidad; }
+      return;
     }
   });
   return { talles, total };
