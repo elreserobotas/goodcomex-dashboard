@@ -812,7 +812,11 @@ function iniciarConSesion(u) {
   if (typeof cargarPedidos === 'function') cargarPedidos();
   if (typeof cargarStock === 'function') cargarStock();
 }
-
+const hoy = new Date();
+const dd = String(hoy.getDate()).padStart(2,'0');
+const mm = String(hoy.getMonth()+1).padStart(2,'0');
+const yyyy = hoy.getFullYear();
+document.getElementById('hasta').value = `${dd}/${mm}/${yyyy}`;
 const sesionGuardada = leerSesion();
 if (sesionGuardada) iniciarConSesion(sesionGuardada);
 </script>
