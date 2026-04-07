@@ -666,7 +666,8 @@
       const r = data.resumen;
 
       document.getElementById('total-general').textContent = fmtM(r.totalGeneral);
-      document.getElementById('periodo-label').textContent = `${desde} → ${hasta}`;
+      const fmtFecha = s => new Date(s + 'T00:00:00').toLocaleDateString('es-AR', {day:'numeric', month:'long', year:'numeric'});
+      document.getElementById('periodo-label').textContent = `${fmtFecha(desde)} → ${fmtFecha(hasta)}`;
       document.getElementById('total-facturas').textContent = r.totalFacturas.toLocaleString('es-AR');
       document.getElementById('total-resero').textContent = fmtM(r.totalResero);
       document.getElementById('facturas-resero').textContent = meses.reduce((a,m)=>a+m.resero.cantidad,0) + ' facturas';
