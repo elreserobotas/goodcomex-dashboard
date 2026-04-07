@@ -251,12 +251,41 @@
   </div>
 </div>
 
-<div class="modal-bg" id="modal-dividir">
+    <div class="modal-bg" id="modal-dividir">
   <div class="modal">
     <div class="modal-title">
       <span>Dividir lote</span>
       <button class="modal-close" onclick="cerrarModal('modal-dividir')">×</button>
     </div>
+    <div class="modal-sub" id="dividir-sub"></div>
+    <input type="hidden" id="dividir-lote-id" />
+    <input type="hidden" id="dividir-pedido-id" />
+
+    <div class="modal-section">Seleccioná cuántos pares van al nuevo lote</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:0.5rem;">
+      <thead>
+        <tr>
+          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Modelo</th>
+          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Talle</th>
+          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Disponible</th>
+          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Nuevo lote</th>
+        </tr>
+      </thead>
+      <tbody id="dividir-lineas-body"></tbody>
+    </table>
+    <div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 8px;background:#f5f5f3;border-radius:6px;margin-bottom:4px;">
+      <span style="color:#888;">Total nuevo lote:</span>
+      <span style="font-weight:500;color:#1a1a1a;" id="dividir-total-val">0 pares</span>
+    </div>
+    <div style="color:#a32d2d;font-size:11px;margin-top:4px;display:none;" id="dividir-err">Alguna línea supera la cantidad disponible</div>
+
+    <div class="field" style="margin-top:1rem;"><label>Nota (opcional)</label><textarea id="dividir-nota" placeholder="Ej: lote urgente para cliente X"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="cerrarModal('modal-dividir')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarDividir()">Dividir</button>
+    </div>
+  </div>
+</div>
     <input type="hidden" id="dividir-lote-id" />
     <p style="font-size:13px;color:#888;margin-bottom:1rem;" id="dividir-info"></p>
     <div class="modal-section">Detalle del nuevo lote</div>
@@ -554,7 +583,7 @@ function renderLoteCard(l, p) {
       ${puedeEditar ? `
         <div class="lote-actions">
           <button class="btn btn-primary btn-sm" onclick="abrirMoverLote(${l.id},'${l.etapa}','${l.aparador||''}')">Mover</button>
-          <button class="btn btn-warn btn-sm" onclick="abrirDividirLote(${l.id},${l.cantidad},'${l.numero}')">Dividir</button>
+          <button class="btn btn-warn btn-sm" onclick="abrirDividirLote(${l.id},${l.cantidad},'${l.numero}',${p.id})"
           <button class="btn btn-outline btn-sm" onclick="abrirEditarLote(${l.id},${l.cantidad},'${(l.notas||'').replace(/'/g,"\\'")}')">Editar</button>
           <button class="btn btn-danger btn-sm" onclick="eliminarLote(${l.id})" style="padding:4px 10px;border-radius:8px;">Eliminar</button>
         </div>` : ''}
@@ -810,42 +839,89 @@ function actualizarTotalDividir() {
   document.getElementById('dividir-total').textContent = `Total: ${total} pares`;
 }
 
-function abrirDividirLote(id, cantidad, numero) {
-  document.getElementById('dividir-lote-id').value = id;
-  document.getElementById('dividir-info').textContent = `Lote ${numero} · ${cantidad} pares disponibles`;
+function abrirDividirLote(loteId, cantidad, numero, pedidoId) {
+  const pedido = pedidos.find(p => p.id === parseInt(pedidoId));
+  document.getElementById('dividir-lote-id').value = loteId;
+  document.getElementById('dividir-pedido-id').value = pedidoId;
+  document.getElementById('dividir-sub').textContent = `Lote ${numero} · ${cantidad} pares disponibles`;
   document.getElementById('dividir-nota').value = '';
-  dividirLineas = 1;
-  document.getElementById('dividir-lineas').innerHTML = `
-    <div class="dividir-linea" id="linea-1">
-      <input type="text" placeholder="Modelo" id="div-modelo-1" />
-      <select id="div-talle-1">
-        <option value="">T—</option>
-        ${TALLES.map(t => `<option value="${t}">T${t}</option>`).join('')}
-      </select>
-      <input type="number" min="1" placeholder="0" id="div-cant-1" oninput="actualizarTotalDividir()" />
-      <span></span>
-    </div>`;
-  document.getElementById('dividir-total').textContent = 'Total: 0 pares';
+
+  const talles = pedido?.talles || [];
+  const tbody = document.getElementById('dividir-lineas-body');
+
+  if (talles.length > 0) {
+    const grupos = {};
+    talles.forEach(t => {
+      const modelo = t.modelo || '?';
+      if (!grupos[modelo]) grupos[modelo] = { nombre: t.nombre_producto || '', talles: [] };
+      grupos[modelo].talles.push({ talle: t.talle || null, cantidad: t.cantidad });
+    });
+    const modelosOrdenados = Object.entries(grupos).sort((a,b) => (parseInt(a[0])||0)-(parseInt(b[0])||0));
+    const filas = [];
+    modelosOrdenados.forEach(([modelo, data]) => {
+      data.talles.sort((a,b) => (parseInt(a.talle)||0)-(parseInt(b.talle)||0)).forEach(t => {
+        filas.push({ modelo, nombre: data.nombre, talle: t.talle, cantidad: t.cantidad });
+      });
+    });
+    window._dividirFilas = filas;
+    window._dividirCantidades = filas.map(f => f.cantidad);
+    tbody.innerHTML = filas.map((f,i) => `
+      <tr>
+        <td style="padding:5px 8px;font-weight:600;color:#1a1a1a;">${f.modelo}</td>
+        <td style="padding:5px 8px;color:#555;">${f.talle ? 'T'+f.talle : '—'}</td>
+        <td style="padding:5px 8px;color:#888;">${f.cantidad}</td>
+        <td style="padding:5px 8px;"><input type="number" id="dd-${i}" min="0" max="${f.cantidad}" value="0" style="width:54px;padding:4px 6px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;" oninput="actualizarTotalDividir()" /></td>
+      </tr>`).join('');
+  } else {
+    window._dividirFilas = [{ modelo: '—', talle: null, cantidad, nombre: '' }];
+    window._dividirCantidades = [cantidad];
+    tbody.innerHTML = `<tr>
+      <td style="padding:5px 8px;">—</td>
+      <td style="padding:5px 8px;">—</td>
+      <td style="padding:5px 8px;color:#888;">${cantidad}</td>
+      <td style="padding:5px 8px;"><input type="number" id="dd-0" min="0" max="${cantidad}" value="0" style="width:54px;padding:4px 6px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;" oninput="actualizarTotalDividir()" /></td>
+    </tr>`;
+  }
+
+  actualizarTotalDividir();
   document.getElementById('modal-dividir').classList.add('open');
 }
 
+function actualizarTotalDividir() {
+  let total = 0, err = false;
+  const n = window._dividirCantidades?.length || 0;
+  for (let i = 0; i < n; i++) {
+    const v = parseInt(document.getElementById('dd-'+i)?.value) || 0;
+    total += v;
+    if (v > (window._dividirCantidades[i] || 0)) err = true;
+  }
+  document.getElementById('dividir-total-val').textContent = total + ' pares';
+  document.getElementById('dividir-err').style.display = err ? 'block' : 'none';
+}
 async function confirmarDividir() {
-  const id = parseInt(document.getElementById('dividir-lote-id').value);
+  const loteId = parseInt(document.getElementById('dividir-lote-id').value);
   const notas = document.getElementById('dividir-nota').value;
-  let total = 0;
-  const detalles = [];
-  document.querySelectorAll('[id^="div-cant-"]').forEach((el, i) => {
-    const n = el.id.replace('div-cant-','');
-    const cant = parseInt(el.value) || 0;
-    const modelo = document.getElementById('div-modelo-' + n)?.value || '';
-    const talle = document.getElementById('div-talle-' + n)?.value || '';
-    if (cant > 0) { total += cant; detalles.push({ modelo, talle, cant }); }
-  });
+  const filas = window._dividirFilas || [];
+  const n = window._dividirCantidades?.length || 0;
+  let total = 0, err = false;
+  const tallesNuevo = [];
+
+  for (let i = 0; i < n; i++) {
+    const v = parseInt(document.getElementById('dd-'+i)?.value) || 0;
+    const max = window._dividirCantidades[i] || 0;
+    if (v > max) err = true;
+    if (v > 0) {
+      total += v;
+      tallesNuevo.push({ modelo: filas[i].modelo, talle: filas[i].talle, cantidad: v, nombre_producto: filas[i].nombre });
+    }
+  }
+
+  if (err) return alert('Alguna línea supera la cantidad disponible');
   if (total < 1) return alert('Ingresá al menos una cantidad');
-  const notaFinal = detalles.map(d => `${d.modelo} T${d.talle} x${d.cant}`).join(', ') + (notas ? ' — ' + notas : '');
+
   const res = await fetch('/api/produccion?action=dividir-lote', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ lote_id: id, cantidad_nueva: total, usuario: usuario.nombre, notas: notaFinal })
+    body: JSON.stringify({ lote_id: loteId, cantidad_nueva: total, usuario: usuario.nombre, notas, talles_nuevo: tallesNuevo })
   });
   const data = await res.json();
   if (data.error) { alert('Error: ' + data.error); return; }
