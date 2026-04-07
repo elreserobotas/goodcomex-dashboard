@@ -645,7 +645,7 @@
     XLSX.writeFile(wb, `goodcomex-${new Date().toISOString().slice(0,10)}.xlsx`);
   }
 
-  async function cargarDatos() 
+  async function cargarDatos() {
     const desde = document.getElementById('desde').value;
     const hasta = document.getElementById('hasta').value;
     extrasLoaded = { clientes: false, productos: false, comparativa: false, iva: false };
