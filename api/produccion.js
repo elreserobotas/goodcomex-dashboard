@@ -207,8 +207,14 @@ return res.json({ ok: true, usuario: { id: u.id, nombre: u.nombre, email: u.emai
   const lote = await sql`SELECT * FROM lotes WHERE id=${lote_id}`;
   if (!lote.length) return res.status(404).json({ error: 'Lote no encontrado' });
   const l = lote[0];
-  if (cantidad_nueva >= l.cantidad) return res.status(400).json({ error: 'La cantidad nueva debe ser menor al lote original' });
-  
+  if (cantidad_nueva > l.cantidad) return res.status(400).json({ error: 'La cantidad nueva supera el lote original' });
+if (cantidad_nueva === l.cantidad) {
+  // Mover todo al nuevo lote — actualizar talles_detalle y devolver el mismo lote
+  const tallesNuevoJson = talles_nuevo ? JSON.stringify(talles_nuevo) : null;
+  await sql`UPDATE lotes SET talles_detalle=${tallesNuevoJson}, updated_at=NOW() WHERE id=${lote_id}`;
+  return res.json({ ok: true, nuevoLote: lote[0] });
+}
+      
   const tallesNuevoJson = talles_nuevo ? JSON.stringify(talles_nuevo) : null;
   const tallesOriginalJson = talles_original ? JSON.stringify(talles_original) : null;
   
