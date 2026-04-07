@@ -412,11 +412,7 @@
   let ordenesVisibles = [];
   let extrasLoaded = { clientes: false, productos: false, comparativa: false, iva: false };
 
-  const hoy = new Date();
-const dd = String(hoy.getDate()).padStart(2,'0');
-const mm = String(hoy.getMonth()+1).padStart(2,'0');
-const yyyy = hoy.getFullYear();
-document.getElementById('hasta').value = `${dd}/${mm}/${yyyy}`;
+  document.getElementById('hasta').value = new Date().toISOString().slice(0,10);
 
   function toggle(id) {
     document.getElementById('body-' + id).classList.toggle('open');
@@ -649,13 +645,9 @@ document.getElementById('hasta').value = `${dd}/${mm}/${yyyy}`;
     XLSX.writeFile(wb, `goodcomex-${new Date().toISOString().slice(0,10)}.xlsx`);
   }
 
-  async function cargarDatos() {
-    function parseFecha(str) {
-  const [d, m, y] = str.split('/');
-  return `${y}-${m}-${d}`;
-}
-    const desde = parseFecha(document.getElementById('desde').value);
-    const hasta = parseFecha(document.getElementById('hasta').value);
+  async function cargarDatos() 
+    const desde = document.getElementById('desde').value;
+    const hasta = document.getElementById('hasta').value;
     extrasLoaded = { clientes: false, productos: false, comparativa: false, iva: false };
     productosData = null;
     document.getElementById('loading').style.display = 'block';
