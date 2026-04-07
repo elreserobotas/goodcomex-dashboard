@@ -347,16 +347,16 @@
           <td class="modelo-label" title="${f.nombre}">${f.modelo}</td>
           <td class="talle-label">${f.talle?'T'+f.talle:'—'}</td>
           <td class="cant-label">${f.cantidad}</td>
-          <td><input type="number" class="col-stock-input" id="ls-${i}" min="0" max="${f.cantidad}" value="0" oninput="actualizarTotalesLineas()" /></td>
-          <td><input type="number" class="col-listo-input" id="ll-${i}" min="0" max="${f.cantidad}" value="0" oninput="actualizarTotalesLineas()" /></td>
+          <td><input type="number" class="col-stock-input" id="ls-${i}" min="0" max="${f.cantidad}" value="" placeholder="0" oninput="actualizarTotalesLineas()" /></td>
+          <td><input type="number" class="col-listo-input" id="ll-${i}" min="0" max="${f.cantidad}" value="" placeholder="0" oninput="actualizarTotalesLineas()" /></td>
         </tr>`).join('');
     } else {
       window._lineasCantidades = [cantidad];
       window._lineasFilas = [{modelo:'—',talle:null,cantidad,nombre:''}];
       tbody.innerHTML = `<tr>
         <td class="modelo-label">—</td><td class="talle-label">—</td><td class="cant-label">${cantidad}</td>
-        <td><input type="number" class="col-stock-input" id="ls-0" min="0" max="${cantidad}" value="0" oninput="actualizarTotalesLineas()" /></td>
-        <td><input type="number" class="col-listo-input" id="ll-0" min="0" max="${cantidad}" value="0" oninput="actualizarTotalesLineas()" /></td>
+        <td><input type="number" class="col-stock-input" id="ls-0" min="0" max="${cantidad}" value="" placeholder="0" oninput="actualizarTotalesLineas()" /></td>
+        <td><input type="number" class="col-listo-input" id="ll-0" min="0" max="${cantidad}" value="" placeholder="0" oninput="actualizarTotalesLineas()" /></td>
       </tr>`;
     }
     actualizarTotalesLineas();
