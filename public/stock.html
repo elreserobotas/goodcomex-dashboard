@@ -368,35 +368,60 @@
     return `<div style="font-size:10px;color:#666;margin-bottom:4px;">${notas}</div>`;
   }
 
-  function renderItemCard(lote, pedido, etapa) {
+function renderItemCard(lote, pedido, etapa) {
     const fecha = lote.updated_at ? new Date(lote.updated_at).toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : '—';
     const dias = diasDesde(lote.updated_at);
     const cliente = pedido.tipo === 'stock' ? 'Stock propio' : (pedido.cliente || '—');
 
-    // Mostrar talles agrupados por modelo
-    let tallesHtml = '';
+    // Agrupar talles por modelo
+    let modelosHtml = '';
+    const COLORES_MODELO = ['#e6f1fb','#eaf3de','#faeeda','#fbeaf0','#eeedfe','#fcebeb','#e1f5ee','#f1efe8'];
+    const COLORES_TEXTO = ['#0c447c','#27500a','#633806','#72243e','#3c3489','#a32d2d','#085041','#444'];
+
     if (pedido.talles?.length) {
-      const byTalle = pedido.talles.sort((a,b) => (parseInt(a.talle)||0)-(parseInt(b.talle)||0));
-      tallesHtml = `<div class="item-talles-row">${byTalle.map(t => `<span class="item-talle">T${t.talle}: ${t.cantidad}</span>`).join('')}</div>`;
+      const grupos = {};
+      pedido.talles.forEach(t => {
+        const m = t.modelo || '?';
+        if (!grupos[m]) grupos[m] = { nombre: t.nombre_producto || '', talles: [] };
+        grupos[m].talles.push(t);
+      });
+      const modelosOrdenados = Object.entries(grupos).sort((a,b) => (parseInt(a[0])||0)-(parseInt(b[0])||0));
+      modelosHtml = modelosOrdenados.map(([modelo, data], idx) => {
+        const bg = COLORES_MODELO[idx % COLORES_MODELO.length];
+        const color = COLORES_TEXTO[idx % COLORES_TEXTO.length];
+        const tallesOrdenados = data.talles.sort((a,b) => (parseInt(a.talle)||0)-(parseInt(b.talle)||0));
+        return `
+          <div style="margin-bottom:6px;border-radius:7px;padding:5px 8px;background:${bg};">
+            <div style="font-size:10px;font-weight:700;color:${color};margin-bottom:3px;">Mod. ${modelo} <span style="font-weight:400;opacity:0.7;">${data.nombre}</span></div>
+            <div style="display:flex;flex-wrap:wrap;gap:3px;">
+              ${tallesOrdenados.map(t => `<span style="background:rgba(255,255,255,0.7);border-radius:4px;padding:1px 6px;font-size:10px;color:#333;">${t.talle ? 'T'+t.talle : '—'}: ${t.cantidad}</span>`).join('')}
+            </div>
+          </div>`;
+      }).join('');
     } else if (lote.notas) {
-      tallesHtml = `<div style="font-size:10px;color:#888;margin-bottom:4px;">${lote.notas}</div>`;
+      modelosHtml = `<div style="font-size:10px;color:#888;margin-bottom:4px;">${lote.notas}</div>`;
     }
 
-    let actionsHtml = etapa === 'empaque'
-      ? `<button class="btn btn-primary btn-sm" onclick="abrirMoverEmpaque(${lote.id}, ${lote.cantidad}, ${pedido.id})">Distribuir →</button>`
-      : `<button class="btn btn-outline btn-sm" onclick="abrirMoverStock(${lote.id}, '${etapa}', '${cliente.replace(/'/g,"\\'")}')">Mover</button>`;
+    let actionsHtml = '';
+    if (etapa === 'empaque') {
+      actionsHtml = `<button class="btn btn-primary btn-sm" onclick="abrirMoverEmpaque(${lote.id}, ${lote.cantidad}, ${pedido.id})">Distribuir →</button>`;
+    } else {
+      actionsHtml = `
+        <button class="btn btn-outline btn-sm" onclick="abrirMoverStock(${lote.id}, '${etapa}', '${cliente.replace(/'/g,"\\'")}')">Mover</button>
+        <button class="btn btn-danger btn-sm" onclick="eliminarLoteStock(${lote.id})">Eliminar</button>`;
+    }
 
     return `
       <div class="item-card">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
           <div class="item-cliente">${cliente}</div>
           <span class="emp-badge ${pedido.empresa === 'El Resero' ? 'emp-r' : 'emp-b'}">${pedido.empresa}</span>
         </div>
-        <div style="font-size:11px;color:#555;margin-bottom:4px;">${pedido.producto}</div>
-        ${tallesHtml}
+        <div style="font-size:11px;color:#555;margin-bottom:6px;">${pedido.producto}</div>
+        ${modelosHtml}
         <div class="item-total">${lote.cantidad} pares · ${lote.numero}</div>
         <div class="item-fecha">${fecha} · ${dias}d en esta etapa</div>
-        <div class="item-actions">${actionsHtml}</div>
+        <div class="item-actions" style="margin-top:6px;">${actionsHtml}</div>
       </div>`;
   }
 
@@ -572,6 +597,15 @@
     cargarStock();
   }
 
+async function eliminarLoteStock(loteId) {
+    if (!confirm('¿Eliminar este item? Esta acción no se puede deshacer.')) return;
+    await fetch('/api/produccion?action=eliminar-lote', {
+      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: loteId })
+    });
+    cargarStock();
+  }
+  
   function cerrarModal(id) {
     document.getElementById(id).classList.remove('open');
   }
