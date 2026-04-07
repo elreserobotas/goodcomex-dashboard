@@ -687,8 +687,9 @@
       document.getElementById('total-pendiente').textContent = fmtM(data.pendientes.total);
       document.getElementById('cant-pendiente').textContent = data.pendientes.cantidad + ' facturas · total en sistema';
 
-      if (data.tiempoPromedioCobro !== null && data.tiempoPromedioCobro !== undefined) {
-  document.getElementById('tiempo-cobro').textContent = data.tiempoPromedioCobro + ' días promedio';
+      const tpc = data.pendientes.tiempoPromedioCobro;
+if (tpc !== null && tpc !== undefined) {
+  document.getElementById('tiempo-cobro').textContent = tpc + ' días promedio';
 } else {
   document.getElementById('tiempo-cobro').textContent = 'Sin datos';
 }
