@@ -258,10 +258,14 @@ return res.json({ ok: true, usuario: { id: u.id, nombre: u.nombre, email: u.emai
     }
 
     if (req.method === 'DELETE' && action === 'eliminar') {
-      const { id } = req.body;
-      await sql`DELETE FROM pedidos WHERE id=${id}`;
-      return res.json({ ok: true });
-    }
+  const { id } = req.body;
+  await sql`DELETE FROM historial_lotes WHERE pedido_id=${id}`;
+  await sql`DELETE FROM historial WHERE pedido_id=${id}`;
+  await sql`DELETE FROM talles WHERE pedido_id=${id}`;
+  await sql`DELETE FROM lotes WHERE pedido_id=${id}`;
+  await sql`DELETE FROM pedidos WHERE id=${id}`;
+  return res.json({ ok: true });
+}
 
     if (req.method === 'DELETE' && action === 'eliminar-lote') {
       const { id } = req.body;
