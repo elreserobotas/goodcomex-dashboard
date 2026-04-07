@@ -21,7 +21,9 @@
     .btn-outline:hover { background: #f5f5f3; }
     .btn-success { background: #eaf3de; color: #27500a; border: none; }
     .btn-success:hover { background: #c0dd97; }
-    .btn-warn { background: #faeeda; color: #633806; border: none; }
+    .btn-info { background: #e6f1fb; color: #0c447c; border: none; }
+    .btn-info:hover { background: #b5d4f4; }
+    .btn-danger { background: #fcebeb; color: #a32d2d; border: none; }
     .btn-sm { padding: 4px 10px; font-size: 11px; }
 
     .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
@@ -33,41 +35,55 @@
     .field input, .field select, .field textarea { width: 100%; padding: 8px 12px; border: 0.5px solid #e5e5e5; border-radius: 8px; font-size: 14px; background: #fff; color: #1a1a1a; font-family: inherit; }
     .login-err { font-size: 13px; color: #a32d2d; margin-bottom: 1rem; display: none; }
 
-    .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+    .sticky-header { position: sticky; top: 0; z-index: 50; background: #f5f5f3; padding: 1rem 1.5rem 0; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem 1.5rem; }
+    .container-inner { max-width: 1200px; margin: 0 auto; }
 
-    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; }
     .user-label { font-size: 12px; color: #888; margin-left: auto; }
 
-    .stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
+    .stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 1rem; }
     .stat { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1rem 1.25rem; }
     .stat-label { font-size: 12px; color: #888; margin-bottom: 4px; }
     .stat-value { font-size: 22px; font-weight: 500; }
     .stat-sub { font-size: 11px; color: #aaa; margin-top: 2px; }
 
-    .cols { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
-    .col-wrap { }
-    .col-title { font-size: 13px; font-weight: 500; padding: 10px 14px; border-radius: 10px 10px 0 0; display: flex; justify-content: space-between; align-items: center; }
-    .col-body { background: #f0f0ee; border-radius: 0 0 10px 10px; padding: 8px; min-height: 200px; display: flex; flex-direction: column; gap: 8px; }
+    .flujo { display: flex; align-items: center; gap: 8px; margin-bottom: 1.5rem; background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 12px 16px; }
+    .flujo-etapa { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 20px; }
+    .flujo-empaque { background: #D3D1C7; color: #2C2C2A; }
+    .flujo-stock { background: #e6f1fb; color: #0c447c; }
+    .flujo-listo { background: #eaf3de; color: #27500a; }
+    .flujo-arrow { color: #aaa; font-size: 14px; }
+    .flujo-split { display: flex; flex-direction: column; gap: 4px; }
+    .flujo-split-arrow { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #888; }
 
-    .col-empaque .col-title { background: #D3D1C7; color: #2C2C2A; }
-    .col-stock .col-title { background: #e6f1fb; color: #0c447c; }
-    .col-listo .col-title { background: #eaf3de; color: #27500a; }
+    .cols { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+    .col-header { font-size: 13px; font-weight: 500; padding: 10px 14px; border-radius: 10px 10px 0 0; display: flex; justify-content: space-between; align-items: center; }
+    .col-body { background: #f0f0ee; border-radius: 0 0 10px 10px; padding: 8px; min-height: 200px; display: flex; flex-direction: column; gap: 8px; }
+    .col-empaque .col-header { background: #D3D1C7; color: #2C2C2A; }
+    .col-stock .col-header { background: #e6f1fb; color: #0c447c; }
+    .col-listo .col-header { background: #eaf3de; color: #27500a; }
 
     .item-card { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 10px; padding: 10px 12px; }
     .item-cliente { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
-    .item-modelo { font-size: 11px; color: #666; margin-bottom: 4px; line-height: 1.3; }
-    .item-pares { font-size: 12px; font-weight: 500; color: #1a1a1a; margin-bottom: 3px; }
+    .item-modelo { font-size: 11px; color: #666; margin-bottom: 3px; }
+    .item-talles { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 5px; }
+    .item-talle { background: #f5f5f3; border-radius: 4px; padding: 1px 6px; font-size: 10px; color: #555; }
+    .item-total { font-size: 12px; font-weight: 500; color: #1a1a1a; margin-bottom: 3px; }
     .item-fecha { font-size: 10px; color: #aaa; margin-bottom: 6px; }
     .item-actions { display: flex; gap: 4px; flex-wrap: wrap; }
     .emp-badge { font-size: 9px; padding: 2px 5px; border-radius: 8px; }
     .emp-r { background: #e6f1fb; color: #0c447c; }
     .emp-b { background: #e1f5ee; color: #085041; }
 
+    .split-indicator { font-size: 10px; color: #378ADD; margin-top: 2px; }
+
     .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; align-items: flex-start; justify-content: center; padding: 1.5rem 1rem 5rem; overflow-y: auto; }
     .modal-bg.open { display: flex; }
     .modal { background: #fff; border-radius: 16px; padding: 1.5rem; width: 100%; max-width: 520px; margin: auto; }
     .modal-title { font-size: 16px; font-weight: 500; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; }
     .modal-close { cursor: pointer; font-size: 22px; color: #888; background: none; border: none; line-height: 1; }
+    .modal-section { font-size: 11px; font-weight: 500; color: #aaa; margin: 1rem 0 0.5rem; text-transform: uppercase; }
     .modal-actions { display: flex; gap: 8px; margin-top: 1.25rem; justify-content: flex-end; }
     .detalle-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
     .detalle-row:last-child { border-bottom: none; }
@@ -75,9 +91,17 @@
     .detalle-val { font-weight: 500; }
     .empty-state { text-align: center; padding: 2rem; color: #aaa; font-size: 12px; }
 
-    .registrar-wrap { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; }
-    .registrar-title { font-size: 14px; font-weight: 500; margin-bottom: 1rem; }
-    .registrar-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+    .destino-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 1rem; }
+    .destino-btn { padding: 12px; border-radius: 10px; border: 0.5px solid #e5e5e5; cursor: pointer; text-align: center; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+    .destino-btn:hover { transform: scale(1.02); }
+    .destino-stock { background: #e6f1fb; color: #0c447c; border-color: #B5D4F4; }
+    .destino-listo { background: #eaf3de; color: #27500a; border-color: #9FE1CB; }
+    .destino-btn .destino-icon { font-size: 20px; margin-bottom: 4px; }
+    .destino-btn .destino-label { font-size: 12px; }
+
+    .cant-split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 1rem; }
+    .cant-split .field { margin-bottom: 0; }
+    .cant-total { font-size: 12px; color: #a32d2d; margin-top: 6px; display: none; }
   </style>
 </head>
 <body>
@@ -96,91 +120,69 @@
 </div>
 
 <div id="app-screen" style="display:none;">
-  <div class="container">
+  <div class="sticky-header">
+    <div class="container-inner">
+      <div class="toolbar">
+        <span style="font-size:15px;font-weight:500;">Stock y empaque</span>
+        <button class="btn btn-outline btn-sm" onclick="cargarStock()">Actualizar</button>
+        <span class="user-label" id="user-label"></span>
+        <button class="btn btn-outline btn-sm" onclick="logout()">Salir</button>
+      </div>
 
-    <div class="toolbar">
-      <span style="font-size:15px;font-weight:500;">Stock y empaque</span>
-      <button class="btn btn-primary btn-sm" id="btn-registrar" onclick="abrirRegistrar()" style="display:none;">+ Registrar ingreso</button>
-      <button class="btn btn-outline btn-sm" onclick="cargarStock()">Actualizar</button>
-      <span class="user-label" id="user-label"></span>
-      <button class="btn btn-outline btn-sm" onclick="logout()">Salir</button>
-    </div>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">En empaque</div>
+          <div class="stat-value" id="stat-empaque">—</div>
+          <div class="stat-sub">pares pendientes</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">En stock</div>
+          <div class="stat-value" id="stat-stock">—</div>
+          <div class="stat-sub">pares disponibles</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Listos para entregar</div>
+          <div class="stat-value" id="stat-listo">—</div>
+          <div class="stat-sub">pares</div>
+        </div>
+      </div>
 
-    <div class="stats">
-      <div class="stat">
-        <div class="stat-label">En empaque</div>
-        <div class="stat-value" id="stat-empaque">—</div>
-        <div class="stat-sub">lotes pendientes</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">En stock</div>
-        <div class="stat-value" id="stat-stock">—</div>
-        <div class="stat-sub">pares disponibles</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Listos para entregar</div>
-        <div class="stat-value" id="stat-listo">—</div>
-        <div class="stat-sub">pares</div>
-      </div>
-    </div>
-
-    <div class="cols">
-      <div class="col-wrap col-empaque">
-        <div class="col-title">
-          <span>Empaque</span>
-          <span id="cnt-empaque">0</span>
+      <div class="flujo">
+        <div class="flujo-etapa flujo-empaque">Empaque</div>
+        <div class="flujo-arrow">→</div>
+        <div class="flujo-split">
+          <div class="flujo-split-arrow"><span style="color:#0c447c;">→</span> <span class="flujo-etapa flujo-stock" style="padding:3px 10px;">Stock</span> <span style="font-size:10px;color:#aaa;">(para reponer)</span></div>
+          <div class="flujo-split-arrow"><span style="color:#27500a;">→</span> <span class="flujo-etapa flujo-listo" style="padding:3px 10px;">Listo para entregar</span> <span style="font-size:10px;color:#aaa;">(pedido confirmado)</span></div>
         </div>
-        <div class="col-body" id="col-empaque-body"></div>
-      </div>
-      <div class="col-wrap col-stock">
-        <div class="col-title">
-          <span>Stock</span>
-          <span id="cnt-stock">0</span>
-        </div>
-        <div class="col-body" id="col-stock-body"></div>
-      </div>
-      <div class="col-wrap col-listo">
-        <div class="col-title">
-          <span>Listo para entregar</span>
-          <span id="cnt-listo">0</span>
-        </div>
-        <div class="col-body" id="col-listo-body"></div>
       </div>
     </div>
-
   </div>
-</div>
 
-<div class="modal-bg" id="modal-registrar">
-  <div class="modal">
-    <div class="modal-title">
-      <span>Registrar ingreso a empaque</span>
-      <button class="modal-close" onclick="cerrarModal('modal-registrar')">×</button>
-    </div>
-    <div class="field">
-      <label>Producto / modelo</label>
-      <input type="text" id="reg-producto" placeholder="ej: Borceguí Alta Montaña 500" />
-    </div>
-    <div class="registrar-grid">
-      <div class="field">
-        <label>Empresa</label>
-        <select id="reg-empresa">
-          <option value="El Resero">El Resero</option>
-          <option value="Empresa B">Empresa B</option>
-        </select>
+  <div class="container">
+    <div class="container-inner">
+      <div class="cols">
+        <div class="col-empaque">
+          <div class="col-header">
+            <span>Empaque</span>
+            <span id="cnt-empaque">0</span>
+          </div>
+          <div class="col-body" id="col-empaque-body"></div>
+        </div>
+        <div class="col-stock">
+          <div class="col-header">
+            <span>Stock</span>
+            <span id="cnt-stock">0</span>
+          </div>
+          <div class="col-body" id="col-stock-body"></div>
+        </div>
+        <div class="col-listo">
+          <div class="col-header">
+            <span>Listo para entregar</span>
+            <span id="cnt-listo">0</span>
+          </div>
+          <div class="col-body" id="col-listo-body"></div>
+        </div>
       </div>
-      <div class="field">
-        <label>Talle</label>
-        <input type="text" id="reg-talle" placeholder="ej: 41" />
-      </div>
-      <div class="field">
-        <label>Cantidad (pares)</label>
-        <input type="number" id="reg-cantidad" min="1" placeholder="0" />
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="cerrarModal('modal-registrar')">Cancelar</button>
-      <button class="btn btn-primary" onclick="confirmarRegistro()">Registrar</button>
     </div>
   </div>
 </div>
@@ -188,23 +190,72 @@
 <div class="modal-bg" id="modal-mover">
   <div class="modal">
     <div class="modal-title">
-      <span id="mover-titulo">Mover item</span>
+      <span id="mover-titulo">Mover desde empaque</span>
       <button class="modal-close" onclick="cerrarModal('modal-mover')">×</button>
     </div>
-    <input type="hidden" id="mover-id" />
-    <div id="mover-detalle" style="margin-bottom:1rem;font-size:13px;color:#555;"></div>
+    <div id="mover-info" style="font-size:13px;color:#555;margin-bottom:1rem;"></div>
+
+    <div class="modal-section">¿A dónde va?</div>
+    <div class="destino-btns">
+      <div class="destino-btn destino-stock" onclick="seleccionarDestino('stock')">
+        <div class="destino-icon">📦</div>
+        <div>Stock</div>
+        <div class="destino-label">Para reponer más adelante</div>
+      </div>
+      <div class="destino-btn destino-listo" onclick="seleccionarDestino('listo')">
+        <div class="destino-icon">✓</div>
+        <div>Listo para entregar</div>
+        <div class="destino-label">Pedido confirmado</div>
+      </div>
+    </div>
+
+    <div id="mover-dividir-wrap" style="display:none;">
+      <div class="modal-section">O dividir entre ambos</div>
+      <div class="cant-split">
+        <div class="field">
+          <label style="color:#0c447c;">Pares a Stock</label>
+          <input type="number" id="cant-stock" min="0" placeholder="0" oninput="validarSplit()" />
+        </div>
+        <div class="field">
+          <label style="color:#27500a;">Pares a Listo</label>
+          <input type="number" id="cant-listo" min="0" placeholder="0" oninput="validarSplit()" />
+        </div>
+      </div>
+      <div class="cant-total" id="cant-error">La suma supera los pares disponibles</div>
+      <div style="margin-top:1rem;">
+        <button class="btn btn-primary" style="width:100%;" onclick="confirmarSplit()">Confirmar división</button>
+      </div>
+    </div>
+
+    <div style="margin-top:1rem;text-align:center;">
+      <button class="btn btn-outline btn-sm" onclick="toggleDividir()">Dividir entre Stock y Listo →</button>
+    </div>
+
+    <input type="hidden" id="mover-lote-id" />
+    <input type="hidden" id="mover-cantidad-total" />
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-mover-stock">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="mover-stock-titulo">Mover item</span>
+      <button class="modal-close" onclick="cerrarModal('modal-mover-stock')">×</button>
+    </div>
+    <div id="mover-stock-info" style="font-size:13px;color:#555;margin-bottom:1rem;"></div>
     <div class="field">
       <label>Mover a</label>
-      <select id="mover-estado">
-        <option value="empaque">Empaque</option>
-        <option value="stock">Stock</option>
+      <select id="mover-stock-destino">
         <option value="listo">Listo para entregar</option>
+        <option value="stock">Stock</option>
+        <option value="empaque">Volver a Empaque</option>
       </select>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="cerrarModal('modal-mover')">Cancelar</button>
-      <button class="btn btn-primary" onclick="confirmarMover()">Confirmar</button>
+      <button class="btn btn-outline" onclick="cerrarModal('modal-mover-stock')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarMoverStock()">Confirmar</button>
     </div>
+    <input type="hidden" id="mover-stock-lote-id" />
   </div>
 </div>
 
@@ -219,195 +270,204 @@
 
 <script>
   let usuario = null;
-  let stockItems = [];
-  let lotesEnEmpaque = [];
+  let pedidos = [];
+  let dividirVisible = false;
 
- function login() {
-  const email = document.getElementById('login-email').value.trim();
-  const pass = document.getElementById('login-pass').value;
-  fetch('/api/produccion?action=login', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password: pass })
-  }).then(r => r.json()).then(data => {
-    if (data.error) { document.getElementById('login-err').style.display = 'block'; return; }
-    localStorage.setItem('gx_usuario', JSON.stringify(data.usuario));
-    iniciarConSesion(data.usuario);
-  }).catch(() => { document.getElementById('login-err').style.display = 'block'; });
-}
+  function diasDesde(f) {
+    if (!f) return 0;
+    return Math.floor((new Date() - new Date(f)) / (1000*60*60*24));
+  }
 
-function logout() {
-  localStorage.removeItem('gx_usuario');
-  usuario = null;
-  document.getElementById('login-screen').style.display = 'block';
-  document.getElementById('app-screen').style.display = 'none';
-  document.getElementById('login-email').value = '';
-  document.getElementById('login-pass').value = '';
-}
+  function login() {
+    const email = document.getElementById('login-email').value.trim();
+    const pass = document.getElementById('login-pass').value;
+    fetch('/api/produccion?action=login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    }).then(r => r.json()).then(data => {
+      if (data.error) { document.getElementById('login-err').style.display = 'block'; return; }
+      localStorage.setItem('gx_usuario', JSON.stringify(data.usuario));
+      iniciarConSesion(data.usuario);
+    }).catch(() => { document.getElementById('login-err').style.display = 'block'; });
+  }
+
+  function logout() {
+    localStorage.removeItem('gx_usuario');
+    usuario = null;
+    document.getElementById('login-screen').style.display = 'block';
+    document.getElementById('app-screen').style.display = 'none';
+    document.getElementById('login-email').value = '';
+    document.getElementById('login-pass').value = '';
+  }
 
   async function cargarStock() {
-    const [resStock, resPedidos] = await Promise.all([
-      fetch('/api/produccion?action=stock'),
-      fetch('/api/produccion?action=pedidos')
-    ]);
-    stockItems = await resStock.json();
-    const pedidos = await resPedidos.json();
-    lotesEnEmpaque = pedidos.flatMap(p =>
-      (p.lotes || []).filter(l => l.etapa === 'empaque').map(l => ({ ...l, pedido: p }))
-    );
+    const res = await fetch('/api/produccion?action=pedidos');
+    pedidos = await res.json();
     renderStock();
     renderStats();
   }
 
   function renderStats() {
-    const enEmpaque = lotesEnEmpaque.length;
-    const enStock = stockItems.filter(i => i.estado === 'stock').reduce((a,i) => a + i.cantidad, 0);
-    const enListo = stockItems.filter(i => i.estado === 'listo').reduce((a,i) => a + i.cantidad, 0);
-    document.getElementById('stat-empaque').textContent = enEmpaque;
-    document.getElementById('stat-stock').textContent = enStock.toLocaleString('es-AR');
-    document.getElementById('stat-listo').textContent = enListo.toLocaleString('es-AR');
+    const todosLotes = pedidos.flatMap(p => p.lotes || []);
+    const enEmpaque = todosLotes.filter(l => l.etapa === 'empaque');
+    const enStock = todosLotes.filter(l => l.etapa === 'stock');
+    const enListo = todosLotes.filter(l => l.etapa === 'listo');
+    document.getElementById('stat-empaque').textContent = enEmpaque.reduce((a,l) => a+(parseInt(l.cantidad)||0), 0).toLocaleString('es-AR');
+    document.getElementById('stat-stock').textContent = enStock.reduce((a,l) => a+(parseInt(l.cantidad)||0), 0).toLocaleString('es-AR');
+    document.getElementById('stat-listo').textContent = enListo.reduce((a,l) => a+(parseInt(l.cantidad)||0), 0).toLocaleString('es-AR');
   }
 
-  function diasDesde(fecha) {
-    if (!fecha) return 0;
-    return Math.floor((new Date() - new Date(fecha)) / (1000*60*60*24));
+  function renderItemCard(lote, pedido, etapa) {
+    const tallesHtml = pedido.talles?.length
+      ? pedido.talles.map(t => `<span class="item-talle">T${t.talle}: ${t.cantidad}</span>`).join('')
+      : '';
+    const fecha = lote.updated_at ? new Date(lote.updated_at).toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : '—';
+    const dias = diasDesde(lote.updated_at);
+    const cliente = pedido.tipo === 'stock' ? 'Stock propio' : (pedido.cliente || '—');
+    const hasSplits = lote.notas?.includes('Split:');
+
+    let actionsHtml = '';
+    if (etapa === 'empaque') {
+      actionsHtml = `<button class="btn btn-primary btn-sm" onclick="abrirMoverEmpaque(${lote.id}, ${lote.cantidad}, '${cliente.replace(/'/g,"\\'")}', '${pedido.producto.replace(/'/g,"\\'")}')">Mover →</button>`;
+    } else {
+      actionsHtml = `<button class="btn btn-outline btn-sm" onclick="abrirMoverStock(${lote.id}, '${etapa}', '${cliente.replace(/'/g,"\\'")}')">Mover</button>`;
+    }
+
+    return `
+      <div class="item-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px;">
+          <div class="item-cliente">${cliente}</div>
+          <span class="emp-badge ${pedido.empresa === 'El Resero' ? 'emp-r' : 'emp-b'}">${pedido.empresa}</span>
+        </div>
+        <div class="item-modelo">${pedido.producto}</div>
+        ${tallesHtml ? `<div class="item-talles">${tallesHtml}</div>` : ''}
+        <div class="item-total">${lote.cantidad} pares · ${lote.numero}</div>
+        <div class="item-fecha">${fecha} · ${dias}d en esta etapa</div>
+        ${hasSplits ? `<div class="split-indicator">División parcial</div>` : ''}
+        <div class="item-actions">${actionsHtml}</div>
+      </div>`;
   }
 
   function renderStock() {
-    const empaque = document.getElementById('col-empaque-body');
-    const stock = document.getElementById('col-stock-body');
-    const listo = document.getElementById('col-listo-body');
+    const todosLotes = pedidos.flatMap(p => ({
+      lotes: p.lotes || [],
+      pedido: p
+    }));
 
-    document.getElementById('cnt-empaque').textContent = lotesEnEmpaque.length;
-    document.getElementById('cnt-stock').textContent = stockItems.filter(i => i.estado === 'stock').length;
-    document.getElementById('cnt-listo').textContent = stockItems.filter(i => i.estado === 'listo').length;
+    const empaque = [], stock = [], listo = [];
+    pedidos.forEach(p => {
+      (p.lotes || []).forEach(l => {
+        if (l.etapa === 'empaque') empaque.push({ lote: l, pedido: p });
+        else if (l.etapa === 'stock') stock.push({ lote: l, pedido: p });
+        else if (l.etapa === 'listo') listo.push({ lote: l, pedido: p });
+      });
+    });
 
-    empaque.innerHTML = lotesEnEmpaque.length === 0
+    document.getElementById('cnt-empaque').textContent = empaque.length;
+    document.getElementById('cnt-stock').textContent = stock.length;
+    document.getElementById('cnt-listo').textContent = listo.length;
+
+    document.getElementById('col-empaque-body').innerHTML = empaque.length === 0
       ? '<div class="empty-state">Sin lotes en empaque</div>'
-      : lotesEnEmpaque.map(l => `
-          <div class="item-card">
-            <div class="item-cliente">${l.pedido.tipo === 'stock' ? 'Stock propio' : (l.pedido.cliente || '—')}</div>
-            <div class="item-modelo">${l.pedido.producto}</div>
-            <div class="item-pares">${l.cantidad} pares</div>
-            <div class="item-fecha">${l.numero} · ${diasDesde(l.updated_at)}d en empaque</div>
-            <div style="margin-bottom:6px;">
-              <span class="emp-badge ${l.pedido.empresa === 'El Resero' ? 'emp-r' : 'emp-b'}">${l.pedido.empresa}</span>
-            </div>
-            <div class="item-actions">
-              <button class="btn btn-success btn-sm" onclick="moverLoteAStock(${l.id}, 'stock')">→ Stock</button>
-              <button class="btn btn-warn btn-sm" onclick="moverLoteAStock(${l.id}, 'listo')">→ Listo</button>
-            </div>
-          </div>`).join('');
+      : empaque.map(({ lote, pedido }) => renderItemCard(lote, pedido, 'empaque')).join('');
 
-    const itemsStock = stockItems.filter(i => i.estado === 'stock');
-    stock.innerHTML = itemsStock.length === 0
+    document.getElementById('col-stock-body').innerHTML = stock.length === 0
       ? '<div class="empty-state">Sin items en stock</div>'
-      : itemsStock.map(i => `
-          <div class="item-card">
-            <div class="item-cliente">${i.pedido?.cliente || i.producto}</div>
-            <div class="item-modelo">${i.producto}${i.talle ? ' · T' + i.talle : ''}</div>
-            <div class="item-pares">${i.cantidad} pares</div>
-            <div class="item-fecha">${new Date(i.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short'})}</div>
-            <div style="margin-bottom:6px;">
-              <span class="emp-badge ${i.empresa === 'El Resero' ? 'emp-r' : 'emp-b'}">${i.empresa}</span>
-            </div>
-            <div class="item-actions">
-              <button class="btn btn-warn btn-sm" onclick="abrirMover(${i.id}, '${i.producto}', ${i.cantidad}, 'stock')">Mover</button>
-            </div>
-          </div>`).join('');
+      : stock.map(({ lote, pedido }) => renderItemCard(lote, pedido, 'stock')).join('');
 
-    const itemsListo = stockItems.filter(i => i.estado === 'listo');
-    listo.innerHTML = itemsListo.length === 0
+    document.getElementById('col-listo-body').innerHTML = listo.length === 0
       ? '<div class="empty-state">Sin items listos</div>'
-      : itemsListo.map(i => `
-          <div class="item-card">
-            <div class="item-cliente">${i.pedido?.cliente || i.producto}</div>
-            <div class="item-modelo">${i.producto}${i.talle ? ' · T' + i.talle : ''}</div>
-            <div class="item-pares">${i.cantidad} pares</div>
-            <div class="item-fecha">${new Date(i.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short'})}</div>
-            <div style="margin-bottom:6px;">
-              <span class="emp-badge ${i.empresa === 'El Resero' ? 'emp-r' : 'emp-b'}">${i.empresa}</span>
-            </div>
-            <div class="item-actions">
-              <button class="btn btn-outline btn-sm" onclick="abrirMover(${i.id}, '${i.producto}', ${i.cantidad}, 'listo')">Mover</button>
-            </div>
-          </div>`).join('');
+      : listo.map(({ lote, pedido }) => renderItemCard(lote, pedido, 'listo')).join('');
   }
 
-  async function moverLoteAStock(loteId, estado) {
-    const lote = lotesEnEmpaque.find(l => l.id === loteId);
-    if (!lote) return;
-    await fetch('/api/produccion?action=etapa-lote', {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lote_id: loteId, etapa: estado === 'listo' ? 'listo' : 'stock', usuario: usuario.nombre })
-    });
-    await fetch('/api/produccion?action=crear', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        numero: lote.numero + '-S',
-        cliente: lote.pedido.cliente || '',
-        producto: lote.pedido.producto,
-        tipo: lote.pedido.tipo,
-        cantidad_pedida: lote.cantidad,
-        cantidad_stock: 0,
-        empresa: lote.pedido.empresa,
-        notas: 'Desde lote ' + lote.numero,
-        talles: [],
-        usuario: usuario.nombre,
-        monto_total: 0
-      })
-    });
-    cargarStock();
-  }
-
-  function abrirRegistrar() {
-    document.getElementById('reg-producto').value = '';
-    document.getElementById('reg-talle').value = '';
-    document.getElementById('reg-cantidad').value = '';
-    document.getElementById('modal-registrar').classList.add('open');
-  }
-
-  async function confirmarRegistro() {
-    const producto = document.getElementById('reg-producto').value.trim();
-    const talle = document.getElementById('reg-talle').value.trim();
-    const cantidad = parseInt(document.getElementById('reg-cantidad').value) || 0;
-    const empresa = document.getElementById('reg-empresa').value;
-    if (!producto || cantidad < 1) return alert('Completá producto y cantidad');
-    await fetch('/api/produccion?action=crear', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        numero: 'STK-' + Date.now(),
-        cliente: '',
-        producto: producto + (talle ? ' T' + talle : ''),
-        tipo: 'stock',
-        cantidad_pedida: 0,
-        cantidad_stock: cantidad,
-        empresa,
-        notas: talle ? 'Talle ' + talle : '',
-        talles: talle ? [{ talle, cantidad }] : [],
-        usuario: usuario.nombre,
-        monto_total: 0
-      })
-    });
-    cerrarModal('modal-registrar');
-    cargarStock();
-  }
-
-  function abrirMover(id, producto, cantidad, estadoActual) {
-    document.getElementById('mover-id').value = id;
-    document.getElementById('mover-titulo').textContent = 'Mover — ' + producto;
-    document.getElementById('mover-detalle').textContent = cantidad + ' pares · actualmente en ' + (estadoActual === 'stock' ? 'Stock' : 'Listo para entregar');
-    document.getElementById('mover-estado').value = estadoActual === 'stock' ? 'listo' : 'stock';
+  function abrirMoverEmpaque(loteId, cantidad, cliente, producto) {
+    document.getElementById('mover-lote-id').value = loteId;
+    document.getElementById('mover-cantidad-total').value = cantidad;
+    document.getElementById('mover-titulo').textContent = 'Mover desde Empaque';
+    document.getElementById('mover-info').textContent = `${cliente} · ${producto} · ${cantidad} pares`;
+    document.getElementById('cant-stock').value = '';
+    document.getElementById('cant-listo').value = '';
+    document.getElementById('cant-error').style.display = 'none';
+    document.getElementById('mover-dividir-wrap').style.display = 'none';
+    dividirVisible = false;
     document.getElementById('modal-mover').classList.add('open');
   }
 
-  async function confirmarMover() {
-    const id = parseInt(document.getElementById('mover-id').value);
-    const estado = document.getElementById('mover-estado').value;
-    await fetch('/api/produccion?action=stock-estado', {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, estado })
-    });
+  function toggleDividir() {
+    dividirVisible = !dividirVisible;
+    document.getElementById('mover-dividir-wrap').style.display = dividirVisible ? 'block' : 'none';
+  }
+
+  function seleccionarDestino(destino) {
+    const loteId = parseInt(document.getElementById('mover-lote-id').value);
+    moverLote(loteId, destino);
     cerrarModal('modal-mover');
+  }
+
+  function validarSplit() {
+    const total = parseInt(document.getElementById('mover-cantidad-total').value) || 0;
+    const aStock = parseInt(document.getElementById('cant-stock').value) || 0;
+    const aListo = parseInt(document.getElementById('cant-listo').value) || 0;
+    const error = document.getElementById('cant-error');
+    if (aStock + aListo > total) {
+      error.style.display = 'block';
+    } else {
+      error.style.display = 'none';
+    }
+  }
+
+  async function confirmarSplit() {
+    const loteId = parseInt(document.getElementById('mover-lote-id').value);
+    const total = parseInt(document.getElementById('mover-cantidad-total').value) || 0;
+    const aStock = parseInt(document.getElementById('cant-stock').value) || 0;
+    const aListo = parseInt(document.getElementById('cant-listo').value) || 0;
+
+    if (aStock + aListo > total) return alert('La suma supera los pares disponibles');
+    if (aStock + aListo === 0) return alert('Ingresá al menos una cantidad');
+
+    if (aStock > 0 && aListo > 0) {
+      const res = await fetch('/api/produccion?action=dividir-lote', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lote_id: loteId, cantidad_nueva: aListo, usuario: usuario.nombre, notas: 'Split: ' + aListo + ' a Listo' })
+      });
+      const data = await res.json();
+      if (data.error) return alert('Error: ' + data.error);
+      await moverLote(data.nuevoLote?.id || loteId, 'listo');
+      if (aStock < total) await moverLote(loteId, 'stock');
+    } else if (aStock > 0) {
+      await moverLote(loteId, 'stock');
+    } else {
+      await moverLote(loteId, 'listo');
+    }
+
+    cerrarModal('modal-mover');
+    cargarStock();
+  }
+
+  async function moverLote(loteId, etapa) {
+    await fetch('/api/produccion?action=etapa-lote', {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lote_id: loteId, etapa, usuario: usuario.nombre })
+    });
+    cargarStock();
+  }
+
+  function abrirMoverStock(loteId, etapaActual, cliente) {
+    document.getElementById('mover-stock-lote-id').value = loteId;
+    document.getElementById('mover-stock-titulo').textContent = 'Mover — ' + cliente;
+    document.getElementById('mover-stock-info').textContent = etapaActual === 'stock' ? 'Actualmente en Stock' : 'Actualmente en Listo para entregar';
+    document.getElementById('mover-stock-destino').value = etapaActual === 'stock' ? 'listo' : 'stock';
+    document.getElementById('modal-mover-stock').classList.add('open');
+  }
+
+  async function confirmarMoverStock() {
+    const loteId = parseInt(document.getElementById('mover-stock-lote-id').value);
+    const destino = document.getElementById('mover-stock-destino').value;
+    await fetch('/api/produccion?action=etapa-lote', {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lote_id: loteId, etapa: destino, usuario: usuario.nombre })
+    });
+    cerrarModal('modal-mover-stock');
     cargarStock();
   }
 
@@ -415,37 +475,27 @@ function logout() {
     document.getElementById(id).classList.remove('open');
   }
 
+  function leerSesion() {
+    try {
+      const s = localStorage.getItem('gx_usuario');
+      return s ? JSON.parse(s) : null;
+    } catch { return null; }
+  }
+
+  function iniciarConSesion(u) {
+    usuario = u;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display = 'block';
+    if (document.getElementById('user-label')) document.getElementById('user-label').textContent = u.nombre;
+    cargarStock();
+  }
+
   document.getElementById('login-pass').addEventListener('keydown', e => {
     if (e.key === 'Enter') login();
   });
 
-  function leerSesion() {
-  try { 
-    const s = localStorage.getItem('gx_usuario');
-    return s ? JSON.parse(s) : null;
-  } catch { return null; }
-}
-
-function iniciarConSesion(u) {
-  usuario = u;
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app-screen').style.display = 'block';
-  if (document.getElementById('user-label')) {
-    document.getElementById('user-label').textContent = u.nombre + ' · ' + u.rol;
-  }
-  if (u.rol === 'produccion' || u.rol === 'admin') {
-    if (document.getElementById('btn-nuevo')) document.getElementById('btn-nuevo').style.display = 'inline-block';
-    if (document.getElementById('btn-importar')) document.getElementById('btn-importar').style.display = 'inline-block';
-  }
-  if (u.rol === 'empaque' || u.rol === 'admin' || u.rol === 'produccion') {
-    if (document.getElementById('btn-registrar')) document.getElementById('btn-registrar').style.display = 'inline-block';
-  }
-  if (typeof cargarPedidos === 'function') cargarPedidos();
-  if (typeof cargarStock === 'function') cargarStock();
-}
-
-const sesionGuardada = leerSesion();
-if (sesionGuardada) iniciarConSesion(sesionGuardada);
+  const sesionGuardada = leerSesion();
+  if (sesionGuardada) iniciarConSesion(sesionGuardada);
 </script>
 </body>
 </html>
