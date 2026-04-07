@@ -154,6 +154,11 @@ module.exports = async function handler(req, res) {
         if (!productoMap[key]) productoMap[key] = { nombre: key, cantidad: 0, total: 0 };
         productoMap[key].cantidad += l.cantidad;
         productoMap[key].total += l.total;
+        const EXCLUIR = ['ajuste', 'redondeo', 'descuento'];
+        const productosBase = Object.values(productoMap)
+        .filter(p => p.cantidad > 0)
+        .filter(p => !EXCLUIR.some(ex => p.nombre.toLowerCase().includes(ex)))
+        .map(p => ({ ...p, promedio: p.cantidad > 0 ? Math.round(p.total / p.cantidad) : 0 }));
       });
       const productosBase = Object.values(productoMap).filter(p => p.cantidad > 0).map(p => ({
         ...p, promedio: p.cantidad > 0 ? Math.round(p.total / p.cantidad) : 0
