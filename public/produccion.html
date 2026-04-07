@@ -720,50 +720,70 @@ function abrirPrimerLote(pedidoId) {
   if (!p) return;
   cerrarModal('modal-detalle');
 
-  const totalPares = (parseInt(p.cantidad_pedida)||0) + (parseInt(p.cantidad_stock)||0);
   document.getElementById('nuevo-lote-pedido-id').value = pedidoId;
   document.getElementById('nuevo-lote-notas').value = '';
   document.getElementById('nuevo-lote-titulo').textContent = 'Crear lote — ' + (p.cliente || p.producto);
 
-  const tallesDelPedido = p.talles || [];
+  const talles = p.talles || [];
+  const totalPares = (parseInt(p.cantidad_pedida)||0) + (parseInt(p.cantidad_stock)||0);
 
-  if (tallesDelPedido.length > 0) {
-    const tallesHtml = `
-      <div style="margin-bottom:0.5rem;">
-        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:8px;">
-          ${tallesDelPedido.map(t => `
-            <div style="text-align:center;">
-              <div style="font-size:10px;color:#888;margin-bottom:3px;">T${t.talle}</div>
-              <input type="number" id="primer-lote-t-${t.talle}" min="0" value="${t.cantidad}" 
-                style="width:100%;padding:4px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;"
-                oninput="actualizarTotalPrimerLote()" />
-            </div>`).join('')}
-        </div>
-        <div style="font-size:13px;color:#085041;font-weight:500;margin-bottom:8px;" id="primer-lote-total">
-          Total: ${totalPares} pares
-        </div>
+  let extraHtml = document.getElementById('primer-lote-talles-wrap');
+  if (!extraHtml) {
+    extraHtml = document.createElement('div');
+    extraHtml.id = 'primer-lote-talles-wrap';
+    const cantField = document.querySelector('#modal-nuevo-lote .field:first-of-type');
+    cantField.parentNode.insertBefore(extraHtml, cantField);
+  }
+
+  if (talles.length > 0) {
+    const grupos = {};
+    talles.forEach(t => {
+      const m = t.modelo || '?';
+      if (!grupos[m]) grupos[m] = { nombre: t.nombre_producto || '', talles: [] };
+      grupos[m].talles.push({ talle: t.talle, cantidad: t.cantidad });
+    });
+    const modelosOrdenados = Object.entries(grupos).sort((a,b) => (parseInt(a[0])||0)-(parseInt(b[0])||0));
+    const filas = [];
+    modelosOrdenados.forEach(([modelo, data]) => {
+      data.talles.sort((a,b) => (parseInt(a.talle)||0)-(parseInt(b.talle)||0)).forEach(t => {
+        filas.push({ modelo, nombre: data.nombre, talle: t.talle, cantidad: t.cantidad });
+      });
+    });
+    window._primerLoteFilas = filas;
+    window._primerLoteCantidades = filas.map(f => f.cantidad);
+
+    extraHtml.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:0.5rem;">
+        <thead><tr>
+          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Modelo</th>
+          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Talle</th>
+          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Disponible</th>
+          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Este lote</th>
+        </tr></thead>
+        <tbody>${filas.map((f,i) => `
+          <tr>
+            <td style="padding:5px 8px;font-weight:600;color:#1a1a1a;">${f.modelo}</td>
+            <td style="padding:5px 8px;color:#555;">${f.talle ? 'T'+f.talle : '—'}</td>
+            <td style="padding:5px 8px;color:#888;">${f.cantidad}</td>
+            <td style="padding:5px 8px;"><input type="number" id="pl-${i}" min="0" max="${f.cantidad}" placeholder="0" style="width:54px;padding:4px 6px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;" oninput="actualizarTotalPrimerLote()" /></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 8px;background:#f5f5f3;border-radius:6px;margin-bottom:8px;">
+        <span style="color:#888;">Total este lote:</span>
+        <span style="font-weight:500;color:#1a1a1a;" id="primer-lote-total">0 pares</span>
       </div>`;
 
+    document.getElementById('nuevo-lote-cant').value = '';
     const cantField = document.querySelector('#modal-nuevo-lote .field:first-of-type');
     if (cantField) cantField.style.display = 'none';
-
-    let tallesWrap = document.getElementById('primer-lote-talles-wrap');
-    if (!tallesWrap) {
-      tallesWrap = document.createElement('div');
-      tallesWrap.id = 'primer-lote-talles-wrap';
-      cantField.parentNode.insertBefore(tallesWrap, cantField);
-    }
-    tallesWrap.innerHTML = tallesHtml;
-    document.getElementById('nuevo-lote-cant').value = totalPares;
-
-    window._primerLoteTalles = tallesDelPedido.map(t => t.talle);
   } else {
+    extraHtml.innerHTML = '';
+    window._primerLoteFilas = [];
+    window._primerLoteCantidades = [];
     const cantField = document.querySelector('#modal-nuevo-lote .field:first-of-type');
-    if (cantField) cantField.style.display = 'block';
+    if (cantField) { cantField.style.display = 'block'; }
     document.getElementById('nuevo-lote-cant').value = totalPares || '';
-    const wrap = document.getElementById('primer-lote-talles-wrap');
-    if (wrap) wrap.innerHTML = '';
-    window._primerLoteTalles = [];
   }
 
   document.getElementById('modal-nuevo-lote').classList.add('open');
@@ -771,14 +791,14 @@ function abrirPrimerLote(pedidoId) {
 
 function actualizarTotalPrimerLote() {
   let total = 0;
-  (window._primerLoteTalles || []).forEach(t => {
-    total += parseInt(document.getElementById('primer-lote-t-' + t)?.value) || 0;
+  (window._primerLoteCantidades || []).forEach((_, i) => {
+    total += parseInt(document.getElementById('pl-'+i)?.value) || 0;
   });
   const el = document.getElementById('primer-lote-total');
-  if (el) el.textContent = 'Total: ' + total + ' pares';
+  if (el) el.textContent = total + ' pares';
   document.getElementById('nuevo-lote-cant').value = total;
 }
-
+  
 function toggleAparadorLote() {
   const val = document.getElementById('lote-etapa').value;
   document.getElementById('aparador-lote-field').style.display = val === 'aparado' ? 'block' : 'none';
@@ -960,18 +980,26 @@ async function confirmarNuevoLote() {
   const pedido_id = parseInt(document.getElementById('nuevo-lote-pedido-id').value);
   const cantidad = parseInt(document.getElementById('nuevo-lote-cant').value);
   const notas = document.getElementById('nuevo-lote-notas').value;
-  if (!cantidad || cantidad < 1) return alert('Ingresá una cantidad válida');
+  if (!cantidad || cantidad < 1) return alert('Ingresá al menos un par');
+
+  const filas = window._primerLoteFilas || [];
+  const tallesLote = [];
+  filas.forEach((f, i) => {
+    const v = parseInt(document.getElementById('pl-'+i)?.value) || 0;
+    if (v > 0) tallesLote.push({ modelo: f.modelo, talle: f.talle, cantidad: v, nombre_producto: f.nombre });
+  });
 
   await fetch('/api/produccion?action=crear-lote', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ pedido_id, cantidad, usuario: usuario.nombre, notas })
+    body: JSON.stringify({ pedido_id, cantidad, usuario: usuario.nombre, notas, talles_detalle: tallesLote.length > 0 ? tallesLote : null })
   });
 
   const wrap = document.getElementById('primer-lote-talles-wrap');
   if (wrap) wrap.innerHTML = '';
   const cantField = document.querySelector('#modal-nuevo-lote .field:first-of-type');
   if (cantField) cantField.style.display = 'block';
-  window._primerLoteTalles = [];
+  window._primerLoteFilas = [];
+  window._primerLoteCantidades = [];
 
   cerrarModal('modal-nuevo-lote');
   cargarPedidos();
