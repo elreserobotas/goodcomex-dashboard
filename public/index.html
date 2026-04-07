@@ -88,7 +88,7 @@
     .iva-header-row { display: flex; padding: 0 0 8px; font-size: 11px; color: #aaa; border-bottom: 0.5px solid #f0f0f0; margin-bottom: 4px; }
     .iva-row { display: flex; align-items: center; padding: 7px 0; border-bottom: 0.5px solid #f5f5f5; font-size: 13px; }
     .iva-row:last-child { border-bottom: none; }
-    .iva-mes { width: 70px; color: #888; font-size: 12px; }
+    .iva-mes { width: 140px; color: #888; font-size: 12px; }
     .iva-ventas { flex: 1; text-align: right; color: #0c447c; font-weight: 500; }
     .iva-compras { flex: 1; text-align: right; color: #085041; font-weight: 500; }
     .iva-iibb { flex: 1; text-align: right; color: #633806; font-weight: 500; }
@@ -500,14 +500,25 @@
       }
       if (tipo === 'iva') {
   const fmtL = n => '$' + Math.round(n).toLocaleString('es-AR');
-  document.getElementById('iva-resumen').textContent = `IVA ventas ${fmtL(data.ivaVentas)} · IVA compras ${fmtL(data.ivaCompras)} · A pagar ${fmtL(data.ivaNeto)}`;
-  document.getElementById('iva-rows').innerHTML = `
+  const totalV = data.meses.reduce((a,m) => a+m.ivaVentas, 0);
+  const totalC = data.meses.reduce((a,m) => a+m.ivaCompras, 0);
+  const totalIIBB = data.meses.reduce((a,m) => a+m.iibb, 0);
+  const totalN = data.meses.reduce((a,m) => a+m.ivaNeto, 0);
+  document.getElementById('iva-resumen').textContent = `IVA ventas ${fmtL(totalV)} · IVA compras ${fmtL(totalC)} · A pagar ${fmtL(totalN)}`;
+  document.getElementById('iva-rows').innerHTML = data.meses.map(m => `
     <div class="iva-row">
-      <span class="iva-mes">Total</span>
-      <span class="iva-ventas">${fmtL(data.ivaVentas)}</span>
-      <span class="iva-compras">${fmtL(data.ivaCompras)}</span>
-      <span class="iva-iibb">${fmtL(data.iibb)}</span>
-      <span class="iva-neto">${fmtL(data.ivaNeto)}</span>
+      <span class="iva-mes" style="width:140px;">${m.label}</span>
+      <span class="iva-ventas">${fmtL(m.ivaVentas)}</span>
+      <span class="iva-compras">${fmtL(m.ivaCompras)}</span>
+      <span class="iva-iibb">${fmtL(m.iibb)}</span>
+      <span class="iva-neto">${fmtL(m.ivaNeto)}</span>
+    </div>`).join('') + `
+    <div class="iva-total-row">
+      <span style="width:140px;color:#888;">Total período</span>
+      <span style="flex:1;text-align:right;color:#0c447c;">${fmtL(totalV)}</span>
+      <span style="flex:1;text-align:right;color:#085041;">${fmtL(totalC)}</span>
+      <span style="flex:1;text-align:right;color:#633806;">${fmtL(totalIIBB)}</span>
+      <span style="flex:1;text-align:right;color:#993c1d;">${fmtL(totalN)}</span>
     </div>`;
 }
     } catch (err) {
