@@ -103,6 +103,40 @@ function parsearModeloColor(nombre) {
   return colorCod ? `${modelo} ${colores[colorCod]} — ${nombreBase}` : `${modelo} — ${nombreBase}`;
 }
 
+function parseIVALineas(xml) {
+  const results = [];
+  const re = /<struct>([\s\S]*?)<\/struct>/g;
+  let s;
+  while ((s = re.exec(xml)) !== null) {
+    const b = s[1].match(/<name>balance<\/name>\s*<value><double>(-?[\d.]+)<\/double>/);
+    const t = s[1].match(/<name>tax_line_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
+    if (b && t) results.push({ balance: parseFloat(b[1]), tax: t[1] });
+  }
+  return results;
+}
+
+async function calcularIVAMes(uid, d, h) {
+  const xmlV = await odooCall(uid, 'account.move.line',
+    [['move_id.move_type','=','out_invoice'],['move_id.state','=','posted'],
+     ['tax_line_id','!=',false],['move_id.invoice_date','>=',d],['move_id.invoice_date','<=',h]],
+    ['balance','tax_line_id']
+  );
+  const xmlC = await odooCall(uid, 'account.move.line',
+    [['move_id.move_type','=','in_invoice'],['move_id.state','=','posted'],
+     ['tax_line_id','!=',false],['move_id.invoice_date','>=',d],['move_id.invoice_date','<=',h]],
+    ['balance','tax_line_id']
+  );
+  const lV = parseIVALineas(xmlV);
+  const lC = parseIVALineas(xmlC);
+  const ivaVN = ['VAT 21%','VAT 10.5%','VAT 27%','Exento (paga IVA 21%)'];
+  const ivaCN = ['VAT 21%','VAT 10.5%','VAT 27%','Perc VAT'];
+  const iibbN = ['P. IIBB CABA','P. IIBB BA','P. IIBB N','P. IIBB LP','P. Especial de IVA'];
+  const ivaVentas = Math.round(lV.filter(l => ivaVN.includes(l.tax)).reduce((a,l) => a+Math.abs(l.balance),0));
+  const ivaCompras = Math.round(lC.filter(l => ivaCN.includes(l.tax)).reduce((a,l) => a+Math.abs(l.balance),0));
+  const iibb = Math.round(lC.filter(l => iibbN.includes(l.tax)).reduce((a,l) => a+Math.abs(l.balance),0));
+  return { ivaVentas, ivaCompras, iibb, ivaNeto: ivaVentas - ivaCompras };
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   try {
@@ -112,18 +146,11 @@ module.exports = async function handler(req, res) {
     const uid = await getUid();
 
     if (tipo === 'clientes') {
-      const xml = await odooCall(uid, 'account.move',
-        [['move_type','=','out_invoice'],['state','=','posted'],['invoice_date','>=',desde],['invoice_date','<=',hasta]],
-        ['amount_total','partner_id','company_id']
-      );
-      const facturas = parseAmounts(xml);
-      const memberRegex = /<struct>([\s\S]*?)<\/struct>/g;
-      let struct;
-      const clienteMap = {};
       const xmlFull = await odooCall(uid, 'account.move',
         [['move_type','=','out_invoice'],['state','=','posted'],['invoice_date','>=',desde],['invoice_date','<=',hasta]],
         ['amount_total','partner_id']
       );
+      const clienteMap = {};
       const mr = /<struct>([\s\S]*?)<\/struct>/g;
       let s;
       while ((s = mr.exec(xmlFull)) !== null) {
@@ -154,19 +181,12 @@ module.exports = async function handler(req, res) {
         if (!productoMap[key]) productoMap[key] = { nombre: key, cantidad: 0, total: 0 };
         productoMap[key].cantidad += l.cantidad;
         productoMap[key].total += l.total;
-        const EXCLUIR = ['ajuste', 'redondeo', 'descuento'];
-        const productosBase = Object.values(productoMap)
-        .filter(p => p.cantidad > 0)
-        .filter(p => !EXCLUIR.some(ex => p.nombre.toLowerCase().includes(ex)))
-        .map(p => ({ ...p, promedio: p.cantidad > 0 ? Math.round(p.total / p.cantidad) : 0 }));
       });
       const EXCLUIR = ['ajuste', 'redondeo', 'descuento'];
       const productosBase = Object.values(productoMap)
-      .filter(p => p.cantidad > 0)
-      .filter(p => !EXCLUIR.some(ex => p.nombre.toLowerCase().includes(ex)))
-      .map(p => ({
-        ...p, promedio: p.cantidad > 0 ? Math.round(p.total / p.cantidad) : 0
-      }));
+        .filter(p => p.cantidad > 0)
+        .filter(p => !EXCLUIR.some(ex => p.nombre.toLowerCase().includes(ex)))
+        .map(p => ({ ...p, promedio: p.cantidad > 0 ? Math.round(p.total / p.cantidad) : 0 }));
       return res.json({
         productosPorCantidad: [...productosBase].sort((a,b) => b.cantidad - a.cantidad).slice(0, 10),
         productosPorMonto: [...productosBase].sort((a,b) => b.total - a.total).slice(0, 10)
@@ -201,112 +221,46 @@ module.exports = async function handler(req, res) {
       ]);
       return res.json({ comparativa: { periodoAnterior, anioAnterior } });
     }
-    
-if (tipo === 'iva') {
-  const hoy = new Date();
-  const mesActualDesde = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-01`;
-  const mesActualHasta = new Date().toISOString().slice(0,10);
 
-  // Calcular meses entre desde y hasta
-  const meses = [];
-  let cur = new Date(desde + '-01');
-  const fin = new Date(hasta.slice(0,7) + '-01');
-  while (cur <= fin) {
-    const y = cur.getFullYear();
-    const m = String(cur.getMonth()+1).padStart(2,'0');
-    const ultimoDia = new Date(y, cur.getMonth()+1, 0).getDate();
-    meses.push({
-      label: cur.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' }),
-      desde: `${y}-${m}-01`,
-      hasta: `${y}-${m}-${ultimoDia}`
-    });
-    cur.setMonth(cur.getMonth()+1);
-  }
+    if (tipo === 'iva') {
+      const hoy = new Date();
+      const pad = n => String(n).padStart(2,'0');
 
-  // Agregar mes actual si no está ya incluido
-  const mesActualKey = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}`;
-  const yaIncluido = meses.some(m => m.desde.startsWith(mesActualKey));
-  if (!yaIncluido) {
-    meses.push({
-      label: hoy.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' }) + ' (en curso)',
-      desde: mesActualDesde,
-      hasta: mesActualHasta
-    });
-  }
-
-  async function calcularIVA(d, h) {
-    const xmlV = await odooCall(uid, 'account.move.line',
-      [['move_id.move_type','=','out_invoice'],['move_id.state','=','posted'],
-       ['tax_line_id','!=',false],['move_id.invoice_date','>=',d],['move_id.invoice_date','<=',h]],
-      ['balance','tax_line_id']
-    );
-    const xmlC = await odooCall(uid, 'account.move.line',
-      [['move_id.move_type','=','in_invoice'],['move_id.state','=','posted'],
-       ['tax_line_id','!=',false],['move_id.invoice_date','>=',d],['move_id.invoice_date','<=',h]],
-      ['balance','tax_line_id']
-    );
-    function parseL(xml) {
-      const results = [];
-      const re = /<struct>([\s\S]*?)<\/struct>/g;
-      let s;
-      while ((s = re.exec(xml)) !== null) {
-        const b = s[1].match(/<name>balance<\/name>\s*<value><double>(-?[\d.]+)<\/double>/);
-        const t = s[1].match(/<name>tax_line_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
-        if (b && t) results.push({ balance: parseFloat(b[1]), tax: t[1] });
+      // Generar meses del período seleccionado
+      const meses = [];
+      let cur = new Date(desde.slice(0,7) + '-01');
+      const fin = new Date(hasta.slice(0,7) + '-01');
+      while (cur <= fin) {
+        const y = cur.getFullYear();
+        const m = pad(cur.getMonth()+1);
+        const ultimoDia = new Date(y, cur.getMonth()+1, 0).getDate();
+        meses.push({
+          label: cur.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' }),
+          desde: `${y}-${m}-01`,
+          hasta: `${y}-${m}-${ultimoDia}`
+        });
+        cur.setMonth(cur.getMonth()+1);
       }
-      return results;
+
+      // Agregar mes actual si no está incluido
+      const mesActualKey = `${hoy.getFullYear()}-${pad(hoy.getMonth()+1)}`;
+      const yaIncluido = meses.some(m => m.desde.startsWith(mesActualKey));
+      if (!yaIncluido) {
+        meses.push({
+          label: hoy.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' }) + ' (en curso)',
+          desde: `${hoy.getFullYear()}-${pad(hoy.getMonth()+1)}-01`,
+          hasta: hoy.toISOString().slice(0,10)
+        });
+      }
+
+      const resultados = [];
+      for (const mes of meses) {
+        const r = await calcularIVAMes(uid, mes.desde, mes.hasta);
+        resultados.push({ label: mes.label, ...r });
+      }
+      return res.json({ meses: resultados });
     }
-    const lV = parseL(xmlV);
-    const lC = parseL(xmlC);
-    const ivaVNombres = ['VAT 21%','VAT 10.5%','VAT 27%','Exento (paga IVA 21%)'];
-    const ivaCNombres = ['VAT 21%','VAT 10.5%','VAT 27%','Perc VAT'];
-    const iibbNombres = ['P. IIBB CABA','P. IIBB BA','P. IIBB N','P. IIBB LP','P. Especial de IVA'];
-    return {
-      ivaVentas: Math.round(lV.filter(l => ivaVNombres.includes(l.tax)).reduce((a,l) => a+Math.abs(l.balance),0)),
-      ivaCompras: Math.round(lC.filter(l => ivaCNombres.includes(l.tax)).reduce((a,l) => a+Math.abs(l.balance),0)),
-      iibb: Math.round(lC.filter(l => iibbNombres.includes(l.tax)).reduce((a,l) => a+Math.abs(l.balance),0)),
-    };
-  }
 
-  const resultados = [];
-  for (const mes of meses) {
-    const r = await calcularIVA(mes.desde, mes.hasta);
-    resultados.push({ label: mes.label, ...r, ivaNeto: r.ivaVentas - r.ivaCompras });
-  }
-
-  return res.json({ meses: resultados });
-}
-
-  function parseLineas(xml) {
-    const results = [];
-    const memberRegex = /<struct>([\s\S]*?)<\/struct>/g;
-    let struct;
-    while ((struct = memberRegex.exec(xml)) !== null) {
-      const balMatch = struct[1].match(/<name>balance<\/name>\s*<value><double>(-?[\d.]+)<\/double>/);
-      const taxMatch = struct[1].match(/<name>tax_line_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
-      if (balMatch && taxMatch) results.push({ balance: parseFloat(balMatch[1]), tax: taxMatch[1] });
-    }
-    return results;
-  }
-
-  const lineasVentas = parseLineas(xmlVentas);
-  const lineasCompras = parseLineas(xmlCompras);
-  const ivaVentasNombres = ['VAT 21%', 'VAT 10.5%', 'VAT 27%', 'Exento (paga IVA 21%)'];
-  const ivaComprasNombres = ['VAT 21%', 'VAT 10.5%', 'VAT 27%', 'Perc VAT'];
-  const iibbNombres = ['P. IIBB CABA', 'P. IIBB BA', 'P. IIBB N', 'P. IIBB LP', 'P. Especial de IVA'];
-
-  const ivaVentas = lineasVentas.filter(l => ivaVentasNombres.includes(l.tax)).reduce((a,l) => a + Math.abs(l.balance), 0);
-  const ivaCompras = lineasCompras.filter(l => ivaComprasNombres.includes(l.tax)).reduce((a,l) => a + Math.abs(l.balance), 0);
-  const iibb = lineasCompras.filter(l => iibbNombres.includes(l.tax)).reduce((a,l) => a + Math.abs(l.balance), 0);
-
-  return res.json({
-    ivaVentas: Math.round(ivaVentas),
-    ivaCompras: Math.round(ivaCompras),
-    iibb: Math.round(iibb),
-    ivaNeto: Math.round(ivaVentas - ivaCompras)
-  });
-}
-    
     res.status(400).json({ error: 'Tipo no válido' });
   } catch (err) {
     console.error('ERROR odoo-extra:', err.message);
