@@ -473,13 +473,14 @@ function renderKanbanCard(p, etapaFiltro) {
   const diasTotal = diasDesde(p.created_at);
   const monto = fmtPesos(p.monto_total);
   const puedeEditar = usuario?.rol === 'produccion' || usuario?.rol === 'admin';
+  const cliente = p.tipo === 'stock' ? 'Stock propio' : (p.cliente || '—');
 
   if (sinLotes) {
     return `
       <div class="kanban-pedido">
         <div class="pedido-sin-lotes" onclick="abrirPrimerLote(${p.id})">
           <div class="pedido-num">${p.numero} · sin lotes</div>
-          <div class="pedido-cliente">${p.tipo === 'stock' ? 'Stock propio' : (p.cliente || '—')}</div>
+          <div class="pedido-cliente">${cliente}</div>
           <div class="pedido-modelo">${p.producto}</div>
           <div class="pedido-bottom">
             ${tipoBadge(p.tipo)}
@@ -496,8 +497,7 @@ function renderKanbanCard(p, etapaFiltro) {
     <div class="kanban-pedido">
       <div class="pedido-header" onclick="toggleLotes('lotes-${p.id}-${etapaFiltro}')">
         <div class="pedido-num">${p.numero} · ${lotesMostrar.length} lote${lotesMostrar.length !== 1 ? 's' : ''}</div>
-        <div class="pedido-cliente">${p.tipo === 'stock' ? 'Stock propio' : (p.cliente || '—')}</div>
-        <div class="pedido-modelo">${p.producto}</div>
+        <div class="pedido-cliente">${cliente}</div>
         <div class="pedido-bottom">
           ${tipoBadge(p.tipo)}
           <span class="emp-badge ${p.empresa === 'El Resero' ? 'emp-r' : 'emp-b'}">${p.empresa}</span>
