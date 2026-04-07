@@ -575,7 +575,7 @@ function renderLoteCard(l, p) {
 
   return `
     <div class="lote-card">
-      <div class="lote-num">${l.numero}</div>
+      <div style="font-weight:700;font-size:11px;color:#1a1a1a;margin-bottom:4px;">${l.numero}</div>
       ${modelosHtml}
       <div class="lote-info" style="margin-top:3px;">${l.cantidad} pares · <span class="etapa-pill ${etapaCls(l.etapa)}">${etapaLabel(l.etapa)}</span></div>
       ${l.aparador ? `<div><span class="lote-aparador">${l.aparador}</span></div>` : ''}
