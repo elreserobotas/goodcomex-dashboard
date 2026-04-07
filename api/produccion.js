@@ -234,22 +234,6 @@ return res.json({ ok: true, usuario: { id: u.id, nombre: u.nombre, email: u.emai
     VALUES (${nuevoLote[0].id}, ${l.pedido_id}, null, ${l.etapa}, ${usuario}, ${'Dividido de ' + l.numero})`;
   return res.json({ ok: true, nuevoLote: nuevoLote[0] });
 }  
-      
-  const tallesNuevoJson = talles_nuevo ? JSON.stringify(talles_nuevo) : null;
-  const tallesOriginalJson = talles_original ? JSON.stringify(talles_original) : null;
-  
-  await sql`UPDATE lotes SET cantidad=${l.cantidad - cantidad_nueva}, talles_detalle=${tallesOriginalJson}, updated_at=NOW() WHERE id=${lote_id}`;
-  const existentes = await sql`SELECT COUNT(*) FROM lotes WHERE pedido_id=${l.pedido_id}`;
-  const num = parseInt(existentes[0].count) + 1;
-  const pedido = await sql`SELECT numero FROM pedidos WHERE id=${l.pedido_id}`;
-  const nuevoLote = await sql`
-    INSERT INTO lotes (pedido_id, numero, cantidad, etapa, aparador, notas, talles_detalle)
-    VALUES (${l.pedido_id}, ${pedido[0].numero + '-L' + num}, ${cantidad_nueva}, ${l.etapa}, ${l.aparador||null}, ${notas||null}, ${tallesNuevoJson})
-    RETURNING *
-  `;
-  await sql`INSERT INTO historial_lotes (lote_id, pedido_id, etapa_desde, etapa_hasta, usuario, notas) VALUES (${nuevoLote[0].id}, ${l.pedido_id}, null, ${l.etapa}, ${usuario}, ${'Dividido de ' + l.numero})`;
-  return res.json({ ok: true, nuevoLote: nuevoLote[0] });
-}
 
     if (req.method === 'PUT' && action === 'etapa') {
       const { id, etapa, aparador, usuario, notas } = req.body;
