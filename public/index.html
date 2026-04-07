@@ -172,10 +172,10 @@
 <div class="container">
   <div class="filtros">
     <label>Desde</label>
-    <input type="text" id="desde" value="01/11/2025" placeholder="DD/MM/AAAA" style="padding:6px 10px;border:0.5px solid #e5e5e5;border-radius:8px;font-size:13px;width:110px;" />
-    <span class="sep">→</span>
-    <label>Hasta</label>
-    <input type="text" id="hasta" placeholder="DD/MM/AAAA" style="padding:6px 10px;border:0.5px solid #e5e5e5;border-radius:8px;font-size:13px;width:110px;" />
+<input type="date" id="desde" value="2025-11-01" />
+<span class="sep">→</span>
+<label>Hasta</label>
+<input type="date" id="hasta" />
     <button class="btn btn-primary" onclick="cargarDatos()">Aplicar</button>
     <button class="btn btn-excel" onclick="exportarExcel()">Exportar Excel</button>
   </div>
