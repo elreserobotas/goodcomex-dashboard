@@ -301,9 +301,6 @@ module.exports = async function handler(req, res) {
     const totalVencido = pendientesConDias.filter(f => f.dias >= 0).reduce((a,f) => a + f.amount_residual, 0);
     const todasVencidas = pendientesConDias.filter(f => f.dias >= 0);
 
-    const ivaTotal = await getIVA(uid, desde, hasta);
-    const ivaMeses = [{ mes: 'Total período', ...ivaTotal }];
-
     const [xmlPickings1, xmlPickings2] = await Promise.all([
       odooCall(uid, 'stock.picking',
         [['company_id','=',1],['state','in',['confirmed','assigned','waiting']],['picking_type_code','=','outgoing']],
