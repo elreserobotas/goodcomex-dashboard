@@ -313,7 +313,12 @@
       <button class="modal-close" onclick="cerrarModal('modal-editar-lote')">×</button>
     </div>
     <input type="hidden" id="editar-lote-id" />
-    <div class="field"><label>Cantidad de pares</label><input type="number" id="editar-lote-cant" min="1" /></div>
+    <input type="hidden" id="editar-lote-pedido-id" />
+    <div id="editar-lote-tabla-wrap"></div>
+    <div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 8px;background:#f5f5f3;border-radius:6px;margin-bottom:8px;">
+      <span style="color:#888;">Total:</span>
+      <span style="font-weight:500;color:#1a1a1a;" id="editar-lote-total">0 pares</span>
+    </div>
     <div class="field"><label>Notas</label><textarea id="editar-lote-notas"></textarea></div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="cerrarModal('modal-editar-lote')">Cancelar</button>
@@ -949,20 +954,97 @@ async function confirmarDividir() {
   cargarPedidos();
 }
 
-function abrirEditarLote(id, cantidad, notas) {
-  document.getElementById('editar-lote-id').value = id;
-  document.getElementById('editar-lote-cant').value = cantidad;
+function abrirEditarLote(loteId, cantidad, notas, pedidoId) {
+  const pedido = pedidos.find(p => p.id === parseInt(pedidoId));
+  const lote = pedido?.lotes?.find(l => l.id === parseInt(loteId));
+  document.getElementById('editar-lote-id').value = loteId;
+  document.getElementById('editar-lote-pedido-id').value = pedidoId;
   document.getElementById('editar-lote-notas').value = notas || '';
+
+  // Usar talles_detalle del lote si existe, sino los del pedido
+  const fuenteTalles = lote?.talles_detalle || pedido?.talles || [];
+  const wrap = document.getElementById('editar-lote-tabla-wrap');
+
+  if (fuenteTalles.length > 0) {
+    const grupos = {};
+    fuenteTalles.forEach(t => {
+      const m = t.modelo || '?';
+      if (!grupos[m]) grupos[m] = { nombre: t.nombre_producto || '', talles: [] };
+      grupos[m].talles.push({ talle: t.talle, cantidad: t.cantidad });
+    });
+    const modelosOrdenados = Object.entries(grupos).sort((a,b) => (parseInt(a[0])||0)-(parseInt(b[0])||0));
+    const filas = [];
+    modelosOrdenados.forEach(([modelo, data]) => {
+      data.talles.sort((a,b) => (parseInt(a.talle)||0)-(parseInt(b.talle)||0)).forEach(t => {
+        filas.push({ modelo, nombre: data.nombre, talle: t.talle, cantidad: t.cantidad });
+      });
+    });
+    window._editarLoteFilas = filas;
+
+    wrap.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:0.5rem;">
+        <thead><tr>
+          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Modelo</th>
+          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Talle</th>
+          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Cantidad</th>
+        </tr></thead>
+        <tbody>${filas.map((f,i) => `
+          <tr>
+            <td style="padding:5px 8px;font-weight:600;color:#1a1a1a;">${f.modelo}</td>
+            <td style="padding:5px 8px;color:#555;">${f.talle ? 'T'+f.talle : '—'}</td>
+            <td style="padding:5px 8px;">
+              <input type="number" id="el-${i}" min="0" value="${f.cantidad}" placeholder="0"
+                style="width:54px;padding:4px 6px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;"
+                oninput="actualizarTotalEditarLote()" />
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+    actualizarTotalEditarLote();
+  } else {
+    window._editarLoteFilas = [];
+    wrap.innerHTML = `
+      <div class="field">
+        <label>Cantidad de pares</label>
+        <input type="number" id="editar-lote-cant-simple" min="1" value="${cantidad}" />
+      </div>`;
+    document.getElementById('editar-lote-total').textContent = cantidad + ' pares';
+  }
+
   document.getElementById('modal-editar-lote').classList.add('open');
+}
+
+function actualizarTotalEditarLote() {
+  let total = 0;
+  (window._editarLoteFilas || []).forEach((_, i) => {
+    total += parseInt(document.getElementById('el-'+i)?.value) || 0;
+  });
+  document.getElementById('editar-lote-total').textContent = total + ' pares';
 }
 
 async function confirmarEditarLote() {
   const id = parseInt(document.getElementById('editar-lote-id').value);
-  const cantidad = parseInt(document.getElementById('editar-lote-cant').value);
   const notas = document.getElementById('editar-lote-notas').value;
+  const filas = window._editarLoteFilas || [];
+  let cantidad, tallesDetalle;
+
+  if (filas.length > 0) {
+    tallesDetalle = [];
+    filas.forEach((f, i) => {
+      const v = parseInt(document.getElementById('el-'+i)?.value) || 0;
+      if (v > 0) tallesDetalle.push({ modelo: f.modelo, talle: f.talle, cantidad: v, nombre_producto: f.nombre });
+    });
+    cantidad = tallesDetalle.reduce((a, t) => a + t.cantidad, 0);
+  } else {
+    cantidad = parseInt(document.getElementById('editar-lote-cant-simple')?.value) || 0;
+    tallesDetalle = null;
+  }
+
+  if (!cantidad || cantidad < 1) return alert('Ingresá al menos un par');
+
   await fetch('/api/produccion?action=editar-lote', {
     method: 'PUT', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, cantidad, notas })
+    body: JSON.stringify({ id, cantidad, notas, talles_detalle: tallesDetalle })
   });
   cerrarModal('modal-editar-lote');
   cargarPedidos();
