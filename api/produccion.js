@@ -198,10 +198,11 @@ return res.json({ ok: true, usuario: { id: u.id, nombre: u.nombre, email: u.emai
     }
 
     if (req.method === 'PUT' && action === 'editar-lote') {
-      const { id, cantidad, notas } = req.body;
-      await sql`UPDATE lotes SET cantidad=${cantidad}, notas=${notas||null}, updated_at=NOW() WHERE id=${id}`;
-      return res.json({ ok: true });
-    }
+  const { id, cantidad, notas, talles_detalle } = req.body;
+  const tallesJson = talles_detalle ? JSON.stringify(talles_detalle) : null;
+  await sql`UPDATE lotes SET cantidad=${cantidad}, notas=${notas||null}, talles_detalle=${tallesJson}, updated_at=NOW() WHERE id=${id}`;
+  return res.json({ ok: true });
+}
 
   if (req.method === 'POST' && action === 'dividir-lote') {
   const { lote_id, cantidad_nueva, usuario, notas, talles_nuevo, talles_original } = req.body;
