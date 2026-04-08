@@ -133,6 +133,17 @@
     .hist-texto { color: #555; }
     .modal-actions { display: flex; gap: 8px; margin-top: 1.25rem; justify-content: flex-end; flex-wrap: wrap; }
     .empty-state { text-align: center; padding: 1.5rem; color: #aaa; font-size: 12px; }
+    .lineas-tabla { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 0.5rem; }
+    .lineas-tabla th { text-align: left; padding: 5px 8px; font-size: 10px; color: #aaa; font-weight: 500; border-bottom: 0.5px solid #f0f0f0; }
+    .lineas-tabla td { padding: 5px 8px; border-bottom: 0.5px solid #f5f5f5; vertical-align: middle; }
+    .lineas-tabla tr:last-child td { border-bottom: none; }
+    .lineas-tabla input[type="number"] { width: 54px; padding: 4px 6px; border: 0.5px solid #e5e5e5; border-radius: 5px; font-size: 12px; text-align: center; }
+    .lineas-tabla .modelo-label { font-weight: 600; color: #1a1a1a; }
+    .lineas-tabla .talle-label { color: #555; }
+    .lineas-tabla .cant-label { color: #888; }
+    .destino-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 0.5rem; }
+    .destino-btn { padding: 10px; border-radius: 10px; border: 0.5px solid #e5e5e5; cursor: pointer; text-align: center; font-size: 12px; font-weight: 500; }
+    .destino-btn:hover { opacity: 0.85; }
   </style>
 </head>
 <body>
@@ -254,7 +265,7 @@
     <div class="modal-bg" id="modal-dividir">
   <div class="modal">
     <div class="modal-title">
-      <span>Dividir lote</span>
+      <span>Distribuir lote</span>
       <button class="modal-close" onclick="cerrarModal('modal-dividir')">×</button>
     </div>
     <div class="modal-sub" id="dividir-sub"></div>
@@ -262,13 +273,13 @@
     <input type="hidden" id="dividir-pedido-id" />
 
     <div class="modal-section">Seleccioná cuántos pares van al nuevo lote</div>
-    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:0.5rem;">
+    <table class="lineas-tabla">
       <thead>
         <tr>
-          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Modelo</th>
-          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Talle</th>
-          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Disponible</th>
-          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Nuevo lote</th>
+          <th>Modelo</th>
+          <th>Talle</th>
+          <th>Disponible</th>
+          <th>Nuevo lote</th>
         </tr>
       </thead>
       <tbody id="dividir-lineas-body"></tbody>
@@ -278,11 +289,10 @@
       <span style="font-weight:500;color:#1a1a1a;" id="dividir-total-val">0 pares</span>
     </div>
     <div style="color:#a32d2d;font-size:11px;margin-top:4px;display:none;" id="dividir-err">Alguna línea supera la cantidad disponible</div>
-
     <div class="field" style="margin-top:1rem;"><label>Nota (opcional)</label><textarea id="dividir-nota" placeholder="Ej: lote urgente para cliente X"></textarea></div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="cerrarModal('modal-dividir')">Cancelar</button>
-      <button class="btn btn-primary" onclick="confirmarDividir()">Dividir</button>
+      <button class="btn btn-primary" onclick="confirmarDividir()">Distribuir</button>
     </div>
   </div>
 </div>
