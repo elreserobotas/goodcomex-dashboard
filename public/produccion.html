@@ -52,8 +52,8 @@
 
     .kanban-scroll-wrap { overflow-x: auto; padding-bottom: 1rem; }
     .kanban { display: flex; gap: 8px; align-items: flex-start; min-width: max-content; }
-    .kanban-col { width: 200px; flex-shrink: 0; }
-    .kanban-header { font-size: 11px; font-weight: 500; padding: 7px 10px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; }
+    .kanban-col { width: 210px; flex-shrink: 0; }
+    .kanban-header { font-size: 11px; font-weight: 500; padding: 7px 10px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; }
     .kanban-body { background: #f0f0ee; border-radius: 0 0 8px 8px; padding: 6px; min-height: 120px; display: flex; flex-direction: column; gap: 6px; }
 
     .kanban-pedido { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 10px; overflow: hidden; }
@@ -63,7 +63,6 @@
     .pedido-sin-lotes:hover { background: #f0f0ee; }
     .pedido-num { font-size: 10px; color: #aaa; margin-bottom: 2px; }
     .pedido-cliente { font-size: 12px; font-weight: 500; margin-bottom: 2px; line-height: 1.3; }
-    .pedido-modelo { font-size: 10px; color: #666; margin-bottom: 4px; line-height: 1.3; }
     .pedido-bottom { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; }
     .pedido-monto { font-size: 10px; color: #085041; font-weight: 500; margin-top: 3px; }
     .pedido-accion { font-size: 10px; color: #378ADD; margin-top: 4px; }
@@ -71,9 +70,6 @@
     .lotes-wrap { border-top: 0.5px solid #f0f0f0; padding: 4px 6px 6px; display: none; flex-direction: column; gap: 4px; background: #fafafa; }
     .lotes-wrap.open { display: flex; }
     .lote-card { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 7px; padding: 6px 8px; }
-    .lote-num { font-size: 10px; color: #aaa; margin-bottom: 2px; }
-    .lote-info { font-size: 11px; font-weight: 500; margin-bottom: 3px; }
-    .lote-aparador { font-size: 10px; padding: 1px 6px; border-radius: 8px; background: #eeedfe; color: #3c3489; display: inline-block; margin-bottom: 3px; }
     .lote-actions { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
     .add-lote-btn { width: 100%; padding: 5px; border: 0.5px dashed #ccc; border-radius: 6px; background: none; font-size: 11px; color: #888; cursor: pointer; margin-top: 2px; }
     .add-lote-btn:hover { background: #f5f5f3; color: #1a1a1a; }
@@ -97,6 +93,7 @@
     .etapa-empaque { background: #D3D1C7; color: #2C2C2A; }
     .etapa-listo { background: #eaf3de; color: #27500a; }
     .etapa-pill { font-size: 10px; padding: 2px 7px; border-radius: 10px; display: inline-block; }
+    .lote-aparador { font-size: 10px; padding: 1px 6px; border-radius: 8px; background: #eeedfe; color: #3c3489; display: inline-block; margin-bottom: 3px; }
 
     .lista-wrap { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; overflow: hidden; }
     .lista-table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -105,15 +102,11 @@
     .lista-table tr:last-child td { border-bottom: none; }
     .lista-table tr:hover td { background: #fafafa; }
 
-    .dividir-lineas { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1rem; }
-    .dividir-linea { display: grid; grid-template-columns: 1fr 80px 80px 32px; gap: 6px; align-items: center; }
-    .dividir-linea input, .dividir-linea select { padding: 6px 8px; border: 0.5px solid #e5e5e5; border-radius: 6px; font-size: 13px; }
-    .dividir-total { font-size: 13px; color: #085041; font-weight: 500; margin-top: 4px; }
-
     .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; align-items: flex-start; justify-content: center; padding: 1.5rem 1rem 5rem; overflow-y: auto; }
     .modal-bg.open { display: flex; }
     .modal { background: #fff; border-radius: 16px; padding: 1.5rem; width: 100%; max-width: 580px; margin: auto; }
     .modal-title { font-size: 16px; font-weight: 500; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; }
+    .modal-sub { font-size: 12px; color: #888; margin-bottom: 1rem; }
     .modal-close { cursor: pointer; font-size: 22px; color: #888; background: none; border: none; line-height: 1; }
     .modal-section { font-size: 11px; font-weight: 500; color: #aaa; margin: 1rem 0 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
     .two-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -141,9 +134,6 @@
     .lineas-tabla .modelo-label { font-weight: 600; color: #1a1a1a; }
     .lineas-tabla .talle-label { color: #555; }
     .lineas-tabla .cant-label { color: #888; }
-    .destino-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 0.5rem; }
-    .destino-btn { padding: 10px; border-radius: 10px; border: 0.5px solid #e5e5e5; cursor: pointer; text-align: center; font-size: 12px; font-weight: 500; }
-    .destino-btn:hover { opacity: 0.85; }
   </style>
 </head>
 <body>
@@ -196,10 +186,7 @@
         <div class="lista-wrap">
           <table class="lista-table">
             <thead>
-              <tr>
-                <th>Nro</th><th>Cliente</th><th>Modelo</th><th>Empresa</th>
-                <th>Tipo</th><th>Lotes</th><th>Pares</th><th>Etapa</th><th>Monto</th><th>Días</th><th></th>
-              </tr>
+              <tr><th>Nro</th><th>Cliente</th><th>Modelo</th><th>Empresa</th><th>Tipo</th><th>Lotes</th><th>Pares</th><th>Etapa</th><th>Monto</th><th>Días</th><th></th></tr>
             </thead>
             <tbody id="lista-body"></tbody>
           </table>
@@ -209,38 +196,34 @@
   </div>
 </div>
 
+<!-- Modal detalle -->
 <div class="modal-bg" id="modal-detalle">
   <div class="modal">
-    <div class="modal-title">
-      <span id="det-titulo">Detalle</span>
-      <button class="modal-close" onclick="cerrarModal('modal-detalle')">×</button>
-    </div>
+    <div class="modal-title"><span id="det-titulo">Detalle</span><button class="modal-close" onclick="cerrarModal('modal-detalle')">×</button></div>
     <div id="det-body"></div>
     <div class="modal-actions" id="det-actions"></div>
   </div>
 </div>
 
+<!-- Modal mover lote -->
 <div class="modal-bg" id="modal-lote">
   <div class="modal">
-    <div class="modal-title">
-      <span id="lote-titulo">Mover lote</span>
-      <button class="modal-close" onclick="cerrarModal('modal-lote')">×</button>
-    </div>
+    <div class="modal-title"><span id="lote-titulo">Mover lote</span><button class="modal-close" onclick="cerrarModal('modal-lote')">×</button></div>
     <input type="hidden" id="lote-id" />
     <div class="field">
       <label>Nueva etapa</label>
       <select id="lote-etapa" onchange="toggleAparadorLote()">
-  <option value="recibido">Pedido recibido</option>
-  <option value="corte">Corte</option>
-  <option value="deposito_corte">Depósito de corte</option>
-  <option value="deposito">Depósito</option>
-  <option value="aparado">Aparado</option>
-  <option value="armado">Armado</option>
-  <option value="fabrica">Fábrica</option>
-  <option value="cosedor">Cosedor</option>
-  <option value="empaque">Empaque</option>
-  <option value="listo">Listo para entregar</option>
-</select>
+        <option value="recibido">Pedido recibido</option>
+        <option value="corte">Corte</option>
+        <option value="deposito_corte">Depósito de corte</option>
+        <option value="deposito">Depósito</option>
+        <option value="aparado">Aparado</option>
+        <option value="armado">Armado</option>
+        <option value="fabrica">Fábrica</option>
+        <option value="cosedor">Cosedor</option>
+        <option value="empaque">Empaque</option>
+        <option value="listo">Listo para entregar</option>
+      </select>
     </div>
     <div class="field" id="aparador-lote-field" style="display:none;">
       <label>Aparador</label>
@@ -262,26 +245,16 @@
   </div>
 </div>
 
-    <div class="modal-bg" id="modal-dividir">
+<!-- Modal dividir lote -->
+<div class="modal-bg" id="modal-dividir">
   <div class="modal">
-    <div class="modal-title">
-      <span>Distribuir lote</span>
-      <button class="modal-close" onclick="cerrarModal('modal-dividir')">×</button>
-    </div>
+    <div class="modal-title"><span>Distribuir lote</span><button class="modal-close" onclick="cerrarModal('modal-dividir')">×</button></div>
     <div class="modal-sub" id="dividir-sub"></div>
     <input type="hidden" id="dividir-lote-id" />
     <input type="hidden" id="dividir-pedido-id" />
-
     <div class="modal-section">Seleccioná cuántos pares van al nuevo lote</div>
     <table class="lineas-tabla">
-      <thead>
-        <tr>
-          <th>Modelo</th>
-          <th>Talle</th>
-          <th>Disponible</th>
-          <th>Nuevo lote</th>
-        </tr>
-      </thead>
+      <thead><tr><th>Modelo</th><th>Talle</th><th>Disponible</th><th>Nuevo lote</th></tr></thead>
       <tbody id="dividir-lineas-body"></tbody>
     </table>
     <div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 8px;background:#f5f5f3;border-radius:6px;margin-bottom:4px;">
@@ -296,32 +269,11 @@
     </div>
   </div>
 </div>
-    <input type="hidden" id="dividir-lote-id" />
-    <p style="font-size:13px;color:#888;margin-bottom:1rem;" id="dividir-info"></p>
-    <div class="modal-section">Detalle del nuevo lote</div>
-    <div style="display:grid;grid-template-columns:1fr 80px 80px 32px;gap:6px;margin-bottom:6px;">
-      <span style="font-size:11px;color:#aaa;">Modelo</span>
-      <span style="font-size:11px;color:#aaa;">Talle</span>
-      <span style="font-size:11px;color:#aaa;">Cant.</span>
-      <span></span>
-    </div>
-    <div class="dividir-lineas" id="dividir-lineas"></div>
-    <button class="btn btn-outline btn-sm" onclick="agregarLineaDividir()" style="margin-bottom:1rem;">+ agregar línea</button>
-    <div class="dividir-total" id="dividir-total">Total: 0 pares</div>
-    <div class="field" style="margin-top:1rem;"><label>Nota</label><textarea id="dividir-nota" placeholder="Ej: lote urgente para cliente X"></textarea></div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="cerrarModal('modal-dividir')">Cancelar</button>
-      <button class="btn btn-primary" onclick="confirmarDividir()">Dividir</button>
-    </div>
-  </div>
-</div>
 
+<!-- Modal editar lote -->
 <div class="modal-bg" id="modal-editar-lote">
   <div class="modal">
-    <div class="modal-title">
-      <span>Editar lote</span>
-      <button class="modal-close" onclick="cerrarModal('modal-editar-lote')">×</button>
-    </div>
+    <div class="modal-title"><span>Editar lote</span><button class="modal-close" onclick="cerrarModal('modal-editar-lote')">×</button></div>
     <input type="hidden" id="editar-lote-id" />
     <input type="hidden" id="editar-lote-pedido-id" />
     <div id="editar-lote-tabla-wrap"></div>
@@ -337,12 +289,10 @@
   </div>
 </div>
 
+<!-- Modal nuevo lote -->
 <div class="modal-bg" id="modal-nuevo-lote">
   <div class="modal">
-    <div class="modal-title">
-      <span id="nuevo-lote-titulo">Agregar lote</span>
-      <button class="modal-close" onclick="cerrarModal('modal-nuevo-lote')">×</button>
-    </div>
+    <div class="modal-title"><span id="nuevo-lote-titulo">Agregar lote</span><button class="modal-close" onclick="cerrarModal('modal-nuevo-lote')">×</button></div>
     <input type="hidden" id="nuevo-lote-pedido-id" />
     <div class="field"><label>Cantidad de pares</label><input type="number" id="nuevo-lote-cant" min="1" placeholder="0" /></div>
     <div class="field"><label>Notas</label><textarea id="nuevo-lote-notas" placeholder="Descripción del lote..."></textarea></div>
@@ -353,12 +303,10 @@
   </div>
 </div>
 
+<!-- Modal nuevo pedido -->
 <div class="modal-bg" id="modal-form">
   <div class="modal">
-    <div class="modal-title">
-      <span id="form-titulo">Nuevo pedido</span>
-      <button class="modal-close" onclick="cerrarModal('modal-form')">×</button>
-    </div>
+    <div class="modal-title"><span id="form-titulo">Nuevo pedido</span><button class="modal-close" onclick="cerrarModal('modal-form')">×</button></div>
     <input type="hidden" id="form-id" />
     <div class="two-fields">
       <div class="field"><label>Número de pedido</label><input type="text" id="form-numero" placeholder="ej: P-001" /></div>
@@ -394,10 +342,7 @@
         <input type="number" id="form-cantidad-stock" placeholder="0" min="0" />
       </div>
     </div>
-    <div class="field">
-      <label>Monto total del pedido ($)</label>
-      <input type="number" id="form-monto" placeholder="0" min="0" />
-    </div>
+    <div class="field"><label>Monto total del pedido ($)</label><input type="number" id="form-monto" placeholder="0" min="0" /></div>
     <div class="modal-section">Talles</div>
     <div class="talles-grid" id="talles-grid"></div>
     <div class="field"><label>Notas</label><textarea id="form-notas" placeholder="Observaciones..."></textarea></div>
@@ -431,11 +376,12 @@ const ETAPAS = [
   { key: 'listo',          label: 'Listo para entregar', cls: 'etapa-listo' },
 ];
 const TALLES = ['35','36','37','38','39','40','41','42','43','44','45','46'];
+const COLORES_MODELO = ['#e6f1fb','#eaf3de','#faeeda','#fbeaf0','#eeedfe','#fcebeb','#e1f5ee','#f1efe8'];
+const COLORES_TEXTO  = ['#0c447c','#27500a','#633806','#72243e','#3c3489','#a32d2d','#085041','#444'];
 
 let usuario = null;
 let pedidos = [];
 let vista = 'kanban';
-let dividirLineas = 1;
 
 function etapaCls(k) { return ETAPAS.find(e => e.key === k)?.cls || ''; }
 function etapaLabel(k) { return ETAPAS.find(e => e.key === k)?.label || k; }
@@ -455,6 +401,29 @@ function paresLabel(p) {
 function fmtPesos(n) {
   if (!n || n == 0) return '';
   return '$' + Math.round(n).toLocaleString('es-AR');
+}
+
+function buildModelosHtml(fuenteTalles, notas) {
+  if (fuenteTalles?.length) {
+    const grupos = {};
+    fuenteTalles.forEach(t => {
+      const m = t.modelo || '?';
+      if (!grupos[m]) grupos[m] = { nombre: t.nombre_producto || '', talles: [] };
+      grupos[m].talles.push(t);
+    });
+    const modelosOrdenados = Object.entries(grupos).sort((a,b) => (parseInt(a[0])||0)-(parseInt(b[0])||0));
+    return modelosOrdenados.map(([modelo, data], idx) => {
+      const bg = COLORES_MODELO[idx % COLORES_MODELO.length];
+      const color = COLORES_TEXTO[idx % COLORES_TEXTO.length];
+      const ts = data.talles.sort((a,b) => (parseInt(a.talle)||0)-(parseInt(b.talle)||0));
+      return `<div style="margin-bottom:4px;border-radius:6px;padding:4px 7px;background:${bg};">
+        <div style="font-size:10px;font-weight:700;color:${color};margin-bottom:2px;">Mod. ${modelo} <span style="font-weight:400;opacity:0.7;">${data.nombre}</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:2px;">${ts.map(t => `<span style="background:rgba(255,255,255,0.7);border-radius:3px;padding:1px 5px;font-size:9px;color:#333;">${t.talle?'T'+t.talle:'—'}: ${t.cantidad}</span>`).join('')}</div>
+      </div>`;
+    }).join('');
+  }
+  if (notas) return `<div style="font-size:10px;color:#888;margin-bottom:3px;">${notas}</div>`;
+  return '';
 }
 
 function login() {
@@ -520,89 +489,59 @@ function renderKanbanCard(p, etapaFiltro) {
   const cliente = p.tipo === 'stock' ? 'Stock propio' : (p.cliente || '—');
 
   if (sinLotes) {
-    return `
-      <div class="kanban-pedido">
-        <div class="pedido-sin-lotes" onclick="abrirPrimerLote(${p.id})">
-          <div class="pedido-num">${p.numero} · sin lotes</div>
-          <div class="pedido-cliente">${cliente}</div>
-          <div class="pedido-modelo">${p.producto}</div>
-          <div class="pedido-bottom">
-            ${tipoBadge(p.tipo)}
-            <span class="emp-badge ${p.empresa === 'El Resero' ? 'emp-r' : 'emp-b'}">${p.empresa}</span>
-            <span style="font-size:10px;color:#aaa;margin-left:auto;">${diasTotal}d</span>
-          </div>
-          ${monto ? `<div class="pedido-monto">${monto}</div>` : ''}
-          <div class="pedido-accion">Tap para crear lote y mover →</div>
-        </div>
-      </div>`;
-  }
-
-  return `
-    <div class="kanban-pedido">
-      <div class="pedido-header" onclick="toggleLotes('lotes-${p.id}-${etapaFiltro}')">
-        <div class="pedido-num">${p.numero} · ${lotesMostrar.length} lote${lotesMostrar.length !== 1 ? 's' : ''}</div>
+    return `<div class="kanban-pedido">
+      <div class="pedido-sin-lotes" onclick="abrirPrimerLote(${p.id})">
+        <div class="pedido-num">${p.numero} · sin lotes</div>
         <div class="pedido-cliente">${cliente}</div>
         <div class="pedido-bottom">
           ${tipoBadge(p.tipo)}
-          <span class="emp-badge ${p.empresa === 'El Resero' ? 'emp-r' : 'emp-b'}">${p.empresa}</span>
+          <span class="emp-badge ${p.empresa==='El Resero'?'emp-r':'emp-b'}">${p.empresa}</span>
           <span style="font-size:10px;color:#aaa;margin-left:auto;">${diasTotal}d</span>
         </div>
         ${monto ? `<div class="pedido-monto">${monto}</div>` : ''}
-      </div>
-      <div class="lotes-wrap open" id="lotes-${p.id}-${etapaFiltro}">
-        ${lotesMostrar.map(l => renderLoteCard(l, p)).join('')}
-        ${puedeEditar ? `<button class="add-lote-btn" onclick="abrirNuevoLote(${p.id})">+ agregar lote</button>` : ''}
+        <div style="font-size:10px;color:#378ADD;margin-top:4px;">Tap para crear lote →</div>
       </div>
     </div>`;
+  }
+
+  return `<div class="kanban-pedido">
+    <div class="pedido-header" onclick="toggleLotes('lotes-${p.id}-${etapaFiltro}')">
+      <div class="pedido-num">${p.numero} · ${lotesMostrar.length} lote${lotesMostrar.length!==1?'s':''}</div>
+      <div class="pedido-cliente">${cliente}</div>
+      <div class="pedido-bottom">
+        ${tipoBadge(p.tipo)}
+        <span class="emp-badge ${p.empresa==='El Resero'?'emp-r':'emp-b'}">${p.empresa}</span>
+        <span style="font-size:10px;color:#aaa;margin-left:auto;">${diasTotal}d</span>
+      </div>
+      ${monto ? `<div class="pedido-monto">${monto}</div>` : ''}
+    </div>
+    <div class="lotes-wrap open" id="lotes-${p.id}-${etapaFiltro}">
+      ${lotesMostrar.map(l => renderLoteCard(l, p)).join('')}
+      ${puedeEditar ? `<button class="add-lote-btn" onclick="abrirNuevoLote(${p.id})">+ agregar lote</button>` : ''}
+    </div>
+  </div>`;
 }
 
 function renderLoteCard(l, p) {
   const diasEtapa = diasDesde(l.updated_at);
   const puedeEditar = usuario?.rol === 'produccion' || usuario?.rol === 'admin';
-  const COLORES_MODELO = ['#e6f1fb','#eaf3de','#faeeda','#fbeaf0','#eeedfe','#fcebeb','#e1f5ee','#f1efe8'];
-  const COLORES_TEXTO = ['#0c447c','#27500a','#633806','#72243e','#3c3489','#a32d2d','#085041','#444'];
+  const fuenteTalles = l.talles_detalle || p.talles;
+  const modelosHtml = buildModelosHtml(fuenteTalles, l.notas);
 
-  // Agrupar talles por modelo
-  let modelosHtml = '';
-  if (p.talles?.length) {
-    const grupos = {};
-    p.talles.forEach(t => {
-      const m = t.modelo || '?';
-      if (!grupos[m]) grupos[m] = { nombre: t.nombre_producto || '', talles: [] };
-      grupos[m].talles.push(t);
-    });
-    const modelosOrdenados = Object.entries(grupos).sort((a,b) => (parseInt(a[0])||0)-(parseInt(b[0])||0));
-    modelosHtml = modelosOrdenados.map(([modelo, data], idx) => {
-      const bg = COLORES_MODELO[idx % COLORES_MODELO.length];
-      const color = COLORES_TEXTO[idx % COLORES_TEXTO.length];
-      const tallesOrdenados = data.talles.sort((a,b) => (parseInt(a.talle)||0)-(parseInt(b.talle)||0));
-      return `
-        <div style="margin-bottom:4px;border-radius:6px;padding:4px 7px;background:${bg};">
-          <div style="font-size:10px;font-weight:700;color:${color};margin-bottom:2px;">Mod. ${modelo} <span style="font-weight:400;opacity:0.7;">${data.nombre}</span></div>
-          <div style="display:flex;flex-wrap:wrap;gap:2px;">
-            ${tallesOrdenados.map(t => `<span style="background:rgba(255,255,255,0.7);border-radius:3px;padding:1px 5px;font-size:9px;color:#333;">${t.talle?'T'+t.talle:'—'}: ${t.cantidad}</span>`).join('')}
-          </div>
-        </div>`;
-    }).join('');
-  } else if (l.notas) {
-    modelosHtml = `<div style="font-size:10px;color:#888;margin-bottom:3px;">${l.notas}</div>`;
-  }
-
-  return `
-    <div class="lote-card">
-      <div style="font-weight:700;font-size:11px;color:#1a1a1a;margin-bottom:4px;">${l.numero}</div>
-      ${modelosHtml}
-      <div class="lote-info" style="margin-top:3px;">${l.cantidad} pares · <span class="etapa-pill ${etapaCls(l.etapa)}">${etapaLabel(l.etapa)}</span></div>
-      ${l.aparador ? `<div><span class="lote-aparador">${l.aparador}</span></div>` : ''}
-      <div style="font-size:10px;color:#aaa;margin-top:2px;">${diasEtapa}d en esta etapa</div>
-      ${puedeEditar ? `
-        <div class="lote-actions">
-          <button class="btn btn-primary btn-sm" onclick="abrirMoverLote(${l.id},'${l.etapa}','${l.aparador||''}')">Mover</button>
-          <button class="btn btn-warn btn-sm" onclick="abrirDividirLote(${l.id},${l.cantidad},'${l.numero}',${p.id})"
-          <button class="btn btn-outline btn-sm" onclick="abrirEditarLote(${l.id},${l.cantidad},'${(l.notas||'').replace(/'/g,"\\'")}',${p.id})">Editar</button>
-          <button class="btn btn-danger btn-sm" onclick="eliminarLote(${l.id})" style="padding:4px 10px;border-radius:8px;">Eliminar</button>
-        </div>` : ''}
-    </div>`;
+  return `<div class="lote-card">
+    <div style="font-weight:700;font-size:11px;color:#1a1a1a;margin-bottom:4px;">${l.numero}</div>
+    ${modelosHtml}
+    <div style="font-size:11px;font-weight:500;margin-top:3px;">${l.cantidad} pares · <span class="etapa-pill ${etapaCls(l.etapa)}">${etapaLabel(l.etapa)}</span></div>
+    ${l.aparador ? `<div><span class="lote-aparador">${l.aparador}</span></div>` : ''}
+    <div style="font-size:10px;color:#aaa;margin-top:2px;">${diasEtapa}d en esta etapa</div>
+    ${puedeEditar ? `
+      <div class="lote-actions">
+        <button class="btn btn-primary btn-sm" onclick="abrirMoverLote(${l.id},'${l.etapa}','${l.aparador||''}')">Mover</button>
+        <button class="btn btn-warn btn-sm" onclick="abrirDividirLote(${l.id},${l.cantidad},'${l.numero}',${p.id})">Dividir</button>
+        <button class="btn btn-outline btn-sm" onclick="abrirEditarLote(${l.id},${l.cantidad},'${(l.notas||'').replace(/'/g,"\\'")}',${p.id})">Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="eliminarLote(${l.id})">Eliminar</button>
+      </div>` : ''}
+  </div>`;
 }
 
 function toggleLotes(id) {
@@ -632,16 +571,14 @@ function renderKanban() {
     const cntLotes = etapa.key === 'recibido'
       ? pedidosUnicos.filter(p => (p.lotes||[]).length === 0).length + pedidos.flatMap(p => p.lotes||[]).filter(l => l.etapa === 'recibido').length
       : pedidos.flatMap(p => p.lotes||[]).filter(l => l.etapa === etapa.key).length;
-    return `
-      <div class="kanban-col">
-        <div class="kanban-header ${etapa.cls}">
-          <span>${etapa.label}</span>
-          <span>${cntLotes}</span>
-        </div>
-        <div class="kanban-body">
-          ${pedidosUnicos.length === 0 ? '<div class="empty-state">—</div>' : pedidosUnicos.map(p => renderKanbanCard(p, etapa.key)).join('')}
-        </div>
-      </div>`;
+    return `<div class="kanban-col">
+      <div class="kanban-header ${etapa.cls}">
+        <span>${etapa.label}</span><span>${cntLotes}</span>
+      </div>
+      <div class="kanban-body">
+        ${pedidosUnicos.length === 0 ? '<div class="empty-state">—</div>' : pedidosUnicos.map(p => renderKanbanCard(p, etapa.key)).join('')}
+      </div>
+    </div>`;
   }).join('');
 }
 
@@ -653,23 +590,22 @@ function renderLista() {
     const lotes = p.lotes || [];
     const dias = diasDesde(p.created_at);
     const primerLote = lotes[0];
-    return `
-      <tr>
-        <td onclick="abrirDetalle(${p.id})" style="cursor:pointer;">${p.numero}</td>
-        <td onclick="abrirDetalle(${p.id})" style="cursor:pointer;"><strong>${p.tipo === 'stock' ? 'Stock propio' : (p.cliente||'—')}</strong></td>
-        <td onclick="abrirDetalle(${p.id})" style="cursor:pointer;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.producto}</td>
-        <td><span class="emp-badge ${p.empresa==='El Resero'?'emp-r':'emp-b'}">${p.empresa}</span></td>
-        <td>${tipoBadge(p.tipo)}</td>
-        <td>${lotes.length}</td>
-        <td>${paresLabel(p)}</td>
-        <td><span class="etapa-pill ${etapaCls(p.etapa)}">${etapaLabel(p.etapa)}</span></td>
-        <td style="font-size:11px;color:#085041;">${fmtPesos(p.monto_total)}</td>
-        <td style="font-size:11px;color:#888;">${dias}d</td>
-        <td>${puedeEditar ? (lotes.length === 0
-          ? `<button class="btn btn-primary btn-sm" onclick="abrirPrimerLote(${p.id})">Iniciar</button>`
-          : `<button class="btn btn-primary btn-sm" onclick="abrirMoverLote(${primerLote.id},'${primerLote.etapa}','${primerLote.aparador||''}')">Mover</button>`)
-          : ''}</td>
-      </tr>`;
+    return `<tr>
+      <td onclick="abrirDetalle(${p.id})" style="cursor:pointer;">${p.numero}</td>
+      <td onclick="abrirDetalle(${p.id})" style="cursor:pointer;"><strong>${p.tipo==='stock'?'Stock propio':(p.cliente||'—')}</strong></td>
+      <td onclick="abrirDetalle(${p.id})" style="cursor:pointer;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.producto}</td>
+      <td><span class="emp-badge ${p.empresa==='El Resero'?'emp-r':'emp-b'}">${p.empresa}</span></td>
+      <td>${tipoBadge(p.tipo)}</td>
+      <td>${lotes.length}</td>
+      <td>${paresLabel(p)}</td>
+      <td><span class="etapa-pill ${etapaCls(p.etapa)}">${etapaLabel(p.etapa)}</span></td>
+      <td style="font-size:11px;color:#085041;">${fmtPesos(p.monto_total)}</td>
+      <td style="font-size:11px;color:#888;">${dias}d</td>
+      <td>${puedeEditar ? (lotes.length===0
+        ? `<button class="btn btn-primary btn-sm" onclick="abrirPrimerLote(${p.id})">Iniciar</button>`
+        : `<button class="btn btn-primary btn-sm" onclick="abrirMoverLote(${primerLote.id},'${primerLote.etapa}','${primerLote.aparador||''}')">Mover</button>`)
+        : ''}</td>
+    </tr>`;
   }).join('');
 }
 
@@ -682,25 +618,19 @@ function abrirDetalle(id) {
     ? `<div class="talles-resumen">${p.talles.map(t => `<span class="talle-pill-sm">T${t.talle}: ${t.cantidad}</span>`).join('')}</div>`
     : '<span style="color:#aaa;font-size:12px">Sin talles</span>';
   const histHtml = p.historial?.length
-    ? p.historial.map(h => `
-        <div class="hist-item">
-          <span class="hist-fecha">${new Date(h.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span>
-          <span class="hist-texto"><strong>${h.usuario}</strong> → <strong>${etapaLabel(h.etapa_hasta)}</strong>${h.notas?' — '+h.notas:''}</span>
-        </div>`).join('')
+    ? p.historial.map(h => `<div class="hist-item">
+        <span class="hist-fecha">${new Date(h.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span>
+        <span class="hist-texto"><strong>${h.usuario}</strong> → <strong>${etapaLabel(h.etapa_hasta)}</strong>${h.notas?' — '+h.notas:''}</span>
+      </div>`).join('')
     : '<span style="color:#aaa;font-size:12px">Sin historial</span>';
   const lotesHtml = lotes.map(l => `
     <div style="background:#fafafa;border-radius:8px;padding:8px 10px;margin-bottom:6px;border:0.5px solid #f0f0f0;">
       <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:12px;font-weight:500;">${l.numero}</span>
+        <span style="font-size:12px;font-weight:700;">${l.numero}</span>
         <span class="etapa-pill ${etapaCls(l.etapa)}">${etapaLabel(l.etapa)}</span>
       </div>
       <div style="font-size:12px;color:#555;margin-top:3px;">${l.cantidad} pares${l.aparador?' · '+l.aparador:''}</div>
       ${l.notas?`<div style="font-size:11px;color:#888;margin-top:2px;">${l.notas}</div>`:''}
-      ${l.historial?.length ? l.historial.slice(0,3).map(h => `
-        <div class="hist-item" style="margin-top:4px;">
-          <span class="hist-fecha">${new Date(h.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span>
-          <span class="hist-texto">${h.usuario}${h.aparador?' ('+h.aparador+')':''} → ${etapaLabel(h.etapa_hasta)}</span>
-        </div>`).join('') : ''}
     </div>`).join('');
 
   document.getElementById('det-titulo').textContent = p.numero;
@@ -708,25 +638,20 @@ function abrirDetalle(id) {
     <div class="detalle-row"><span class="detalle-label">Cliente</span><span class="detalle-val">${p.tipo==='stock'?'Stock propio':(p.cliente||'—')}</span></div>
     <div class="detalle-row"><span class="detalle-label">Modelo</span><span class="detalle-val">${p.producto}</span></div>
     <div class="detalle-row"><span class="detalle-label">Empresa</span><span class="detalle-val">${p.empresa}</span></div>
-    <div class="detalle-row"><span class="detalle-label">Tipo</span><span class="detalle-val">${tipoBadge(p.tipo)}</span></div>
     <div class="detalle-row"><span class="detalle-label">Pares</span><span class="detalle-val">${paresLabel(p)}</span></div>
     <div class="detalle-row"><span class="detalle-label">Monto</span><span class="detalle-val" style="color:#085041;">${fmtPesos(p.monto_total)||'—'}</span></div>
     <div class="detalle-row"><span class="detalle-label">Fecha ingreso</span><span class="detalle-val">${fecha}</span></div>
-    <div class="detalle-row"><span class="detalle-label">Días en sistema</span><span class="detalle-val">${diasDesde(p.created_at)} días</span></div>
+    <div class="detalle-row"><span class="detalle-label">Días</span><span class="detalle-val">${diasDesde(p.created_at)} días</span></div>
     ${p.notas?`<div class="detalle-row"><span class="detalle-label">Notas</span><span class="detalle-val" style="font-size:12px;">${p.notas}</span></div>`:''}
     <div class="modal-section">Talles</div>${tallesHtml}
     <div class="modal-section">Lotes (${lotes.length})</div>
     ${lotesHtml || '<span style="color:#aaa;font-size:12px">Sin lotes</span>'}
-    <div class="modal-section">Historial</div>${histHtml}
-  `;
-  const actions = document.getElementById('det-actions');
-  actions.innerHTML = `
-  <button class="btn btn-danger btn-sm" onclick="eliminarPedido(${p.id})">Eliminar</button>
-  ${(usuario?.rol === 'produccion' || usuario?.rol === 'admin') ? `
-    <button class="btn btn-outline btn-sm" onclick="abrirEditar(${p.id})">Editar</button>
-    ${lotes.length === 0 ? `<button class="btn btn-primary btn-sm" onclick="abrirPrimerLote(${p.id})">Crear lote</button>` : ''}
-  ` : ''}
-`;
+    <div class="modal-section">Historial</div>${histHtml}`;
+  document.getElementById('det-actions').innerHTML = `
+    <button class="btn btn-danger btn-sm" onclick="eliminarPedido(${p.id})">Eliminar</button>
+    ${(usuario?.rol==='produccion'||usuario?.rol==='admin') ? `
+      <button class="btn btn-outline btn-sm" onclick="abrirEditar(${p.id})">Editar</button>
+      ${lotes.length===0?`<button class="btn btn-primary btn-sm" onclick="abrirPrimerLote(${p.id})">Crear lote</button>`:''}` : ''}`;
   document.getElementById('modal-detalle').classList.add('open');
 }
 
@@ -734,7 +659,6 @@ function abrirPrimerLote(pedidoId) {
   const p = pedidos.find(x => x.id === pedidoId);
   if (!p) return;
   cerrarModal('modal-detalle');
-
   document.getElementById('nuevo-lote-pedido-id').value = pedidoId;
   document.getElementById('nuevo-lote-notas').value = '';
   document.getElementById('nuevo-lote-titulo').textContent = 'Crear lote — ' + (p.cliente || p.producto);
@@ -754,41 +678,31 @@ function abrirPrimerLote(pedidoId) {
     const grupos = {};
     talles.forEach(t => {
       const m = t.modelo || '?';
-      if (!grupos[m]) grupos[m] = { nombre: t.nombre_producto || '', talles: [] };
+      if (!grupos[m]) grupos[m] = { nombre: t.nombre_producto||'', talles: [] };
       grupos[m].talles.push({ talle: t.talle, cantidad: t.cantidad });
     });
-    const modelosOrdenados = Object.entries(grupos).sort((a,b) => (parseInt(a[0])||0)-(parseInt(b[0])||0));
     const filas = [];
-    modelosOrdenados.forEach(([modelo, data]) => {
-      data.talles.sort((a,b) => (parseInt(a.talle)||0)-(parseInt(b.talle)||0)).forEach(t => {
+    Object.entries(grupos).sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0)).forEach(([modelo,data]) => {
+      data.talles.sort((a,b)=>(parseInt(a.talle)||0)-(parseInt(b.talle)||0)).forEach(t => {
         filas.push({ modelo, nombre: data.nombre, talle: t.talle, cantidad: t.cantidad });
       });
     });
     window._primerLoteFilas = filas;
     window._primerLoteCantidades = filas.map(f => f.cantidad);
-
     extraHtml.innerHTML = `
-      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:0.5rem;">
-        <thead><tr>
-          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Modelo</th>
-          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Talle</th>
-          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Disponible</th>
-          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Este lote</th>
-        </tr></thead>
-        <tbody>${filas.map((f,i) => `
-          <tr>
-            <td style="padding:5px 8px;font-weight:600;color:#1a1a1a;">${f.modelo}</td>
-            <td style="padding:5px 8px;color:#555;">${f.talle ? 'T'+f.talle : '—'}</td>
-            <td style="padding:5px 8px;color:#888;">${f.cantidad}</td>
-            <td style="padding:5px 8px;"><input type="number" id="pl-${i}" min="0" max="${f.cantidad}" placeholder="0" style="width:54px;padding:4px 6px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;" oninput="actualizarTotalPrimerLote()" /></td>
-          </tr>`).join('')}
-        </tbody>
+      <table class="lineas-tabla">
+        <thead><tr><th>Modelo</th><th>Talle</th><th>Disponible</th><th>Este lote</th></tr></thead>
+        <tbody>${filas.map((f,i) => `<tr>
+          <td class="modelo-label">${f.modelo}</td>
+          <td class="talle-label">${f.talle?'T'+f.talle:'—'}</td>
+          <td class="cant-label">${f.cantidad}</td>
+          <td><input type="number" id="pl-${i}" min="0" max="${f.cantidad}" placeholder="0" style="width:54px;padding:4px 6px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;" oninput="actualizarTotalPrimerLote()" /></td>
+        </tr>`).join('')}</tbody>
       </table>
       <div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 8px;background:#f5f5f3;border-radius:6px;margin-bottom:8px;">
         <span style="color:#888;">Total este lote:</span>
         <span style="font-weight:500;color:#1a1a1a;" id="primer-lote-total">0 pares</span>
       </div>`;
-
     document.getElementById('nuevo-lote-cant').value = '';
     const cantField = document.querySelector('#modal-nuevo-lote .field:first-of-type');
     if (cantField) cantField.style.display = 'none';
@@ -797,26 +711,22 @@ function abrirPrimerLote(pedidoId) {
     window._primerLoteFilas = [];
     window._primerLoteCantidades = [];
     const cantField = document.querySelector('#modal-nuevo-lote .field:first-of-type');
-    if (cantField) { cantField.style.display = 'block'; }
+    if (cantField) cantField.style.display = 'block';
     document.getElementById('nuevo-lote-cant').value = totalPares || '';
   }
-
   document.getElementById('modal-nuevo-lote').classList.add('open');
 }
 
 function actualizarTotalPrimerLote() {
   let total = 0;
-  (window._primerLoteCantidades || []).forEach((_, i) => {
-    total += parseInt(document.getElementById('pl-'+i)?.value) || 0;
-  });
+  (window._primerLoteCantidades||[]).forEach((_,i) => { total += parseInt(document.getElementById('pl-'+i)?.value)||0; });
   const el = document.getElementById('primer-lote-total');
   if (el) el.textContent = total + ' pares';
   document.getElementById('nuevo-lote-cant').value = total;
 }
-  
+
 function toggleAparadorLote() {
-  const val = document.getElementById('lote-etapa').value;
-  document.getElementById('aparador-lote-field').style.display = val === 'aparado' ? 'block' : 'none';
+  document.getElementById('aparador-lote-field').style.display = document.getElementById('lote-etapa').value === 'aparado' ? 'block' : 'none';
 }
 
 function abrirMoverLote(id, etapaActual, aparador) {
@@ -842,82 +752,46 @@ async function confirmarEtapaLote() {
   cargarPedidos();
 }
 
-function agregarLineaDividir() {
-  dividirLineas++;
-  const wrap = document.getElementById('dividir-lineas');
-  const linea = document.createElement('div');
-  linea.className = 'dividir-linea';
-  linea.id = 'linea-' + dividirLineas;
-  linea.innerHTML = `
-    <input type="text" placeholder="Modelo" id="div-modelo-${dividirLineas}" />
-    <select id="div-talle-${dividirLineas}">
-      <option value="">T—</option>
-      ${TALLES.map(t => `<option value="${t}">T${t}</option>`).join('')}
-    </select>
-    <input type="number" min="1" placeholder="0" id="div-cant-${dividirLineas}" oninput="actualizarTotalDividir()" />
-    <button class="btn btn-danger btn-sm" onclick="eliminarLineaDividir(${dividirLineas})" style="padding:4px 8px;">×</button>
-  `;
-  wrap.appendChild(linea);
-}
-
-function eliminarLineaDividir(n) {
-  const el = document.getElementById('linea-' + n);
-  if (el) el.remove();
-  actualizarTotalDividir();
-}
-
-function actualizarTotalDividir() {
-  let total = 0;
-  document.querySelectorAll('[id^="div-cant-"]').forEach(el => {
-    total += parseInt(el.value) || 0;
-  });
-  document.getElementById('dividir-total').textContent = `Total: ${total} pares`;
-}
-
 function abrirDividirLote(loteId, cantidad, numero, pedidoId) {
   const pedido = pedidos.find(p => p.id === parseInt(pedidoId));
+  const lote = pedido?.lotes?.find(l => l.id === parseInt(loteId));
   document.getElementById('dividir-lote-id').value = loteId;
   document.getElementById('dividir-pedido-id').value = pedidoId;
   document.getElementById('dividir-sub').textContent = `Lote ${numero} · ${cantidad} pares disponibles`;
   document.getElementById('dividir-nota').value = '';
 
-  const talles = pedido?.talles || [];
+  const fuenteTalles = lote?.talles_detalle || pedido?.talles || [];
   const tbody = document.getElementById('dividir-lineas-body');
 
-  if (talles.length > 0) {
+  if (fuenteTalles.length > 0) {
     const grupos = {};
-    talles.forEach(t => {
+    fuenteTalles.forEach(t => {
       const modelo = t.modelo || '?';
-      if (!grupos[modelo]) grupos[modelo] = { nombre: t.nombre_producto || '', talles: [] };
-      grupos[modelo].talles.push({ talle: t.talle || null, cantidad: t.cantidad });
+      if (!grupos[modelo]) grupos[modelo] = { nombre: t.nombre_producto||'', talles: [] };
+      grupos[modelo].talles.push({ talle: t.talle||null, cantidad: t.cantidad });
     });
-    const modelosOrdenados = Object.entries(grupos).sort((a,b) => (parseInt(a[0])||0)-(parseInt(b[0])||0));
     const filas = [];
-    modelosOrdenados.forEach(([modelo, data]) => {
-      data.talles.sort((a,b) => (parseInt(a.talle)||0)-(parseInt(b.talle)||0)).forEach(t => {
+    Object.entries(grupos).sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0)).forEach(([modelo,data]) => {
+      data.talles.sort((a,b)=>(parseInt(a.talle)||0)-(parseInt(b.talle)||0)).forEach(t => {
         filas.push({ modelo, nombre: data.nombre, talle: t.talle, cantidad: t.cantidad });
       });
     });
     window._dividirFilas = filas;
     window._dividirCantidades = filas.map(f => f.cantidad);
-    tbody.innerHTML = filas.map((f,i) => `
-      <tr>
-        <td style="padding:5px 8px;font-weight:600;color:#1a1a1a;">${f.modelo}</td>
-        <td style="padding:5px 8px;color:#555;">${f.talle ? 'T'+f.talle : '—'}</td>
-        <td style="padding:5px 8px;color:#888;">${f.cantidad}</td>
-        <td style="padding:5px 8px;"><input type="number" id="dd-${i}" min="0" max="${f.cantidad}" value="0" style="width:54px;padding:4px 6px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;" oninput="actualizarTotalDividir()" /></td>
-      </tr>`).join('');
+    tbody.innerHTML = filas.map((f,i) => `<tr>
+      <td class="modelo-label">${f.modelo}</td>
+      <td class="talle-label">${f.talle?'T'+f.talle:'—'}</td>
+      <td class="cant-label">${f.cantidad}</td>
+      <td><input type="number" id="dd-${i}" min="0" max="${f.cantidad}" value="" placeholder="0" style="width:54px;padding:4px 6px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;" oninput="actualizarTotalDividir()" /></td>
+    </tr>`).join('');
   } else {
-    window._dividirFilas = [{ modelo: '—', talle: null, cantidad, nombre: '' }];
+    window._dividirFilas = [{ modelo:'—', talle:null, cantidad, nombre:'' }];
     window._dividirCantidades = [cantidad];
     tbody.innerHTML = `<tr>
-      <td style="padding:5px 8px;">—</td>
-      <td style="padding:5px 8px;">—</td>
-      <td style="padding:5px 8px;color:#888;">${cantidad}</td>
-      <td style="padding:5px 8px;"><input type="number" id="dd-0" min="0" max="${cantidad}" value="" placeholder="0" style="width:54px;padding:4px 6px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;" oninput="actualizarTotalDividir()" /></td>
+      <td class="modelo-label">—</td><td class="talle-label">—</td><td class="cant-label">${cantidad}</td>
+      <td><input type="number" id="dd-0" min="0" max="${cantidad}" value="" placeholder="0" style="width:54px;padding:4px 6px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;" oninput="actualizarTotalDividir()" /></td>
     </tr>`;
   }
-
   actualizarTotalDividir();
   document.getElementById('modal-dividir').classList.add('open');
 }
@@ -928,11 +802,12 @@ function actualizarTotalDividir() {
   for (let i = 0; i < n; i++) {
     const v = parseInt(document.getElementById('dd-'+i)?.value) || 0;
     total += v;
-    if (v > (window._dividirCantidades[i] || 0)) err = true;
+    if (v > (window._dividirCantidades[i]||0)) err = true;
   }
   document.getElementById('dividir-total-val').textContent = total + ' pares';
   document.getElementById('dividir-err').style.display = err ? 'block' : 'none';
 }
+
 async function confirmarDividir() {
   const loteId = parseInt(document.getElementById('dividir-lote-id').value);
   const notas = document.getElementById('dividir-nota').value;
@@ -945,10 +820,7 @@ async function confirmarDividir() {
     const v = parseInt(document.getElementById('dd-'+i)?.value) || 0;
     const max = window._dividirCantidades[i] || 0;
     if (v > max) err = true;
-    if (v > 0) {
-      total += v;
-      tallesNuevo.push({ modelo: filas[i].modelo, talle: filas[i].talle, cantidad: v, nombre_producto: filas[i].nombre });
-    }
+    if (v > 0) { total += v; tallesNuevo.push({ modelo: filas[i].modelo, talle: filas[i].talle, cantidad: v, nombre_producto: filas[i].nombre }); }
   }
 
   if (err) return alert('Alguna línea supera la cantidad disponible');
@@ -971,64 +843,43 @@ function abrirEditarLote(loteId, cantidad, notas, pedidoId) {
   document.getElementById('editar-lote-pedido-id').value = pedidoId;
   document.getElementById('editar-lote-notas').value = notas || '';
 
-  // Usar talles_detalle del lote si existe, sino los del pedido
   const fuenteTalles = lote?.talles_detalle || pedido?.talles || [];
   const wrap = document.getElementById('editar-lote-tabla-wrap');
 
   if (fuenteTalles.length > 0) {
+    const filas = [];
     const grupos = {};
     fuenteTalles.forEach(t => {
       const m = t.modelo || '?';
-      if (!grupos[m]) grupos[m] = { nombre: t.nombre_producto || '', talles: [] };
+      if (!grupos[m]) grupos[m] = { nombre: t.nombre_producto||'', talles: [] };
       grupos[m].talles.push({ talle: t.talle, cantidad: t.cantidad });
     });
-    const modelosOrdenados = Object.entries(grupos).sort((a,b) => (parseInt(a[0])||0)-(parseInt(b[0])||0));
-    const filas = [];
-    modelosOrdenados.forEach(([modelo, data]) => {
-      data.talles.sort((a,b) => (parseInt(a.talle)||0)-(parseInt(b.talle)||0)).forEach(t => {
+    Object.entries(grupos).sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0)).forEach(([modelo,data]) => {
+      data.talles.sort((a,b)=>(parseInt(a.talle)||0)-(parseInt(b.talle)||0)).forEach(t => {
         filas.push({ modelo, nombre: data.nombre, talle: t.talle, cantidad: t.cantidad });
       });
     });
     window._editarLoteFilas = filas;
-
-    wrap.innerHTML = `
-      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:0.5rem;">
-        <thead><tr>
-          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Modelo</th>
-          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Talle</th>
-          <th style="text-align:left;padding:5px 8px;font-size:10px;color:#aaa;border-bottom:0.5px solid #f0f0f0;">Cantidad</th>
-        </tr></thead>
-        <tbody>${filas.map((f,i) => `
-          <tr>
-            <td style="padding:5px 8px;font-weight:600;color:#1a1a1a;">${f.modelo}</td>
-            <td style="padding:5px 8px;color:#555;">${f.talle ? 'T'+f.talle : '—'}</td>
-            <td style="padding:5px 8px;">
-              <input type="number" id="el-${i}" min="0" value="${f.cantidad}" placeholder="0"
-                style="width:54px;padding:4px 6px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;"
-                oninput="actualizarTotalEditarLote()" />
-            </td>
-          </tr>`).join('')}
-        </tbody>
-      </table>`;
+    wrap.innerHTML = `<table class="lineas-tabla">
+      <thead><tr><th>Modelo</th><th>Talle</th><th>Cantidad</th></tr></thead>
+      <tbody>${filas.map((f,i) => `<tr>
+        <td class="modelo-label">${f.modelo}</td>
+        <td class="talle-label">${f.talle?'T'+f.talle:'—'}</td>
+        <td><input type="number" id="el-${i}" min="0" value="${f.cantidad}" placeholder="0" style="width:54px;padding:4px 6px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;" oninput="actualizarTotalEditarLote()" /></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
     actualizarTotalEditarLote();
   } else {
     window._editarLoteFilas = [];
-    wrap.innerHTML = `
-      <div class="field">
-        <label>Cantidad de pares</label>
-        <input type="number" id="editar-lote-cant-simple" min="1" value="${cantidad}" />
-      </div>`;
+    wrap.innerHTML = `<div class="field"><label>Cantidad de pares</label><input type="number" id="editar-lote-cant-simple" min="1" value="${cantidad}" /></div>`;
     document.getElementById('editar-lote-total').textContent = cantidad + ' pares';
   }
-
   document.getElementById('modal-editar-lote').classList.add('open');
 }
 
 function actualizarTotalEditarLote() {
   let total = 0;
-  (window._editarLoteFilas || []).forEach((_, i) => {
-    total += parseInt(document.getElementById('el-'+i)?.value) || 0;
-  });
+  (window._editarLoteFilas||[]).forEach((_,i) => { total += parseInt(document.getElementById('el-'+i)?.value)||0; });
   document.getElementById('editar-lote-total').textContent = total + ' pares';
 }
 
@@ -1040,18 +891,17 @@ async function confirmarEditarLote() {
 
   if (filas.length > 0) {
     tallesDetalle = [];
-    filas.forEach((f, i) => {
+    filas.forEach((f,i) => {
       const v = parseInt(document.getElementById('el-'+i)?.value) || 0;
       if (v > 0) tallesDetalle.push({ modelo: f.modelo, talle: f.talle, cantidad: v, nombre_producto: f.nombre });
     });
-    cantidad = tallesDetalle.reduce((a, t) => a + t.cantidad, 0);
+    cantidad = tallesDetalle.reduce((a,t) => a+t.cantidad, 0);
   } else {
     cantidad = parseInt(document.getElementById('editar-lote-cant-simple')?.value) || 0;
     tallesDetalle = null;
   }
 
   if (!cantidad || cantidad < 1) return alert('Ingresá al menos un par');
-
   await fetch('/api/produccion?action=editar-lote', {
     method: 'PUT', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id, cantidad, notas, talles_detalle: tallesDetalle })
@@ -1065,6 +915,12 @@ function abrirNuevoLote(pedidoId) {
   document.getElementById('nuevo-lote-cant').value = '';
   document.getElementById('nuevo-lote-notas').value = '';
   document.getElementById('nuevo-lote-titulo').textContent = 'Agregar lote';
+  const wrap = document.getElementById('primer-lote-talles-wrap');
+  if (wrap) wrap.innerHTML = '';
+  const cantField = document.querySelector('#modal-nuevo-lote .field:first-of-type');
+  if (cantField) cantField.style.display = 'block';
+  window._primerLoteFilas = [];
+  window._primerLoteCantidades = [];
   document.getElementById('modal-nuevo-lote').classList.add('open');
 }
 
@@ -1076,7 +932,7 @@ async function confirmarNuevoLote() {
 
   const filas = window._primerLoteFilas || [];
   const tallesLote = [];
-  filas.forEach((f, i) => {
+  filas.forEach((f,i) => {
     const v = parseInt(document.getElementById('pl-'+i)?.value) || 0;
     if (v > 0) tallesLote.push({ modelo: f.modelo, talle: f.talle, cantidad: v, nombre_producto: f.nombre });
   });
@@ -1092,7 +948,6 @@ async function confirmarNuevoLote() {
   if (cantField) cantField.style.display = 'block';
   window._primerLoteFilas = [];
   window._primerLoteCantidades = [];
-
   cerrarModal('modal-nuevo-lote');
   cargarPedidos();
 }
@@ -1161,9 +1016,7 @@ function abrirEditar(id) {
 
 async function guardarPedido() {
   const id = document.getElementById('form-id').value;
-  const talles = TALLES.map(t => ({
-    talle: t, cantidad: parseInt(document.getElementById('talle-'+t)?.value)||0
-  })).filter(t => t.cantidad > 0);
+  const talles = TALLES.map(t => ({ talle: t, cantidad: parseInt(document.getElementById('talle-'+t)?.value)||0 })).filter(t => t.cantidad > 0);
   const body = {
     numero: document.getElementById('form-numero').value.trim(),
     producto: document.getElementById('form-producto').value.trim(),
@@ -1178,15 +1031,9 @@ async function guardarPedido() {
   };
   if (!body.numero || !body.producto) return alert('Completá número y modelo');
   if (id) {
-    await fetch('/api/produccion?action=editar', {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...body, id: parseInt(id) })
-    });
+    await fetch('/api/produccion?action=editar', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...body, id: parseInt(id) }) });
   } else {
-    await fetch('/api/produccion?action=crear', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
+    await fetch('/api/produccion?action=crear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   }
   cerrarModal('modal-form');
   cargarPedidos();
@@ -1194,10 +1041,7 @@ async function guardarPedido() {
 
 async function eliminarPedido(id) {
   if (!confirm('¿Eliminar este pedido y todos sus lotes?')) return;
-  await fetch('/api/produccion?action=eliminar', {
-    method: 'DELETE', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id })
-  });
+  await fetch('/api/produccion?action=eliminar', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
   cerrarModal('modal-detalle');
   cargarPedidos();
 }
@@ -1220,19 +1064,12 @@ async function importarOdoo() {
   }
 }
 
-function cerrarModal(id) {
-  document.getElementById(id).classList.remove('open');
-}
+function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
 
-document.getElementById('login-pass').addEventListener('keydown', e => {
-  if (e.key === 'Enter') login();
-});
+document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
 
 function leerSesion() {
-  try {
-    const s = localStorage.getItem('gx_usuario');
-    return s ? JSON.parse(s) : null;
-  } catch { return null; }
+  try { const s = localStorage.getItem('gx_usuario'); return s ? JSON.parse(s) : null; } catch { return null; }
 }
 
 function iniciarConSesion(u) {
