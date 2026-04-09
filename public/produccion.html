@@ -521,7 +521,6 @@ function renderKanbanCard(p, etapaFiltro) {
     </div>
     <div class="lotes-wrap open" id="lotes-${p.id}-${etapaFiltro}">
       ${lotesMostrar.map(l => renderLoteCard(l, p)).join('')}
-      ${puedeEditar ? `<button class="add-lote-btn" onclick="abrirNuevoLote(${p.id})">+ agregar lote</button>` : ''}
     </div>
   </div>`;
 }
@@ -957,11 +956,24 @@ async function confirmarNuevoLote() {
 }
 
 async function eliminarLote(id) {
-  if (!confirm('¿Eliminar este lote?')) return;
-  await fetch('/api/produccion?action=eliminar-lote', {
-    method: 'DELETE', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id })
-  });
+  if (!confirm('¿Eliminar este lote y el pedido completo?')) return;
+  const lote = pedidos.flatMap(p => p.lotes||[]).find(l => l.id === id);
+  if (!lote) return;
+  const pedido = pedidos.find(p => p.id === lote.pedido_id);
+  const otrosLotes = (pedido?.lotes||[]).filter(l => l.id !== id);
+  if (otrosLotes.length === 0) {
+    // Es el último lote — eliminar el pedido completo
+    await fetch('/api/produccion?action=eliminar', {
+      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: lote.pedido_id })
+    });
+  } else {
+    // Quedan otros lotes — solo eliminar este lote
+    await fetch('/api/produccion?action=eliminar-lote', {
+      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    });
+  }
   cargarPedidos();
 }
 
