@@ -50,11 +50,11 @@
     .stat-value { font-size: 20px; font-weight: 500; }
     .stat-sub { font-size: 10px; color: #aaa; margin-top: 2px; }
 
-    .kanban-scroll-wrap { overflow-x: scroll; padding-bottom: 1rem; }
-    .kanban-scroll-wrap::-webkit-scrollbar { height: 6px; }
-    .kanban-scroll-wrap::-webkit-scrollbar-track { background: #f0f0ee; border-radius: 3px; }
-    .kanban-scroll-wrap::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
-    .kanban-scroll-wrap::-webkit-scrollbar-thumb:hover { background: #999; }
+    .kanban-scroll-wrap { overflow-x: scroll; padding-bottom: 1rem; scrollbar-width: thin; scrollbar-color: #ccc #f0f0ee; }
+    .kanban-scroll-wrap::-webkit-scrollbar { height: 8px; display: block; }
+    .kanban-scroll-wrap::-webkit-scrollbar-track { background: #f0f0ee; border-radius: 4px; }
+    .kanban-scroll-wrap::-webkit-scrollbar-thumb { background: #aaa; border-radius: 4px; }
+    .kanban-scroll-wrap::-webkit-scrollbar-thumb:hover { background: #888; }
     .kanban { display: flex; gap: 8px; align-items: flex-start; min-width: max-content; }
     .kanban-col { width: 210px; flex-shrink: 0; }
     .kanban-header { font-size: 11px; font-weight: 500; padding: 7px 10px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; }
