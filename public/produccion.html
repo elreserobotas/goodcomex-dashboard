@@ -818,19 +818,20 @@ async function confirmarDividir() {
   const n = window._dividirCantidades?.length || 0;
   let total = 0, err = false;
   const tallesNuevo = [];
+  const tallesOriginal = [];
 
   for (let i = 0; i < n; i++) {
     const v = parseInt(document.getElementById('dd-'+i)?.value) || 0;
     const max = window._dividirCantidades[i] || 0;
     if (v > max) err = true;
     if (v > 0) {
-  total += v;
-  tallesNuevo.push({ modelo: filas[i].modelo, talle: filas[i].talle, cantidad: v, nombre_producto: filas[i].nombre });
-}
-const restante = (window._dividirCantidades[i]||0) - v;
-if (restante > 0) {
-  tallesOriginal.push({ modelo: filas[i].modelo, talle: filas[i].talle, cantidad: restante, nombre_producto: filas[i].nombre });
-}
+      total += v;
+      tallesNuevo.push({ modelo: filas[i].modelo, talle: filas[i].talle, cantidad: v, nombre_producto: filas[i].nombre });
+    }
+    const restante = max - v;
+    if (restante > 0) {
+      tallesOriginal.push({ modelo: filas[i].modelo, talle: filas[i].talle, cantidad: restante, nombre_producto: filas[i].nombre });
+    }
   }
 
   if (err) return alert('Alguna línea supera la cantidad disponible');
@@ -838,7 +839,7 @@ if (restante > 0) {
 
   const res = await fetch('/api/produccion?action=dividir-lote', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ lote_id: loteId, cantidad_nueva: total, usuario: usuario.nombre, notas, talles_nuevo: tallesNuevo })
+    body: JSON.stringify({ lote_id: loteId, cantidad_nueva: total, usuario: usuario.nombre, notas, talles_nuevo: tallesNuevo, talles_original: tallesOriginal })
   });
   const data = await res.json();
   if (data.error) { alert('Error: ' + data.error); return; }
