@@ -165,6 +165,8 @@ module.exports = async function handler(req, res) {
     for (const p of pickings) {
       const existe = await sql`SELECT id FROM pedidos WHERE numero=${p.name}`;
       if (existe.length) { omitidos++; continue; }
+      const ignorado = await sql`SELECT numero FROM pedidos_ignorados WHERE numero=${p.name}`;
+      if (ignorado.length) { omitidos++; continue; }
 
       const empresa = p.company_id === 1 ? 'El Resero' : 'Empresa B';
       const productos = moves.filter(m => m.picking_id === p.id);
