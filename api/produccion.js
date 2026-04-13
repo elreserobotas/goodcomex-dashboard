@@ -260,6 +260,10 @@ return res.json({ ok: true, usuario: { id: u.id, nombre: u.nombre, email: u.emai
 
     if (req.method === 'DELETE' && action === 'eliminar') {
   const { id } = req.body;
+  const pedido = await sql`SELECT numero FROM pedidos WHERE id=${id}`;
+  if (pedido.length) {
+    await sql`INSERT INTO pedidos_ignorados (numero) VALUES (${pedido[0].numero}) ON CONFLICT DO NOTHING`;
+  }
   await sql`DELETE FROM historial_lotes WHERE pedido_id=${id}`;
   await sql`DELETE FROM historial WHERE pedido_id=${id}`;
   await sql`DELETE FROM talles WHERE pedido_id=${id}`;
