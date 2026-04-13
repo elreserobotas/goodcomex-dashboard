@@ -167,6 +167,10 @@ module.exports = async function handler(req, res) {
       if (existe.length) { omitidos++; continue; }
       const ignorado = await sql`SELECT numero FROM pedidos_ignorados WHERE numero=${p.name}`;
       if (ignorado.length) { omitidos++; continue; }
+      const clienteIgnorado = ['goodcomex', 'assigned', 'administrator'].some(x => 
+      p.partner.toLowerCase().includes(x)
+      );
+      if (clienteIgnorado) { omitidos++; continue; }
 
       const empresa = p.company_id === 1 ? 'El Resero' : 'Empresa B';
       const productos = moves.filter(m => m.picking_id === p.id);
