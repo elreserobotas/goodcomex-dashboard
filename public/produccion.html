@@ -537,6 +537,14 @@ function renderLoteCard(l, p) {
     <div style="font-size:11px;font-weight:500;margin-top:3px;">${l.cantidad} pares · <span class="etapa-pill ${etapaCls(l.etapa)}">${etapaLabel(l.etapa)}</span></div>
     ${l.aparador ? `<div><span class="lote-aparador">${l.aparador}</span></div>` : ''}
     <div style="font-size:10px;color:${diasEtapa >= 7 ? '#a32d2d' : '#aaa'};font-weight:${diasEtapa >= 7 ? '600' : '400'};margin-top:2px;">${diasEtapa}d en esta etapa${diasEtapa >= 7 ? ' ⚠️' : ''}</div>
+    ${l.historial?.length ? `
+  <div style="margin-top:4px;border-top:0.5px solid #f0f0f0;padding-top:4px;">
+    ${l.historial.slice(0,3).map(h => `
+      <div style="display:flex;gap:6px;font-size:9px;color:#aaa;margin-bottom:2px;">
+        <span style="white-space:nowrap;">${new Date(h.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'})}</span>
+        <span style="color:#555;">${h.usuario} → ${etapaLabel(h.etapa_hasta)}</span>
+      </div>`).join('')}
+  </div>` : ''}
     ${puedeEditar ? `
       <div class="lote-actions">
         <button class="btn btn-primary btn-sm" onclick="abrirMoverLote(${l.id},'${l.etapa}','${l.aparador||''}')">Mover</button>
