@@ -536,7 +536,7 @@ function renderLoteCard(l, p) {
     ${modelosHtml}
     <div style="font-size:11px;font-weight:500;margin-top:3px;">${l.cantidad} pares · <span class="etapa-pill ${etapaCls(l.etapa)}">${etapaLabel(l.etapa)}</span></div>
     ${l.aparador ? `<div><span class="lote-aparador">${l.aparador}</span></div>` : ''}
-    <div style="font-size:10px;color:#aaa;margin-top:2px;">${diasEtapa}d en esta etapa</div>
+    <div style="font-size:10px;color:${diasEtapa >= 7 ? '#a32d2d' : '#aaa'};font-weight:${diasEtapa >= 7 ? '600' : '400'};margin-top:2px;">${diasEtapa}d en esta etapa${diasEtapa >= 7 ? ' ⚠️' : ''}</div>
     ${puedeEditar ? `
       <div class="lote-actions">
         <button class="btn btn-primary btn-sm" onclick="abrirMoverLote(${l.id},'${l.etapa}','${l.aparador||''}')">Mover</button>
