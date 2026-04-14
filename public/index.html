@@ -369,6 +369,19 @@
       </div>
     </div>
 
+    <div class="expandible" id="exp-produccion">
+  <div class="expandible-header" onclick="toggleExtra('produccion')">
+    <div>
+      <div class="expandible-title">Informe de producción</div>
+      <div class="expandible-meta" id="produccion-meta">Clic para cargar</div>
+    </div>
+    <span class="expandible-arrow" id="arrow-produccion">▼</span>
+  </div>
+  <div class="expandible-body" id="body-produccion">
+    <div id="produccion-content"><p class="cargando-extra">Cargando...</p></div>
+  </div>
+</div>
+    
     <div class="recent-wrap">
       <div class="recent-header" onclick="toggleRecent()">
         <div class="recent-title">Últimas órdenes de venta</div>
@@ -410,8 +423,7 @@
   let productosTab = 'cantidad';
   let productosData = null;
   let ordenesVisibles = [];
-  let extrasLoaded = { clientes: false, productos: false, comparativa: false, iva: false };
-
+  let extrasLoaded = { clientes: false, productos: false, comparativa: false, iva: false, produccion: false };
   document.getElementById('hasta').value = new Date().toISOString().slice(0,10);
 
   function toggle(id) {
@@ -453,7 +465,10 @@
 }
     extrasLoaded[tipo] = true;
     try {
-      const res = await fetch(`/api/odoo-extra?desde=${desde}&hasta=${hasta}&tipo=${tipo}`);
+      const url = tipo === 'produccion'
+        ? `/api/produccion-informe?desde=${desde}&hasta=${hasta}`
+        : `/api/odoo-extra?desde=${desde}&hasta=${hasta}&tipo=${tipo}`;
+      const res = await fetch(url);
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
@@ -525,8 +540,57 @@
       <span style="flex:1;text-align:right;color:#993c1d;">${fmtL(totalN)}</span>
     </div>`;
 }
+      if (tipo === 'produccion') {
+        const fmtFecha = s => new Date(s + 'T00:00:00').toLocaleDateString('es-AR', {day:'numeric', month:'short'});
+        const etiquetas = { armado: 'Armado', cosedor: 'Cosedor', empaque: 'Empaque', listo: 'Listo para entregar' };
+        const colores = { armado: '#fbeaf0', cosedor: '#B5D4F4', empaque: '#D3D1C7', listo: '#eaf3de' };
+        const coloresTexto = { armado: '#72243e', cosedor: '#042C53', empaque: '#2C2C2A', listo: '#27500a' };
+
+        document.getElementById('produccion-meta').textContent = `${desde} → ${hasta}`;
+
+        let html = `<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1.5rem;">`;
+        data.etapas.forEach(e => {
+          html += `<div style="background:${colores[e]};border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:11px;color:${coloresTexto[e]};font-weight:500;margin-bottom:4px;">${etiquetas[e]}</div>
+            <div style="font-size:22px;font-weight:500;color:${coloresTexto[e]};">${data.totales[e].toLocaleString('es-AR')}</div>
+            <div style="font-size:10px;color:${coloresTexto[e]};opacity:0.7;">pares</div>
+          </div>`;
+        });
+        html += `</div>`;
+
+        const todosLosDias = [...new Set(data.etapas.flatMap(e => Object.keys(data.porEtapa[e])))].sort();
+
+        if (todosLosDias.length > 0) {
+          html += `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead><tr>
+              <th style="text-align:left;padding:6px 8px;border-bottom:0.5px solid #f0f0f0;color:#888;">Fecha</th>
+              ${data.etapas.map(e => `<th style="text-align:right;padding:6px 8px;border-bottom:0.5px solid #f0f0f0;color:${coloresTexto[e]};">${etiquetas[e]}</th>`).join('')}
+            </tr></thead>
+            <tbody>
+              ${todosLosDias.map(dia => `
+                <tr style="border-bottom:0.5px solid #f5f5f5;">
+                  <td style="padding:6px 8px;color:#555;">${fmtFecha(dia)}</td>
+                  ${data.etapas.map(e => {
+                    const d = data.porEtapa[e][dia];
+                    const pares = d?.pares || 0;
+                    const modelos = d?.modelos ? Object.entries(d.modelos).sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0)).map(([m,c]) => `${m}:${c}`).join(' ') : '';
+                    return `<td style="text-align:right;padding:6px 8px;font-weight:${pares>0?'500':'400'};color:${pares>0?'#1a1a1a':'#ccc'};">
+                      ${pares > 0 ? pares : '—'}
+                      ${modelos ? `<div style="font-size:9px;color:#aaa;font-weight:400;">${modelos}</div>` : ''}
+                    </td>`;
+                  }).join('')}
+                </tr>`).join('')}
+            </tbody>
+          </table></div>`;
+        } else {
+          html += `<p class="empty">Sin movimientos en el período seleccionado</p>`;
+        }
+
+        document.getElementById('produccion-content').innerHTML = html;
+      }
     } catch (err) {
-      const el = document.getElementById(tipo === 'clientes' ? 'clientes-list' : tipo === 'productos' ? 'productos-list' : 'comparativa-content');
+      const elMap = { clientes: 'clientes-list', productos: 'productos-list', comparativa: 'comparativa-content', produccion: 'produccion-content' };
+      const el = document.getElementById(elMap[tipo]);
       if (el) el.innerHTML = `<p class="empty">Error: ${err.message}</p>`;
       extrasLoaded[tipo] = false;
     }
@@ -663,7 +727,7 @@
   async function cargarDatos() {
     const desde = document.getElementById('desde').value;
     const hasta = document.getElementById('hasta').value;
-    extrasLoaded = { clientes: false, productos: false, comparativa: false, iva: false };
+    extrasLoaded = { clientes: false, productos: false, comparativa: false, iva: false, produccion: false };
     productosData = null;
     document.getElementById('loading').style.display = 'block';
     document.getElementById('loading').className = 'loading';
