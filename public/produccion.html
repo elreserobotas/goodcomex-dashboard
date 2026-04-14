@@ -165,6 +165,7 @@
         </div>
         <button class="btn btn-outline btn-sm" id="btn-importar" onclick="importarOdoo()" style="display:none;">Importar Odoo</button>
         <button class="btn btn-primary btn-sm" id="btn-nuevo" onclick="abrirNuevo()" style="display:none;">+ Nuevo pedido</button>
+        <input type="text" id="buscar-input" placeholder="Buscar cliente o pedido..." oninput="filtrarPedidos()" style="padding:5px 12px;border:0.5px solid #e5e5e5;border-radius:8px;font-size:12px;width:220px;" />
         <button class="btn btn-outline btn-sm" onclick="cargarPedidos()">Actualizar</button>
         <span class="user-label" id="user-label"></span>
         <button class="btn btn-outline btn-sm" onclick="logout()">Salir</button>
@@ -561,8 +562,20 @@ function toggleLotes(id) {
 }
 
 function renderizar() {
-  if (vista === 'kanban') renderKanban();
-  else renderLista();
+  const q = document.getElementById('buscar-input')?.value.toLowerCase().trim() || '';
+  const pedidosFiltrados = q
+    ? pedidos.filter(p =>
+        p.numero?.toLowerCase().includes(q) ||
+        p.cliente?.toLowerCase().includes(q) ||
+        p.producto?.toLowerCase().includes(q)
+      )
+    : pedidos;
+  if (vista === 'kanban') renderKanban(pedidosFiltrados);
+  else renderLista(pedidosFiltrados);
+}
+
+function filtrarPedidos() {
+  renderizar();
 }
 
 function renderKanban() {
