@@ -330,11 +330,14 @@ module.exports = async function handler(req, res) {
       );
       moves = parseMoves(movesXml);
     }
-    const pendientesEntrega = todosPickings.map(p => ({
-      ...p,
-      empresa: p.company_id === 1 ? 'El Resero' : 'Empresa B',
-      productos: moves.filter(m => m.picking_id === p.id)
-    }));
+  const clientesIgnorar = ['goodcomex', 'assigned', 'administrator'];
+  const pendientesEntrega = todosPickings
+  .filter(p => !clientesIgnorar.some(x => p.partner.toLowerCase().includes(x)))
+  .map(p => ({
+    ...p,
+    empresa: p.company_id === 1 ? 'El Resero' : 'Empresa B',
+    productos: moves.filter(m => m.picking_id === p.id)
+  }));  
 
   const [xmlResero, xmlEmpresaB] = await Promise.all([
       odooCall(uid, 'sale.order', [['company_id','=',1],['state','in',['sale','done']]], ['name','partner_id','amount_total','date_order'], { limit: 10, order: 'date_order desc' }),
