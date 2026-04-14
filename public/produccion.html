@@ -578,7 +578,8 @@ function filtrarPedidos() {
   renderizar();
 }
 
-function renderKanban() {
+function renderKanban(pedidosFiltrados = pedidos) {
+  const pedidos = pedidosFiltrados;
   const board = document.getElementById('kanban-board');
   board.innerHTML = ETAPAS.map(etapa => {
     let pedidosEnCol = [];
@@ -606,7 +607,8 @@ function renderKanban() {
   }).join('');
 }
 
-function renderLista() {
+function renderLista(pedidosFiltrados = pedidos) {
+  const pedidos = pedidosFiltrados;
   const tbody = document.getElementById('lista-body');
   if (!pedidos.length) { tbody.innerHTML = '<tr><td colspan="11" class="empty-state">Sin pedidos</td></tr>'; return; }
   const puedeEditar = usuario?.rol === 'produccion' || usuario?.rol === 'admin';
