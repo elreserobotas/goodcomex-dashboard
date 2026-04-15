@@ -652,56 +652,60 @@
     if (datosGlobales) renderVencidas(datosGlobales.vencidas.detalle);
   }
 
-  function renderVencidas(detalle) {
-  // Agrupar por cliente
-  const clienteMap = {};
-  detalle.forEach(f => {
-    const nombre = f.partner_name || '—';
-    if (!clienteMap[nombre]) clienteMap[nombre] = { nombre, total: 0, facturas: [] };
-    clienteMap[nombre].total += f.amount_residual;
-    clienteMap[nombre].facturas.push(f);
-  });
-
-  let clientes = Object.values(clienteMap);
+function renderVencidas(detalle) {
   if (vencidasOrden === 'monto') {
-    clientes.sort((a,b) => b.total - a.total);
-  } else {
-    // Por vencimiento: ordenar por la factura más antigua de cada cliente
-    clientes.sort((a,b) => {
-      const minA = Math.max(...a.facturas.map(f => f.dias));
-      const minB = Math.max(...b.facturas.map(f => f.dias));
-      return minB - minA;
+    // Agrupar por cliente con detalle expandible
+    const clienteMap = {};
+    detalle.forEach(f => {
+      const nombre = f.partner_name || '—';
+      if (!clienteMap[nombre]) clienteMap[nombre] = { nombre, total: 0, facturas: [] };
+      clienteMap[nombre].total += f.amount_residual;
+      clienteMap[nombre].facturas.push(f);
     });
-  }
+    const clientes = Object.values(clienteMap).sort((a,b) => b.total - a.total);
 
-  document.getElementById('vencidas-list').innerHTML = clientes.length === 0
-    ? '<p class="empty">Sin facturas vencidas</p>'
-    : clientes.map((c, i) => {
-        const facturasOrdenadas = [...c.facturas].sort((a,b) => b.dias - a.dias);
-        return `
-          <div class="venc-row" style="flex-direction:column;align-items:flex-start;gap:0;">
-            <div style="display:flex;justify-content:space-between;width:100%;cursor:pointer;padding:4px 0;" onclick="toggleVencida('venc-det-${i}', 'venc-arrow-${i}')">
-              <div>
-                <div style="font-weight:500;font-size:13px;">${c.nombre}</div>
-                <div style="font-size:11px;color:#aaa;margin-top:2px;">${c.facturas.length} factura${c.facturas.length!==1?'s':''} vencidas</div>
+    document.getElementById('vencidas-list').innerHTML = clientes.length === 0
+      ? '<p class="empty">Sin facturas vencidas</p>'
+      : clientes.map((c, i) => {
+          const facturasOrdenadas = [...c.facturas].sort((a,b) => b.dias - a.dias);
+          return `
+            <div class="venc-row" style="flex-direction:column;align-items:flex-start;gap:0;">
+              <div style="display:flex;justify-content:space-between;width:100%;cursor:pointer;padding:4px 0;" onclick="toggleVencida('venc-det-${i}','venc-arrow-${i}')">
+                <div>
+                  <div style="font-weight:500;font-size:13px;">${c.nombre}</div>
+                  <div style="font-size:11px;color:#aaa;margin-top:2px;">${c.facturas.length} factura${c.facturas.length!==1?'s':''} vencidas</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="font-weight:500;color:#993c1d;font-size:13px;">${fmt(c.total)}</span>
+                  <span style="font-size:10px;color:#aaa;" id="venc-arrow-${i}">▼</span>
+                </div>
               </div>
-              <div style="display:flex;align-items:center;gap:8px;">
-                <span style="font-weight:500;color:#993c1d;font-size:13px;">${fmt(c.total)}</span>
-                <span style="font-size:10px;color:#aaa;" id="venc-arrow-${i}">▼</span>
+              <div id="venc-det-${i}" style="display:none;width:100%;padding:4px 0 8px 0;border-top:0.5px solid #f5f5f5;">
+                ${facturasOrdenadas.map(f => `
+                  <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid #f9f9f9;font-size:12px;">
+                    <div>
+                      <div style="color:#555;">${f.name}</div>
+                      <div style="font-size:10px;color:#aaa;">Vence ${f.invoice_date_due} · ${f.dias} días</div>
+                    </div>
+                    <div style="font-weight:500;color:#993c1d;">${fmt(f.amount_residual)}</div>
+                  </div>`).join('')}
               </div>
+            </div>`;
+        }).join('');
+  } else {
+    // Por vencimiento — vista original una fila por factura
+    const ordenadas = [...detalle].sort((a,b) => b.dias - a.dias);
+    document.getElementById('vencidas-list').innerHTML = ordenadas.length === 0
+      ? '<p class="empty">Sin facturas vencidas</p>'
+      : ordenadas.map(f => `
+          <div class="venc-row">
+            <div class="venc-name">
+              <div style="font-weight:500;">${f.partner_name || '—'}</div>
+              <div class="venc-meta">${f.name} · vence ${f.invoice_date_due} · ${f.dias} días</div>
             </div>
-            <div id="venc-det-${i}" style="display:none;width:100%;padding:4px 0 8px 0;border-top:0.5px solid #f5f5f5;">
-              ${facturasOrdenadas.map(f => `
-                <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid #f9f9f9;font-size:12px;">
-                  <div>
-                    <div style="color:#555;">${f.name}</div>
-                    <div style="font-size:10px;color:#aaa;">Vence ${f.invoice_date_due} · ${f.dias} días</div>
-                  </div>
-                  <div style="font-weight:500;color:#993c1d;">${fmt(f.amount_residual)}</div>
-                </div>`).join('')}
-            </div>
-          </div>`;
-      }).join('');
+            <div class="venc-amount">${fmt(f.amount_residual)}</div>
+          </div>`).join('');
+  }
 }
 
 function toggleVencida(detId, arrowId) {
