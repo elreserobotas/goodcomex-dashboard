@@ -198,10 +198,19 @@
         <div class="metric-sub">Ambas empresas</div>
       </div>
      <div class="metric">
+<div class="metric">
   <div class="metric-label">Pendiente de cobro</div>
   <div class="metric-value" id="total-pendiente">—</div>
   <div class="metric-sub" id="cant-pendiente">Total en sistema</div>
   <div style="margin-top:8px;padding-top:8px;border-top:0.5px solid #f0f0f0;">
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+      <span style="color:#0c447c;">El Resero</span>
+      <span style="font-weight:500;color:#0c447c;" id="pendiente-resero">—</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px;">
+      <span style="color:#085041;">Empresa B</span>
+      <span style="font-weight:500;color:#085041;" id="pendiente-empresab">—</span>
+    </div>
     <div style="font-size:11px;color:#888;">Tiempo promedio de cobro</div>
     <div style="font-size:16px;font-weight:500;margin-top:2px;" id="tiempo-cobro">—</div>
   </div>
@@ -223,35 +232,30 @@
       </div>
     </div>
 
-    <div class="section-label">Antigüedad de deuda</div>
-    <div class="tramos">
-      <div class="tramo t-ok">
-        <div class="tramo-label">No vencidas</div>
-        <div class="tramo-value" id="tramo-ok">—</div>
-        <div class="tramo-cant" id="tramo-ok-cant">—</div>
-      </div>
-      <div class="tramo t0">
-        <div class="tramo-label">0 - 30 días</div>
-        <div class="tramo-value" id="tramo-0-30">—</div>
-        <div class="tramo-cant" id="tramo-0-30-cant">—</div>
-      </div>
-      <div class="tramo t1">
-        <div class="tramo-label">30 - 60 días</div>
-        <div class="tramo-value" id="tramo-30-60">—</div>
-        <div class="tramo-cant" id="tramo-30-60-cant">—</div>
-      </div>
-      <div class="tramo t2">
-        <div class="tramo-label">60 - 90 días</div>
-        <div class="tramo-value" id="tramo-60-90">—</div>
-        <div class="tramo-cant" id="tramo-60-90-cant">—</div>
-      </div>
-      <div class="tramo t3">
-        <div class="tramo-label">+90 días</div>
-        <div class="tramo-value" id="tramo-90">—</div>
-        <div class="tramo-cant" id="tramo-90-cant">—</div>
-      </div>
-    </div>
-
+ <div class="section-label">Antigüedad de deuda (desde emisión)</div>
+<div class="tramos" style="grid-template-columns:repeat(4,minmax(0,1fr));">
+  <div class="tramo t0">
+    <div class="tramo-label">0 - 30 días</div>
+    <div class="tramo-value" id="tramo-0-30">—</div>
+    <div class="tramo-cant" id="tramo-0-30-cant">—</div>
+  </div>
+  <div class="tramo t1">
+    <div class="tramo-label">30 - 60 días</div>
+    <div class="tramo-value" id="tramo-30-60">—</div>
+    <div class="tramo-cant" id="tramo-30-60-cant">—</div>
+  </div>
+  <div class="tramo t2">
+    <div class="tramo-label">60 - 90 días</div>
+    <div class="tramo-value" id="tramo-60-90">—</div>
+    <div class="tramo-cant" id="tramo-60-90-cant">—</div>
+  </div>
+  <div class="tramo t3">
+    <div class="tramo-label">+90 días</div>
+    <div class="tramo-value" id="tramo-90">—</div>
+    <div class="tramo-cant" id="tramo-90-cant">—</div>
+  </div>
+</div>
+    
     <div class="chart-wrap">
       <div class="chart-header">
         <span class="chart-title">Facturación mensual por empresa</span>
