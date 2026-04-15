@@ -198,6 +198,15 @@
         </div>
       </div>
     </div>
+ </div>
+
+  <div class="container" style="margin-top:1rem;">
+    <div class="container-inner">
+      <div style="font-size:11px;font-weight:500;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Pedidos archivados</div>
+      <div style="background:#fff;border:0.5px solid #FAC775;border-radius:12px;padding:1rem 1.25rem;">
+        <div id="archivados-wrap"><p style="font-size:13px;color:#aaa;">Sin pedidos archivados</p></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -555,7 +564,6 @@ function renderLoteCard(l, p) {
         <button class="btn btn-primary btn-sm" onclick="abrirMoverLote(${l.id},'${l.etapa}','${l.aparador||''}')">Mover</button>
         <button class="btn btn-warn btn-sm" onclick="abrirDividirLote(${l.id},${l.cantidad},'${l.numero}',${p.id})">Dividir</button>
         <button class="btn btn-outline btn-sm" onclick="abrirEditarLote(${l.id},${l.cantidad},'${(l.notas||'').replace(/'/g,"\\'")}',${p.id})">Editar</button>
-        <button class="btn btn-warn btn-sm" onclick="archivarPedidoDesdeLote(${l.id},${p.id})">Archivar</button>
         <button class="btn btn-warn btn-sm" onclick="archivarPedidoDesdeLote(${l.id},${p.id})">Archivar</button>
         <button class="btn btn-danger btn-sm" onclick="eliminarLote(${l.id})">Eliminar</button>
       </div>` : ''}
@@ -1152,6 +1160,15 @@ async function eliminarPedidoDefinitivo(id) {
   });
   cargarPedidos();
 }
+
+async function archivarPedidoDesdeLote(pedidoId) {
+  if (!confirm('¿Archivar este pedido?\n\nVas a archivarlo. Podés reimportarlo desde KANBAN cuando quieras.')) return;
+  await fetch('/api/produccion?action=archivar', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: pedidoId })
+  });
+  cargarPedidos();
+}  
   
 function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
 
