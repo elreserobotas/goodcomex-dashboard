@@ -258,6 +258,18 @@ return res.json({ ok: true, usuario: { id: u.id, nombre: u.nombre, email: u.emai
       return res.json({ ok: true });
     }
 
+    if (req.method === 'PUT' && action === 'archivar') {
+  const { id } = req.body;
+  await sql`UPDATE pedidos SET archivado=true, archivado_at=NOW() WHERE id=${id}`;
+  return res.json({ ok: true });
+    }
+
+    if (req.method === 'PUT' && action === 'desarchivar') {
+  const { id } = req.body;
+  await sql`UPDATE pedidos SET archivado=false, archivado_at=null WHERE id=${id}`;
+  return res.json({ ok: true });
+    }
+    
     if (req.method === 'DELETE' && action === 'eliminar') {
   const { id } = req.body;
   const pedido = await sql`SELECT numero FROM pedidos WHERE id=${id}`;
