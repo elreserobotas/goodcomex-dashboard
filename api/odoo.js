@@ -141,46 +141,15 @@ function parseMoves(xml) {
     const pickingMatch = struct[1].match(/<name>picking_id<\/name>\s*<value><array><data>\s*<value><int>(\d+)<\/int>/);
     const productMatch = struct[1].match(/<name>product_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
     const qtyMatch = struct[1].match(/<name>product_uom_qty<\/name>\s*<value><double>([\d.]+)<\/double>/);
-    const doneMatch = struct[1].match(/<name>quantity<\/name>\s*<value><double>([\d.]+)<\/double>/);
     if (pickingMatch && productMatch) {
       results.push({
         picking_id: parseInt(pickingMatch[1]),
         product: productMatch[1],
-        qty: parseFloat(qtyMatch?.[1] || 0),
-        done: parseFloat(doneMatch?.[1] || 0)
+        qty: parseFloat(qtyMatch?.[1] || 0)
       });
     }
   }
   return results;
-}
-
-function parseLineasFactura(xml) {
-  const results = [];
-  const memberRegex = /<struct>([\s\S]*?)<\/struct>/g;
-  let struct;
-  while ((struct = memberRegex.exec(xml)) !== null) {
-    const prodMatch = struct[1].match(/<name>product_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
-    const qtyMatch = struct[1].match(/<name>quantity<\/name>\s*<value><double>(-?[\d.]+)<\/double>/);
-    const totalMatch = struct[1].match(/<name>price_subtotal<\/name>\s*<value><double>(-?[\d.]+)<\/double>/);
-    if (prodMatch && qtyMatch) {
-      results.push({
-        producto: prodMatch[1],
-        cantidad: Math.abs(parseFloat(qtyMatch[1])),
-        total: Math.abs(parseFloat(totalMatch?.[1] || 0))
-      });
-    }
-  }
-  return results;
-}
-
-function parsearModeloColor(nombre) {
-  const match = nombre.match(/\[(\d+)\.?\d*([MNAV])?\]/);
-  if (!match) return nombre;
-  const modelo = match[1];
-  const colorCod = match[2] || null;
-  const colores = { M: 'Marrón', N: 'Negro', A: 'Arena', V: 'Verde' };
-  const nombreBase = nombre.replace(/\[.*?\]\s*/, '').replace(/\(.*?\)/g, '').trim();
-  return colorCod ? `${modelo} ${colores[colorCod] || colorCod} — ${nombreBase}` : `${modelo} — ${nombreBase}`;
 }
 
 function generarMeses(desde, hasta) {
@@ -209,53 +178,15 @@ async function getFacturasPeriodo(uid, desde, hasta) {
   return parseAmounts(xml);
 }
 
-async function getIVA(uid, desde, hasta) {
-  const xmlVentas = await odooCall(uid, 'account.move.line',
-    [['move_id.move_type','=','out_invoice'],['move_id.state','=','posted'],
-     ['tax_line_id','!=',false],['move_id.invoice_date','>=',desde],['move_id.invoice_date','<=',hasta]],
-    ['balance','tax_line_id']
-  );
-  const xmlCompras = await odooCall(uid, 'account.move.line',
-    [['move_id.move_type','=','in_invoice'],['move_id.state','=','posted'],
-     ['tax_line_id','!=',false],['move_id.invoice_date','>=',desde],['move_id.invoice_date','<=',hasta]],
-    ['balance','tax_line_id']
-  );
-
-  function parseLineas(xml) {
-    const results = [];
-    const memberRegex = /<struct>([\s\S]*?)<\/struct>/g;
-    let struct;
-    while ((struct = memberRegex.exec(xml)) !== null) {
-      const balMatch = struct[1].match(/<name>balance<\/name>\s*<value><double>(-?[\d.]+)<\/double>/);
-      const taxMatch = struct[1].match(/<name>tax_line_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
-      if (balMatch && taxMatch) results.push({ balance: parseFloat(balMatch[1]), tax: taxMatch[1] });
-    }
-    return results;
-  }
-
-  const lineasVentas = parseLineas(xmlVentas);
-  const lineasCompras = parseLineas(xmlCompras);
-  const ivaVentasNombres = ['VAT 21%', 'VAT 10.5%', 'VAT 27%', 'Exento (paga IVA 21%)'];
-  const ivaComprasNombres = ['VAT 21%', 'VAT 10.5%', 'VAT 27%', 'Perc VAT'];
-  const iibbNombres = ['P. IIBB CABA', 'P. IIBB BA', 'P. IIBB N', 'P. IIBB LP', 'P. Especial de IVA'];
-
-  const ivaVentas = lineasVentas.filter(l => ivaVentasNombres.includes(l.tax)).reduce((a,l) => a + Math.abs(l.balance), 0);
-  const ivaCompras = lineasCompras.filter(l => ivaComprasNombres.includes(l.tax)).reduce((a,l) => a + Math.abs(l.balance), 0);
-  const iibb = lineasCompras.filter(l => iibbNombres.includes(l.tax)).reduce((a,l) => a + Math.abs(l.balance), 0);
-
-  return { ivaVentas: Math.round(ivaVentas), ivaCompras: Math.round(ivaCompras), iibb: Math.round(iibb), ivaNeto: Math.round(ivaVentas - ivaCompras) };
-}
-
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   try {
     const hoy = new Date();
     const defaultDesde = '2025-11-01';
-    const defaultHasta = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
-
+    const defaultHasta = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-${String(hoy.getDate()).padStart(2,'0')}`;
     const desde = req.query.desde || defaultDesde;
-    const hastaRaw = req.query.hasta || defaultHasta;
-    const hasta = hastaRaw;
+    const hasta = req.query.hasta || defaultHasta;
+    const hoyStr = hoy.toISOString().slice(0, 10);
 
     const uid = await getUid();
     const meses = generarMeses(desde.slice(0,7) + '-01', hasta.slice(0,7) + '-01');
@@ -267,8 +198,8 @@ module.exports = async function handler(req, res) {
         const empresaB = facturas.filter(f => f.company_id[0] === 2);
         return {
           mes: m.nombre,
-          resero: { total: resero.reduce((a,o) => a + o.amount_total, 0), cantidad: resero.length },
-          empresaB: { total: empresaB.reduce((a,o) => a + o.amount_total, 0), cantidad: empresaB.length },
+          resero: { total: resero.reduce((a,o) => a+o.amount_total,0), cantidad: resero.length },
+          empresaB: { total: empresaB.reduce((a,o) => a+o.amount_total,0), cantidad: empresaB.length },
           facturas
         };
       })
@@ -276,39 +207,52 @@ module.exports = async function handler(req, res) {
 
     const todasFacturas = ventasPorMes.flatMap(m => m.facturas);
 
-    const hoyStr = hoy.toISOString().slice(0, 10);
+    // Todas las facturas pendientes de cobro
     const xmlTodoPendiente = await odooCall(uid, 'account.move',
       [['move_type','=','out_invoice'],['state','=','posted'],['payment_state','in',['not_paid','partial']]],
       ['amount_total','company_id','partner_id','name','invoice_date','invoice_date_due','payment_state','amount_residual']
     );
     const todasPendientes = parseAmounts(xmlTodoPendiente);
-    const diasDiferencia = fecha => fecha ? Math.floor((new Date(hoyStr) - new Date(fecha)) / (1000 * 60 * 60 * 24)) : 0;
-    const pendientesConDias = todasPendientes.filter(f => f.amount_residual > 0).map(f => ({ ...f, dias: diasDiferencia(f.invoice_date_due) }));
-    const tramos = {
-      noVencidas: pendientesConDias.filter(f => f.dias < 0),
-      d0_30: pendientesConDias.filter(f => f.dias >= 0 && f.dias <= 30),
-      d30_60: pendientesConDias.filter(f => f.dias > 30 && f.dias <= 60),
-      d60_90: pendientesConDias.filter(f => f.dias > 60 && f.dias <= 90),
-      d90: pendientesConDias.filter(f => f.dias > 90)
-    };
-    const totalPendiente = pendientesConDias.reduce((a,f) => a + f.amount_residual, 0);
-    const tiempoPromedioCobro = (() => {
-  const pagadas = todasFacturas.filter(f => 
-    f.payment_state === 'paid' && 
-    f.invoice_date && 
-    f.invoice_date_due &&
-    (
-      f.company_id[0] === 2 ||
-      (f.company_id[0] === 1 && f.name && f.name.startsWith('FA-A'))
-    )
-  );
-  if (!pagadas.length) return null;
-  const dias = pagadas.map(f => Math.max(0, Math.floor((new Date(f.invoice_date_due) - new Date(f.invoice_date)) / (1000*60*60*24))));
-  return Math.round(dias.reduce((a,b) => a+b, 0) / dias.length);
-})(); 
-    const totalVencido = pendientesConDias.filter(f => f.dias >= 0).reduce((a,f) => a + f.amount_residual, 0);
-    const todasVencidas = pendientesConDias.filter(f => f.dias >= 0);
 
+    // Antigüedad desde fecha de EMISIÓN
+    const diasDesdeEmision = fecha => fecha ? Math.floor((new Date(hoyStr) - new Date(fecha)) / (1000*60*60*24)) : 0;
+    const pendientesConDias = todasPendientes
+      .filter(f => f.amount_residual > 0)
+      .map(f => ({
+        ...f,
+        dias: diasDesdeEmision(f.invoice_date),
+        diasVenc: Math.floor((new Date(hoyStr) - new Date(f.invoice_date_due)) / (1000*60*60*24))
+      }));
+
+    const tramos = {
+      d0_30:  pendientesConDias.filter(f => f.dias >= 0  && f.dias <= 30),
+      d30_60: pendientesConDias.filter(f => f.dias > 30  && f.dias <= 60),
+      d60_90: pendientesConDias.filter(f => f.dias > 60  && f.dias <= 90),
+      d90:    pendientesConDias.filter(f => f.dias > 90)
+    };
+
+    const totalPendiente       = pendientesConDias.reduce((a,f) => a+f.amount_residual, 0);
+    const totalPendienteResero = pendientesConDias.filter(f => f.company_id[0]===1).reduce((a,f) => a+f.amount_residual, 0);
+    const totalPendienteEmpB   = pendientesConDias.filter(f => f.company_id[0]===2).reduce((a,f) => a+f.amount_residual, 0);
+
+    // Tiempo promedio de cobro (FA-A El Resero + todas Empresa B)
+    const tiempoPromedioCobro = (() => {
+      const pagadas = todasFacturas.filter(f =>
+        f.payment_state === 'paid' &&
+        f.invoice_date &&
+        f.invoice_date_due &&
+        (f.company_id[0] === 2 || (f.company_id[0] === 1 && f.name?.startsWith('FA-A')))
+      );
+      if (!pagadas.length) return null;
+      const dias = pagadas.map(f => Math.max(0, Math.floor((new Date(f.invoice_date_due) - new Date(f.invoice_date)) / (1000*60*60*24))));
+      return Math.round(dias.reduce((a,b) => a+b, 0) / dias.length);
+    })();
+
+    // Vencidas (para la sección de facturas vencidas sin cobrar)
+    const todasVencidas = pendientesConDias.filter(f => f.diasVenc >= 0);
+    const totalVencido  = todasVencidas.reduce((a,f) => a+f.amount_residual, 0);
+
+    // Entregas pendientes
     const [xmlPickings1, xmlPickings2] = await Promise.all([
       odooCall(uid, 'stock.picking',
         [['company_id','=',1],['state','in',['confirmed','assigned','waiting']],['picking_type_code','=','outgoing']],
@@ -319,27 +263,27 @@ module.exports = async function handler(req, res) {
         ['name','partner_id','state','scheduled_date','company_id']
       )
     ]);
-    const pickings1 = parsePickings(xmlPickings1);
-    const pickings2 = parsePickings(xmlPickings2);
-    const todosPickings = [...pickings1, ...pickings2];
+    const todosPickings = [...parsePickings(xmlPickings1), ...parsePickings(xmlPickings2)];
     let moves = [];
     if (todosPickings.length > 0) {
       const movesXml = await odooCall(uid, 'stock.move',
         [['picking_id','in',todosPickings.map(p => p.id)],['state','not in',['done','cancel']]],
-        ['picking_id','product_id','product_uom_qty','quantity']
+        ['picking_id','product_id','product_uom_qty']
       );
       moves = parseMoves(movesXml);
     }
-  const clientesIgnorar = ['goodcomex', 'assigned', 'administrator'];
-  const pendientesEntrega = todosPickings
-  .filter(p => !clientesIgnorar.some(x => p.partner.toLowerCase().includes(x)))
-  .map(p => ({
-    ...p,
-    empresa: p.company_id === 1 ? 'El Resero' : 'Empresa B',
-    productos: moves.filter(m => m.picking_id === p.id)
-  }));  
 
-  const [xmlResero, xmlEmpresaB] = await Promise.all([
+    const clientesIgnorar = ['goodcomex', 'assigned', 'administrator'];
+    const pendientesEntrega = todosPickings
+      .filter(p => !clientesIgnorar.some(x => p.partner.toLowerCase().includes(x)))
+      .map(p => ({
+        ...p,
+        empresa: p.company_id === 1 ? 'El Resero' : 'Empresa B',
+        productos: moves.filter(m => m.picking_id === p.id)
+      }));
+
+    // Órdenes recientes
+    const [xmlResero, xmlEmpresaB] = await Promise.all([
       odooCall(uid, 'sale.order', [['company_id','=',1],['state','in',['sale','done']]], ['name','partner_id','amount_total','date_order'], { limit: 10, order: 'date_order desc' }),
       odooCall(uid, 'sale.order', [['company_id','=',2],['state','in',['sale','done']]], ['name','partner_id','amount_total','date_order'], { limit: 10, order: 'date_order desc' })
     ]);
@@ -348,22 +292,23 @@ module.exports = async function handler(req, res) {
       ...parseOrders(xmlEmpresaB, 'Empresa B')
     ].sort((a,b) => new Date(b.date_order) - new Date(a.date_order)).slice(0, 10);
 
-    const totalGeneral = todasFacturas.reduce((a,f) => a + f.amount_total, 0);
-    const totalResero = todasFacturas.filter(f => f.company_id[0] === 1).reduce((a,f) => a + f.amount_total, 0);
-    const totalEmpresaB = todasFacturas.filter(f => f.company_id[0] === 2).reduce((a,f) => a + f.amount_total, 0);
+    const totalGeneral  = todasFacturas.reduce((a,f) => a+f.amount_total, 0);
+    const totalResero   = todasFacturas.filter(f => f.company_id[0]===1).reduce((a,f) => a+f.amount_total, 0);
+    const totalEmpresaB = todasFacturas.filter(f => f.company_id[0]===2).reduce((a,f) => a+f.amount_total, 0);
 
     res.json({
       ventasPorMes: ventasPorMes.map(m => ({ mes: m.mes, resero: m.resero, empresaB: m.empresaB })),
       pendientes: {
         total: totalPendiente,
+        resero: totalPendienteResero,
+        empresaB: totalPendienteEmpB,
         tiempoPromedioCobro,
         cantidad: pendientesConDias.length,
         tramos: {
-          noVencidas: { total: tramos.noVencidas.reduce((a,f) => a+f.amount_residual,0), cantidad: tramos.noVencidas.length },
-          d0_30: { total: tramos.d0_30.reduce((a,f) => a+f.amount_residual,0), cantidad: tramos.d0_30.length },
+          d0_30:  { total: tramos.d0_30.reduce((a,f)  => a+f.amount_residual,0), cantidad: tramos.d0_30.length },
           d30_60: { total: tramos.d30_60.reduce((a,f) => a+f.amount_residual,0), cantidad: tramos.d30_60.length },
           d60_90: { total: tramos.d60_90.reduce((a,f) => a+f.amount_residual,0), cantidad: tramos.d60_90.length },
-          d90: { total: tramos.d90.reduce((a,f) => a+f.amount_residual,0), cantidad: tramos.d90.length }
+          d90:    { total: tramos.d90.reduce((a,f)    => a+f.amount_residual,0), cantidad: tramos.d90.length }
         }
       },
       vencidas: { total: totalVencido, cantidad: todasVencidas.length, detalle: todasVencidas },
@@ -371,6 +316,7 @@ module.exports = async function handler(req, res) {
       ordenesRecientes,
       resumen: { totalGeneral, totalResero, totalEmpresaB, totalFacturas: todasFacturas.length }
     });
+
   } catch (err) {
     console.error('ERROR:', err.message);
     res.status(500).json({ error: err.message });
