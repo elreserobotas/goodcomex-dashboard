@@ -464,9 +464,12 @@ function setVista(v) {
 
 async function cargarPedidos() {
   const res = await fetch('/api/produccion?action=pedidos');
-  pedidos = await res.json();
+  const data = await res.json();
+  pedidos = data.pedidos || data;
+  archivados = data.archivados || [];
   renderizar();
   renderStats();
+  renderArchivados();
 }
 
 function renderStats() {
