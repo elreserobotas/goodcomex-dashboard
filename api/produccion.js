@@ -133,7 +133,11 @@ return res.json({ ok: true, usuario: { id: u.id, nombre: u.nombre, email: u.emai
           l.historial = await sql`SELECT * FROM historial_lotes WHERE lote_id=${l.id} ORDER BY fecha DESC LIMIT 5`;
         }
       }
-      return res.json(pedidos);
+      for (const p of archivados) {
+        p.talles = await sql`SELECT * FROM talles WHERE pedido_id=${p.id} ORDER BY talle`;
+        p.lotes = await sql`SELECT id, pedido_id, numero, cantidad, etapa, aparador, notas, talles_detalle, created_at, updated_at FROM lotes WHERE pedido_id=${p.id} ORDER BY created_at ASC`;
+}
+return res.json({ pedidos, archivados });
     }
 
     if (req.method === 'GET' && action === 'stock') {
