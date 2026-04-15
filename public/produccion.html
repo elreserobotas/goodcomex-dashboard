@@ -1114,7 +1114,43 @@ async function importarOdoo() {
     btn.disabled = false;
   }
 }
+function renderArchivados() {
+  let wrap = document.getElementById('archivados-wrap');
+  if (!wrap) return;
+  if (archivados.length === 0) {
+    wrap.innerHTML = '<p style="font-size:13px;color:#aaa;padding:1rem 0;">Sin pedidos archivados</p>';
+    return;
+  }
+  wrap.innerHTML = archivados.map(p => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid #f0f0f0;font-size:13px;">
+      <div>
+        <div style="font-weight:500;">${p.numero} · ${p.tipo==='stock'?'Stock propio':(p.cliente||'—')}</div>
+        <div style="font-size:11px;color:#888;">${p.producto} · ${p.empresa}</div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-outline btn-sm" onclick="desarchivarPedido(${p.id})">Reimportar</button>
+        <button class="btn btn-danger btn-sm" onclick="eliminarPedidoDefinitivo(${p.id})">Eliminar</button>
+      </div>
+    </div>`).join('');
+}
 
+async function desarchivarPedido(id) {
+  await fetch('/api/produccion?action=desarchivar', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id })
+  });
+  cargarPedidos();
+}
+
+async function eliminarPedidoDefinitivo(id) {
+  if (!confirm('¿Eliminar definitivamente? No se podrá reimportar desde Odoo.')) return;
+  await fetch('/api/produccion?action=eliminar', {
+    method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id })
+  });
+  cargarPedidos();
+}
+  
 function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
 
 document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
