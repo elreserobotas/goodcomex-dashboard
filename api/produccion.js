@@ -123,7 +123,8 @@ return res.json({ ok: true, usuario: { id: u.id, nombre: u.nombre, email: u.emai
     }
 
     if (req.method === 'GET' && action === 'pedidos') {
-      const pedidos = await sql`SELECT * FROM pedidos ORDER BY updated_at DESC`;
+      const pedidos = await sql`SELECT * FROM pedidos WHERE archivado=false OR archivado IS NULL ORDER BY updated_at DESC`;
+      const archivados = await sql`SELECT * FROM pedidos WHERE archivado=true ORDER BY archivado_at DESC`;
       for (const p of pedidos) {
         p.talles = await sql`SELECT * FROM talles WHERE pedido_id=${p.id} ORDER BY talle`;
         p.historial = await sql`SELECT * FROM historial WHERE pedido_id=${p.id} ORDER BY fecha DESC LIMIT 10`;
