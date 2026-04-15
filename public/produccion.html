@@ -556,6 +556,7 @@ function renderLoteCard(l, p) {
         <button class="btn btn-warn btn-sm" onclick="abrirDividirLote(${l.id},${l.cantidad},'${l.numero}',${p.id})">Dividir</button>
         <button class="btn btn-outline btn-sm" onclick="abrirEditarLote(${l.id},${l.cantidad},'${(l.notas||'').replace(/'/g,"\\'")}',${p.id})">Editar</button>
         <button class="btn btn-warn btn-sm" onclick="archivarPedidoDesdeLote(${l.id},${p.id})">Archivar</button>
+        <button class="btn btn-warn btn-sm" onclick="archivarPedidoDesdeLote(${l.id},${p.id})">Archivar</button>
         <button class="btn btn-danger btn-sm" onclick="eliminarLote(${l.id})">Eliminar</button>
       </div>` : ''}
   </div>`;
