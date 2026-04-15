@@ -807,19 +807,16 @@ function toggleVencida(detId, arrowId) {
       document.getElementById('facturas-resero').textContent = meses.reduce((a,m)=>a+m.resero.cantidad,0) + ' facturas';
       document.getElementById('total-empresab').textContent = fmtM(r.totalEmpresaB);
       document.getElementById('facturas-empresab').textContent = meses.reduce((a,m)=>a+m.empresaB.cantidad,0) + ' facturas';
+
       document.getElementById('total-pendiente').textContent = fmtM(data.pendientes.total);
       document.getElementById('cant-pendiente').textContent = data.pendientes.cantidad + ' facturas · total en sistema';
+      if (document.getElementById('pendiente-resero')) document.getElementById('pendiente-resero').textContent = fmtM(data.pendientes.resero);
+      if (document.getElementById('pendiente-empresab')) document.getElementById('pendiente-empresab').textContent = fmtM(data.pendientes.empresaB);
 
       const tpc = data.pendientes.tiempoPromedioCobro;
-if (tpc !== null && tpc !== undefined) {
-  document.getElementById('tiempo-cobro').textContent = tpc + ' días promedio';
-} else {
-  document.getElementById('tiempo-cobro').textContent = 'Sin datos';
-}
+      document.getElementById('tiempo-cobro').textContent = tpc !== null && tpc !== undefined ? tpc + ' días promedio' : 'Sin datos';
 
       const tr = data.pendientes.tramos;
-      document.getElementById('tramo-ok').textContent = fmtM(tr.noVencidas.total);
-      document.getElementById('tramo-ok-cant').textContent = tr.noVencidas.cantidad + ' facturas';
       document.getElementById('tramo-0-30').textContent = fmtM(tr.d0_30.total);
       document.getElementById('tramo-0-30-cant').textContent = tr.d0_30.cantidad + ' facturas';
       document.getElementById('tramo-30-60').textContent = fmtM(tr.d30_60.total);
