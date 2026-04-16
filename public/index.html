@@ -638,48 +638,49 @@
     if (datosGlobales) renderVencidas(datosGlobales.vencidas.detalle);
   }
 
-  function renderVencidas(detalle) {
-    if (vencidasOrden === 'monto') {
-      const clienteMap = {};
-      detalle.forEach(f => {
-        const nombre = f.partner_name || '—';
-        if (!clienteMap[nombre]) clienteMap[nombre] = { nombre, total: 0, facturas: [] };
-        clienteMap[nombre].total += f.amount_residual;
-        clienteMap[nombre].facturas.push(f);
-      });
-      const clientes = Object.values(clienteMap).sort((a,b) => b.total - a.total);
-      document.getElementById('vencidas-list').innerHTML = clientes.length === 0
-        ? '<p class="empty">Sin facturas vencidas</p>'
-        : clientes.map((c,i) => {
-            const facs = [...c.facturas].sort((a,b) => b.diasVenc - a.diasVenc);
-            return `<div class="venc-row" style="flex-direction:column;align-items:flex-start;gap:0;">
-              <div style="display:flex;justify-content:space-between;width:100%;cursor:pointer;padding:4px 0;" onclick="toggleVencida('venc-det-${i}','venc-arrow-${i}')">
+function renderVencidas(detalle) {
+  if (vencidasOrden === 'monto') {
+    const clienteMap = {};
+    detalle.forEach(f => {
+      const nombre = f.partner_name || '—';
+      if (!clienteMap[nombre]) clienteMap[nombre] = { nombre, total: 0, facturas: [] };
+      clienteMap[nombre].total += f.amount_residual;
+      clienteMap[nombre].facturas.push(f);
+    });
+    const clientes = Object.values(clienteMap).sort((a,b) => b.total - a.total);
+    document.getElementById('vencidas-list').innerHTML = clientes.length === 0
+      ? '<p class="empty">Sin facturas pendientes</p>'
+      : clientes.map((c,i) => {
+          const facs = [...c.facturas].sort((a,b) => b.amount_residual - a.amount_residual);
+          return `
+            <div style="border-bottom:0.5px solid #f0f0f0;padding:8px 0;">
+              <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="toggleVencida('venc-det-${i}','venc-arrow-${i}')">
                 <div>
                   <div style="font-weight:500;font-size:13px;">${c.nombre}</div>
-                  <div style="font-size:10px;color:#aaa;">Vence ${f.invoice_date_due}${f.diasVenc >= 0 ? ' · <span style="color:#a32d2d;">vencida '+f.diasVenc+' días</span>' : ' · vence en '+Math.abs(f.diasVenc)+' días'}</div>
+                  <div style="font-size:11px;color:#aaa;margin-top:2px;">${c.facturas.length} factura${c.facturas.length!==1?'s':''} pendiente${c.facturas.length!==1?'s':''}</div>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;">
                   <span style="font-weight:500;color:#993c1d;font-size:13px;">${fmt(c.total)}</span>
                   <span style="font-size:10px;color:#aaa;" id="venc-arrow-${i}">▼</span>
                 </div>
               </div>
-              <div id="venc-det-${i}" style="display:none;width:100%;padding:4px 0 8px 0;border-top:0.5px solid #f5f5f5;">
+              <div id="venc-det-${i}" style="display:none;padding-top:6px;">
                 ${facs.map(f => `
-                  <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid #f9f9f9;font-size:12px;">
+                  <div style="display:flex;justify-content:space-between;padding:5px 0;border-top:0.5px solid #f9f9f9;font-size:12px;">
                     <div>
                       <div style="color:#555;">${f.name}</div>
-                      <div style="font-size:10px;color:#aaa;">Vence ${f.invoice_date_due} · ${f.diasVenc} días</div>
+                      <div style="font-size:10px;color:#aaa;">Vence ${f.invoice_date_due}${f.diasVenc >= 0 ? ' · <span style="color:#a32d2d;">vencida '+f.diasVenc+' días</span>' : ' · vence en '+Math.abs(f.diasVenc)+' días'}</div>
                     </div>
-                    <div style="font-weight:500;color:#993c1d;">${fmt(f.amount_residual)}</div>
+                    <div style="font-weight:500;color:#993c1d;white-space:nowrap;margin-left:12px;">${fmt(f.amount_residual)}</div>
                   </div>`).join('')}
               </div>
             </div>`;
-          }).join('');
-    } else {
-      const ordenadas = [...detalle].sort((a,b) => b.diasVenc - a.diasVenc);
-      document.getElementById('vencidas-list').innerHTML = ordenadas.length === 0
-        ? '<p class="empty">Sin facturas vencidas</p>'
-        : ordenadas.map(f => `
+        }).join('');
+  } else {
+    const ordenadas = [...detalle].sort((a,b) => b.diasVenc - a.diasVenc);
+    document.getElementById('vencidas-list').innerHTML = ordenadas.length === 0
+      ? '<p class="empty">Sin facturas pendientes</p>'
+      : ordenadas.map(f => `
           <div class="venc-row">
             <div class="venc-name">
               <div style="font-weight:500;">${f.partner_name || '—'}</div>
@@ -687,18 +688,18 @@
             </div>
             <div class="venc-amount">${fmt(f.amount_residual)}</div>
           </div>`).join('');
-    }
   }
+}
 
-  function toggleVencida(detId, arrowId) {
-    const det = document.getElementById(detId);
-    const arrow = document.getElementById(arrowId);
-    if (!det) return;
-    const abierto = det.style.display !== 'none';
-    det.style.display = abierto ? 'none' : 'block';
-    if (arrow) arrow.textContent = abierto ? '▼' : '▲';
-  }
-
+function toggleVencida(detId, arrowId) {
+  const det = document.getElementById(detId);
+  const arrow = document.getElementById(arrowId);
+  if (!det) return;
+  const abierto = det.style.display !== 'none';
+  det.style.display = abierto ? 'none' : 'block';
+  if (arrow) arrow.textContent = abierto ? '▼' : '▲';
+}
+  
   function renderEntregas(pickings, containerId) {
     const el = document.getElementById(containerId);
     if (!pickings.length) { el.innerHTML = '<p class="empty">Sin entregas pendientes</p>'; return; }
