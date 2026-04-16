@@ -656,7 +656,7 @@
               <div style="display:flex;justify-content:space-between;width:100%;cursor:pointer;padding:4px 0;" onclick="toggleVencida('venc-det-${i}','venc-arrow-${i}')">
                 <div>
                   <div style="font-weight:500;font-size:13px;">${c.nombre}</div>
-                  <div style="font-size:11px;color:#aaa;margin-top:2px;">${c.facturas.length} factura${c.facturas.length!==1?'s':''} vencidas</div>
+                  <div style="font-size:10px;color:#aaa;">Vence ${f.invoice_date_due}${f.diasVenc >= 0 ? ' · <span style="color:#a32d2d;">vencida '+f.diasVenc+' días</span>' : ' · vence en '+Math.abs(f.diasVenc)+' días'}</div>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;">
                   <span style="font-weight:500;color:#993c1d;font-size:13px;">${fmt(c.total)}</span>
