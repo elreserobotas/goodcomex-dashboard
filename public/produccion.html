@@ -22,6 +22,7 @@
     .btn-outline:hover { background: #f5f5f3; }
     .btn-danger { background: #fcebeb; color: #a32d2d; border: none; }
     .btn-warn { background: #faeeda; color: #633806; border: none; }
+    .btn-success { background: #27500a; color: #fff; border: none; }
     .btn-sm { padding: 4px 10px; font-size: 11px; }
 
     .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
@@ -61,6 +62,7 @@
     .kanban-body { background: #f0f0ee; border-radius: 0 0 8px 8px; padding: 6px; min-height: 120px; display: flex; flex-direction: column; gap: 6px; }
 
     .kanban-pedido { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 10px; overflow: hidden; }
+    .kanban-pedido.entregado { background: #eaf3de; border-color: #9FE1CB; }
     .pedido-header { padding: 8px 10px; cursor: pointer; }
     .pedido-header:hover { background: #fafafa; }
     .pedido-sin-lotes { padding: 8px 10px; cursor: pointer; border: 0.5px dashed #ccc; border-radius: 10px; background: #fafafa; }
@@ -69,14 +71,11 @@
     .pedido-cliente { font-size: 12px; font-weight: 500; margin-bottom: 2px; line-height: 1.3; }
     .pedido-bottom { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; }
     .pedido-monto { font-size: 10px; color: #085041; font-weight: 500; margin-top: 3px; }
-    .pedido-accion { font-size: 10px; color: #378ADD; margin-top: 4px; }
 
     .lotes-wrap { border-top: 0.5px solid #f0f0f0; padding: 4px 6px 6px; display: none; flex-direction: column; gap: 4px; background: #fafafa; }
     .lotes-wrap.open { display: flex; }
     .lote-card { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 7px; padding: 6px 8px; }
     .lote-actions { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
-    .add-lote-btn { width: 100%; padding: 5px; border: 0.5px dashed #ccc; border-radius: 6px; background: none; font-size: 11px; color: #888; cursor: pointer; margin-top: 2px; }
-    .add-lote-btn:hover { background: #f5f5f3; color: #1a1a1a; }
 
     .badge-tipo { font-size: 9px; padding: 2px 5px; border-radius: 8px; }
     .tipo-cliente { background: #e6f1fb; color: #0c447c; }
@@ -138,6 +137,12 @@
     .lineas-tabla .modelo-label { font-weight: 600; color: #1a1a1a; }
     .lineas-tabla .talle-label { color: #555; }
     .lineas-tabla .cant-label { color: #888; }
+
+    .panel-seccion { margin-top: 1.5rem; }
+    .panel-titulo { font-size: 11px; font-weight: 500; color: #aaa; text-transform: uppercase; letter-spacing:.06em; margin-bottom: 10px; }
+    .panel-card { border-radius: 12px; padding: 1rem 1.25rem; }
+    .panel-entregados { background: #eaf3de; border: 0.5px solid #9FE1CB; }
+    .panel-archivados { background: #fff; border: 0.5px solid #FAC775; }
   </style>
 </head>
 <body>
@@ -197,14 +202,22 @@
           </table>
         </div>
       </div>
-    </div>
- </div>
 
-  <div class="container" style="margin-top:1rem;">
-    <div class="container-inner">
-      <div style="font-size:11px;font-weight:500;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Pedidos archivados</div>
-      <div style="background:#fff;border:0.5px solid #FAC775;border-radius:12px;padding:1rem 1.25rem;">
-        <div id="archivados-wrap"><p style="font-size:13px;color:#aaa;">Sin pedidos archivados</p></div>
+      <!-- Panel pedidos entregados en Odoo -->
+      <div class="panel-seccion" id="panel-entregados-wrap" style="display:none;">
+        <div class="panel-titulo">✓ Entregados en Odoo</div>
+        <div class="panel-card panel-entregados">
+          <div style="font-size:12px;color:#27500a;margin-bottom:10px;">Estos pedidos figuran como entregados en Odoo. Podés confirmar y eliminarlos del sistema.</div>
+          <div id="entregados-list"></div>
+        </div>
+      </div>
+
+      <!-- Panel pedidos archivados -->
+      <div class="panel-seccion">
+        <div class="panel-titulo">Pedidos archivados</div>
+        <div class="panel-card panel-archivados">
+          <div id="archivados-wrap"><p style="font-size:13px;color:#aaa;">Sin pedidos archivados</p></div>
+        </div>
       </div>
     </div>
   </div>
@@ -378,16 +391,16 @@
 
 <script>
 const ETAPAS = [
-  { key: 'recibido',       label: 'Pedido recibido',    cls: 'etapa-recibido' },
-  { key: 'corte',          label: 'Corte',               cls: 'etapa-corte' },
-  { key: 'deposito_corte', label: 'Depósito de corte',   cls: 'etapa-deposito_corte' },
-  { key: 'deposito',       label: 'Depósito',            cls: 'etapa-deposito' },
-  { key: 'aparado',        label: 'Aparado',             cls: 'etapa-aparado' },
-  { key: 'armado',         label: 'Armado',              cls: 'etapa-armado' },
-  { key: 'fabrica',        label: 'Fábrica',             cls: 'etapa-fabrica' },
-  { key: 'cosedor',        label: 'Cosedor',             cls: 'etapa-cosedor' },
-  { key: 'empaque',        label: 'Empaque',             cls: 'etapa-empaque' },
-  { key: 'listo',          label: 'Listo para entregar', cls: 'etapa-listo' },
+  { key:'recibido',       label:'Pedido recibido',    cls:'etapa-recibido' },
+  { key:'corte',          label:'Corte',               cls:'etapa-corte' },
+  { key:'deposito_corte', label:'Depósito de corte',   cls:'etapa-deposito_corte' },
+  { key:'deposito',       label:'Depósito',            cls:'etapa-deposito' },
+  { key:'aparado',        label:'Aparado',             cls:'etapa-aparado' },
+  { key:'armado',         label:'Armado',              cls:'etapa-armado' },
+  { key:'fabrica',        label:'Fábrica',             cls:'etapa-fabrica' },
+  { key:'cosedor',        label:'Cosedor',             cls:'etapa-cosedor' },
+  { key:'empaque',        label:'Empaque',             cls:'etapa-empaque' },
+  { key:'listo',          label:'Listo para entregar', cls:'etapa-listo' },
 ];
 const TALLES = ['35','36','37','38','39','40','41','42','43','44','45','46'];
 const COLORES_MODELO = ['#e6f1fb','#eaf3de','#faeeda','#fbeaf0','#eeedfe','#fcebeb','#e1f5ee','#f1efe8'];
@@ -396,44 +409,39 @@ const COLORES_TEXTO  = ['#0c447c','#27500a','#633806','#72243e','#3c3489','#a32d
 let usuario = null;
 let pedidos = [];
 let archivados = [];
+let entregados = [];
 let vista = 'kanban';
 
-function etapaCls(k) { return ETAPAS.find(e => e.key === k)?.cls || ''; }
-function etapaLabel(k) { return ETAPAS.find(e => e.key === k)?.label || k; }
-function diasDesde(f) { if (!f) return 0; return Math.floor((new Date() - new Date(f)) / (1000*60*60*24)); }
+function etapaCls(k) { return ETAPAS.find(e => e.key===k)?.cls||''; }
+function etapaLabel(k) { return ETAPAS.find(e => e.key===k)?.label||k; }
+function diasDesde(f) { if (!f) return 0; return Math.floor((new Date()-new Date(f))/(1000*60*60*24)); }
 function tipoBadge(tipo) {
-  if (tipo === 'stock') return '<span class="badge-tipo tipo-stock">Stock</span>';
-  if (tipo === 'mixto') return '<span class="badge-tipo tipo-mixto">Cli+Stock</span>';
+  if (tipo==='stock') return '<span class="badge-tipo tipo-stock">Stock</span>';
+  if (tipo==='mixto') return '<span class="badge-tipo tipo-mixto">Cli+Stock</span>';
   return '<span class="badge-tipo tipo-cliente">Cliente</span>';
 }
 function paresLabel(p) {
-  const ped = parseInt(p.cantidad_pedida)||0;
-  const stk = parseInt(p.cantidad_stock)||0;
-  if (p.tipo === 'stock') return stk + ' pares';
-  if (p.tipo === 'mixto') return ped + '+' + stk + ' pares';
-  return ped + ' pares';
+  const ped=parseInt(p.cantidad_pedida)||0, stk=parseInt(p.cantidad_stock)||0;
+  if (p.tipo==='stock') return stk+' pares';
+  if (p.tipo==='mixto') return ped+'+'+stk+' pares';
+  return ped+' pares';
 }
-function fmtPesos(n) {
-  if (!n || n == 0) return '';
-  return '$' + Math.round(n).toLocaleString('es-AR');
-}
+function fmtPesos(n) { if (!n||n==0) return ''; return '$'+Math.round(n).toLocaleString('es-AR'); }
 
 function buildModelosHtml(fuenteTalles, notas) {
   if (fuenteTalles?.length) {
     const grupos = {};
     fuenteTalles.forEach(t => {
-      const m = t.modelo || '?';
-      if (!grupos[m]) grupos[m] = { nombre: t.nombre_producto || '', talles: [] };
+      const m = t.modelo||'?';
+      if (!grupos[m]) grupos[m]={nombre:t.nombre_producto||'',talles:[]};
       grupos[m].talles.push(t);
     });
-    const modelosOrdenados = Object.entries(grupos).sort((a,b) => (parseInt(a[0])||0)-(parseInt(b[0])||0));
-    return modelosOrdenados.map(([modelo, data], idx) => {
-      const bg = COLORES_MODELO[idx % COLORES_MODELO.length];
-      const color = COLORES_TEXTO[idx % COLORES_TEXTO.length];
-      const ts = data.talles.sort((a,b) => (parseInt(a.talle)||0)-(parseInt(b.talle)||0));
+    return Object.entries(grupos).sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0)).map(([modelo,data],idx) => {
+      const bg=COLORES_MODELO[idx%COLORES_MODELO.length], color=COLORES_TEXTO[idx%COLORES_TEXTO.length];
+      const ts=data.talles.sort((a,b)=>(parseInt(a.talle)||0)-(parseInt(b.talle)||0));
       return `<div style="margin-bottom:4px;border-radius:6px;padding:4px 7px;background:${bg};">
         <div style="font-size:10px;font-weight:700;color:${color};margin-bottom:2px;">Mod. ${modelo} <span style="font-weight:400;opacity:0.7;">${data.nombre}</span></div>
-        <div style="display:flex;flex-wrap:wrap;gap:2px;">${ts.map(t => `<span style="background:rgba(255,255,255,0.7);border-radius:3px;padding:1px 5px;font-size:9px;color:#333;">${t.talle?'T'+t.talle:'—'}: ${t.cantidad}</span>`).join('')}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:2px;">${ts.map(t=>`<span style="background:rgba(255,255,255,0.7);border-radius:3px;padding:1px 5px;font-size:9px;color:#333;">${t.talle?'T'+t.talle:'—'}: ${t.cantidad}</span>`).join('')}</div>
       </div>`;
     }).join('');
   }
@@ -442,33 +450,31 @@ function buildModelosHtml(fuenteTalles, notas) {
 }
 
 function login() {
-  const email = document.getElementById('login-email').value.trim();
-  const pass = document.getElementById('login-pass').value;
-  fetch('/api/produccion?action=login', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password: pass })
-  }).then(r => r.json()).then(data => {
-    if (data.error) { document.getElementById('login-err').style.display = 'block'; return; }
-    localStorage.setItem('gx_usuario', JSON.stringify(data.usuario));
-    iniciarConSesion(data.usuario);
-  }).catch(() => { document.getElementById('login-err').style.display = 'block'; });
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-pass').value;
+  fetch('/api/produccion?action=login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})})
+    .then(r=>r.json()).then(data=>{
+      if (data.error){document.getElementById('login-err').style.display='block';return;}
+      localStorage.setItem('gx_usuario',JSON.stringify(data.usuario));
+      iniciarConSesion(data.usuario);
+    }).catch(()=>{document.getElementById('login-err').style.display='block';});
 }
 
 function logout() {
   localStorage.removeItem('gx_usuario');
-  usuario = null; pedidos = [];
-  document.getElementById('login-screen').style.display = 'block';
-  document.getElementById('app-screen').style.display = 'none';
-  document.getElementById('login-email').value = '';
-  document.getElementById('login-pass').value = '';
+  usuario=null; pedidos=[];
+  document.getElementById('login-screen').style.display='block';
+  document.getElementById('app-screen').style.display='none';
+  document.getElementById('login-email').value='';
+  document.getElementById('login-pass').value='';
 }
 
 function setVista(v) {
-  vista = v;
-  document.getElementById('vista-kanban').style.display = v === 'kanban' ? 'block' : 'none';
-  document.getElementById('vista-lista').style.display = v === 'lista' ? 'block' : 'none';
-  document.getElementById('btn-kanban').classList.toggle('active', v === 'kanban');
-  document.getElementById('btn-lista').classList.toggle('active', v === 'lista');
+  vista=v;
+  document.getElementById('vista-kanban').style.display=v==='kanban'?'block':'none';
+  document.getElementById('vista-lista').style.display=v==='lista'?'block':'none';
+  document.getElementById('btn-kanban').classList.toggle('active',v==='kanban');
+  document.getElementById('btn-lista').classList.toggle('active',v==='lista');
   renderizar();
 }
 
@@ -477,661 +483,54 @@ async function cargarPedidos() {
   const data = await res.json();
   pedidos = data.pedidos || data;
   archivados = data.archivados || [];
+  entregados = data.entregados || [];
   renderizar();
   renderStats();
   renderArchivados();
+  renderEntregadosOdoo();
 }
 
 function renderStats() {
-  const activos = pedidos.filter(p => p.etapa !== 'listo' && p.etapa !== 'stock');
-  const todosLotes = pedidos.flatMap(p => p.lotes || []);
-  const lotesActivos = todosLotes.filter(l => l.etapa !== 'listo' && l.etapa !== 'stock' && l.etapa !== 'empaque');
-  const enAparado = todosLotes.filter(l => l.etapa === 'aparado');
-  const enDeposito = todosLotes.filter(l => l.etapa === 'deposito' || l.etapa === 'deposito_corte');
-  const paresPendientes = lotesActivos.reduce((a,l) => a + (parseInt(l.cantidad)||0), 0);
-  const totalPares = pedidos.reduce((a,p) => a + (parseInt(p.cantidad_pedida)||0) + (parseInt(p.cantidad_stock)||0), 0);
-  document.getElementById('stat-total').textContent = activos.length;
+  const todosLotes = pedidos.flatMap(p=>p.lotes||[]);
+  const lotesActivos = todosLotes.filter(l=>l.etapa!=='listo'&&l.etapa!=='stock'&&l.etapa!=='empaque');
+  const enAparado = todosLotes.filter(l=>l.etapa==='aparado');
+  const enDeposito = todosLotes.filter(l=>l.etapa==='deposito'||l.etapa==='deposito_corte');
+  const paresPendientes = lotesActivos.reduce((a,l)=>a+(parseInt(l.cantidad)||0),0);
+  const totalPares = pedidos.reduce((a,p)=>a+(parseInt(p.cantidad_pedida)||0)+(parseInt(p.cantidad_stock)||0),0);
+  document.getElementById('stat-total').textContent = pedidos.length;
   document.getElementById('stat-lotes').textContent = paresPendientes.toLocaleString('es-AR');
   document.getElementById('stat-aparado').textContent = enAparado.length;
   document.getElementById('stat-deposito').textContent = enDeposito.length;
   document.getElementById('stat-pares').textContent = totalPares.toLocaleString('es-AR');
 }
 
-function renderKanbanCard(p, etapaFiltro) {
-  const todosLotes = p.lotes || [];
-  const sinLotes = todosLotes.length === 0;
-  const lotesMostrar = sinLotes ? [] : todosLotes.filter(l => l.etapa === etapaFiltro);
-  const diasTotal = diasDesde(p.created_at);
-  const monto = fmtPesos(p.monto_total);
-  const puedeEditar = usuario?.rol === 'produccion' || usuario?.rol === 'admin';
-  const cliente = p.tipo === 'stock' ? 'Stock propio' : (p.cliente || '—');
-
-  if (sinLotes) {
-    return `<div class="kanban-pedido">
-      <div class="pedido-sin-lotes" onclick="abrirPrimerLote(${p.id})">
-        <div class="pedido-num">${p.numero} · sin lotes</div>
-        <div class="pedido-cliente">${cliente}</div>
-        <div class="pedido-bottom">
-          ${tipoBadge(p.tipo)}
-          <span class="emp-badge ${p.empresa==='El Resero'?'emp-r':'emp-b'}">${p.empresa}</span>
-          <span style="font-size:10px;color:#aaa;margin-left:auto;">${diasTotal}d</span>
-        </div>
-        ${monto ? `<div class="pedido-monto">${monto}</div>` : ''}
-        <div style="font-size:10px;color:#378ADD;margin-top:4px;">Tap para crear lote →</div>
+function renderEntregadosOdoo() {
+  const wrap = document.getElementById('panel-entregados-wrap');
+  const list = document.getElementById('entregados-list');
+  const pedidosEntregados = pedidos.filter(p => entregados.includes(p.numero));
+  if (pedidosEntregados.length === 0) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  list.innerHTML = pedidosEntregados.map(p => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:0.5px solid #9FE1CB;">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:#1a1a1a;">${p.numero}</div>
+        <div style="font-size:11px;color:#27500a;">${p.tipo==='stock'?'Stock propio':(p.cliente||'—')} · ${p.producto}</div>
       </div>
-    </div>`;
-  }
-
-  return `<div class="kanban-pedido">
-    <div class="pedido-header" onclick="toggleLotes('lotes-${p.id}-${etapaFiltro}')">
-      <div class="pedido-num">${p.numero} · ${lotesMostrar.length} lote${lotesMostrar.length!==1?'s':''}</div>
-      <div class="pedido-cliente">${cliente}</div>
-      <div class="pedido-bottom">
-        ${tipoBadge(p.tipo)}
-        <span class="emp-badge ${p.empresa==='El Resero'?'emp-r':'emp-b'}">${p.empresa}</span>
-        <span style="font-size:10px;color:#aaa;margin-left:auto;">${diasTotal}d</span>
-      </div>
-      ${monto ? `<div class="pedido-monto">${monto}</div>` : ''}
-    </div>
-    <div class="lotes-wrap open" id="lotes-${p.id}-${etapaFiltro}">
-      ${lotesMostrar.map(l => renderLoteCard(l, p)).join('')}
-    </div>
-  </div>`;
-}
-
-function renderLoteCard(l, p) {
-  const diasEtapa = diasDesde(l.updated_at);
-  const puedeEditar = usuario?.rol === 'produccion' || usuario?.rol === 'admin';
-  const fuenteTalles = l.talles_detalle || p.talles;
-  const modelosHtml = buildModelosHtml(fuenteTalles, l.notas);
-
-  return `<div class="lote-card">
-    <div style="font-weight:700;font-size:11px;color:#1a1a1a;margin-bottom:4px;">${l.numero}</div>
-    ${modelosHtml}
-    <div style="font-size:11px;font-weight:500;margin-top:3px;">${l.cantidad} pares · <span class="etapa-pill ${etapaCls(l.etapa)}">${etapaLabel(l.etapa)}</span></div>
-    ${l.aparador ? `<div><span class="lote-aparador">${l.aparador}</span></div>` : ''}
-    <div style="font-size:10px;color:${diasEtapa >= 7 ? '#a32d2d' : '#aaa'};font-weight:${diasEtapa >= 7 ? '600' : '400'};margin-top:2px;">${diasEtapa}d en esta etapa${diasEtapa >= 7 ? ' ⚠️' : ''}</div>
-    ${l.historial?.length ? `
-  <div style="margin-top:4px;border-top:0.5px solid #f0f0f0;padding-top:4px;">
-    ${l.historial.slice(0,3).map(h => `
-      <div style="display:flex;gap:6px;font-size:9px;color:#aaa;margin-bottom:2px;">
-        <span style="white-space:nowrap;">${new Date(h.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'})}</span>
-        <span style="color:#555;">${h.usuario} → ${etapaLabel(h.etapa_hasta)}</span>
-      </div>`).join('')}
-  </div>` : ''}
-    ${puedeEditar ? `
-      <div class="lote-actions">
-        <button class="btn btn-primary btn-sm" onclick="abrirMoverLote(${l.id},'${l.etapa}','${l.aparador||''}')">Mover</button>
-        <button class="btn btn-warn btn-sm" onclick="abrirDividirLote(${l.id},${l.cantidad},'${l.numero}',${p.id})">Dividir</button>
-        <button class="btn btn-outline btn-sm" onclick="abrirEditarLote(${l.id},${l.cantidad},'${(l.notas||'').replace(/'/g,"\\'")}',${p.id})">Editar</button>
-        <button class="btn btn-warn btn-sm" onclick="archivarPedidoDesdeLote(${l.id},${p.id})">Archivar</button>
-        <button class="btn btn-danger btn-sm" onclick="eliminarLote(${l.id})">Eliminar</button>
-      </div>` : ''}
-  </div>`;
-}
-
-function toggleLotes(id) {
-  const el = document.getElementById(id);
-  if (el) el.classList.toggle('open');
-}
-
-function renderizar() {
-  const q = document.getElementById('buscar-input')?.value.toLowerCase().trim() || '';
-  const pedidosFiltrados = q
-    ? pedidos.filter(p =>
-        p.numero?.toLowerCase().includes(q) ||
-        p.cliente?.toLowerCase().includes(q) ||
-        p.producto?.toLowerCase().includes(q)
-      )
-    : pedidos;
-  if (vista === 'kanban') renderKanban(pedidosFiltrados);
-  else renderLista(pedidosFiltrados);
-}
-
-function filtrarPedidos() {
-  renderizar();
-}
-
-function renderKanban(pedidosFiltrados = pedidos) {
-  const pedidos = pedidosFiltrados;
-  const board = document.getElementById('kanban-board');
-  board.innerHTML = ETAPAS.map(etapa => {
-    let pedidosEnCol = [];
-    if (etapa.key === 'recibido') {
-      pedidosEnCol = pedidos.filter(p => {
-        const lotes = p.lotes || [];
-        return lotes.length === 0 || lotes.some(l => l.etapa === 'recibido');
-      });
-    } else {
-      pedidosEnCol = pedidos.filter(p => (p.lotes||[]).some(l => l.etapa === etapa.key));
-    }
-    const uniqueIds = [...new Set(pedidosEnCol.map(p => p.id))];
-    const pedidosUnicos = uniqueIds.map(id => pedidos.find(p => p.id === id));
-    const cntLotes = etapa.key === 'recibido'
-      ? pedidosUnicos.filter(p => (p.lotes||[]).length === 0).length + pedidos.flatMap(p => p.lotes||[]).filter(l => l.etapa === 'recibido').length
-      : pedidos.flatMap(p => p.lotes||[]).filter(l => l.etapa === etapa.key).length;
-    return `<div class="kanban-col">
-      <div class="kanban-header ${etapa.cls}">
-        <span>${etapa.label}</span><span>${cntLotes}</span>
-      </div>
-      <div class="kanban-body">
-        ${pedidosUnicos.length === 0 ? '<div class="empty-state">—</div>' : pedidosUnicos.map(p => renderKanbanCard(p, etapa.key)).join('')}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function renderLista(pedidosFiltrados = pedidos) {
-  const pedidos = pedidosFiltrados;
-  const tbody = document.getElementById('lista-body');
-  if (!pedidos.length) { tbody.innerHTML = '<tr><td colspan="11" class="empty-state">Sin pedidos</td></tr>'; return; }
-  const puedeEditar = usuario?.rol === 'produccion' || usuario?.rol === 'admin';
-  tbody.innerHTML = pedidos.map(p => {
-    const lotes = p.lotes || [];
-    const dias = diasDesde(p.created_at);
-    const primerLote = lotes[0];
-    return `<tr>
-      <td onclick="abrirDetalle(${p.id})" style="cursor:pointer;">${p.numero}</td>
-      <td onclick="abrirDetalle(${p.id})" style="cursor:pointer;"><strong>${p.tipo==='stock'?'Stock propio':(p.cliente||'—')}</strong></td>
-      <td onclick="abrirDetalle(${p.id})" style="cursor:pointer;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.producto}</td>
-      <td><span class="emp-badge ${p.empresa==='El Resero'?'emp-r':'emp-b'}">${p.empresa}</span></td>
-      <td>${tipoBadge(p.tipo)}</td>
-      <td>${lotes.length}</td>
-      <td>${paresLabel(p)}</td>
-      <td><span class="etapa-pill ${etapaCls(p.etapa)}">${etapaLabel(p.etapa)}</span></td>
-      <td style="font-size:11px;color:#085041;">${fmtPesos(p.monto_total)}</td>
-      <td style="font-size:11px;color:#888;">${dias}d</td>
-      <td>${puedeEditar ? (lotes.length===0
-        ? `<button class="btn btn-primary btn-sm" onclick="abrirPrimerLote(${p.id})">Iniciar</button>`
-        : `<button class="btn btn-primary btn-sm" onclick="abrirMoverLote(${primerLote.id},'${primerLote.etapa}','${primerLote.aparador||''}')">Mover</button>`)
-        : ''}</td>
-    </tr>`;
-  }).join('');
-}
-
-function abrirDetalle(id) {
-  const p = pedidos.find(x => x.id === id);
-  if (!p) return;
-  const lotes = p.lotes || [];
-  const fecha = p.created_at ? new Date(p.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'}) : '—';
-  const tallesHtml = p.talles?.length
-    ? `<div class="talles-resumen">${p.talles.map(t => `<span class="talle-pill-sm">T${t.talle}: ${t.cantidad}</span>`).join('')}</div>`
-    : '<span style="color:#aaa;font-size:12px">Sin talles</span>';
-  const histHtml = p.historial?.length
-    ? p.historial.map(h => `<div class="hist-item">
-        <span class="hist-fecha">${new Date(h.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span>
-        <span class="hist-texto"><strong>${h.usuario}</strong> → <strong>${etapaLabel(h.etapa_hasta)}</strong>${h.notas?' — '+h.notas:''}</span>
-      </div>`).join('')
-    : '<span style="color:#aaa;font-size:12px">Sin historial</span>';
-  const lotesHtml = lotes.map(l => `
-    <div style="background:#fafafa;border-radius:8px;padding:8px 10px;margin-bottom:6px;border:0.5px solid #f0f0f0;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:12px;font-weight:700;">${l.numero}</span>
-        <span class="etapa-pill ${etapaCls(l.etapa)}">${etapaLabel(l.etapa)}</span>
-      </div>
-      <div style="font-size:12px;color:#555;margin-top:3px;">${l.cantidad} pares${l.aparador?' · '+l.aparador:''}</div>
-      ${l.notas?`<div style="font-size:11px;color:#888;margin-top:2px;">${l.notas}</div>`:''}
-    </div>`).join('');
-
-  document.getElementById('det-titulo').textContent = p.numero;
-  document.getElementById('det-body').innerHTML = `
-    <div class="detalle-row"><span class="detalle-label">Cliente</span><span class="detalle-val">${p.tipo==='stock'?'Stock propio':(p.cliente||'—')}</span></div>
-    <div class="detalle-row"><span class="detalle-label">Modelo</span><span class="detalle-val">${p.producto}</span></div>
-    <div class="detalle-row"><span class="detalle-label">Empresa</span><span class="detalle-val">${p.empresa}</span></div>
-    <div class="detalle-row"><span class="detalle-label">Pares</span><span class="detalle-val">${paresLabel(p)}</span></div>
-    <div class="detalle-row"><span class="detalle-label">Monto</span><span class="detalle-val" style="color:#085041;">${fmtPesos(p.monto_total)||'—'}</span></div>
-    <div class="detalle-row"><span class="detalle-label">Fecha ingreso</span><span class="detalle-val">${fecha}</span></div>
-    <div class="detalle-row"><span class="detalle-label">Días</span><span class="detalle-val">${diasDesde(p.created_at)} días</span></div>
-    ${p.notas?`<div class="detalle-row"><span class="detalle-label">Notas</span><span class="detalle-val" style="font-size:12px;">${p.notas}</span></div>`:''}
-    <div class="modal-section">Talles</div>${tallesHtml}
-    <div class="modal-section">Lotes (${lotes.length})</div>
-    ${lotesHtml || '<span style="color:#aaa;font-size:12px">Sin lotes</span>'}
-    <div class="modal-section">Historial</div>${histHtml}`;
-  document.getElementById('det-actions').innerHTML = `
-    <button class="btn btn-danger btn-sm" onclick="eliminarPedido(${p.id})">Eliminar</button>
-    ${(usuario?.rol==='produccion'||usuario?.rol==='admin') ? `
-      <button class="btn btn-outline btn-sm" onclick="abrirEditar(${p.id})">Editar</button>
-      ${lotes.length===0?`<button class="btn btn-primary btn-sm" onclick="abrirPrimerLote(${p.id})">Crear lote</button>`:''}` : ''}`;
-  document.getElementById('modal-detalle').classList.add('open');
-}
-
-function abrirPrimerLote(pedidoId) {
-  const p = pedidos.find(x => x.id === pedidoId);
-  if (!p) return;
-  cerrarModal('modal-detalle');
-  document.getElementById('nuevo-lote-pedido-id').value = pedidoId;
-  document.getElementById('nuevo-lote-notas').value = '';
-  document.getElementById('nuevo-lote-titulo').textContent = 'Crear lote — ' + (p.cliente || p.producto);
-
-  const talles = p.talles || [];
-  const totalPares = (parseInt(p.cantidad_pedida)||0) + (parseInt(p.cantidad_stock)||0);
-
-  let extraHtml = document.getElementById('primer-lote-talles-wrap');
-  if (!extraHtml) {
-    extraHtml = document.createElement('div');
-    extraHtml.id = 'primer-lote-talles-wrap';
-    const cantField = document.querySelector('#modal-nuevo-lote .field:first-of-type');
-    cantField.parentNode.insertBefore(extraHtml, cantField);
-  }
-
-  if (talles.length > 0) {
-    const grupos = {};
-    talles.forEach(t => {
-      const m = t.modelo || '?';
-      if (!grupos[m]) grupos[m] = { nombre: t.nombre_producto||'', talles: [] };
-      grupos[m].talles.push({ talle: t.talle, cantidad: t.cantidad });
-    });
-    const filas = [];
-    Object.entries(grupos).sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0)).forEach(([modelo,data]) => {
-      data.talles.sort((a,b)=>(parseInt(a.talle)||0)-(parseInt(b.talle)||0)).forEach(t => {
-        filas.push({ modelo, nombre: data.nombre, talle: t.talle, cantidad: t.cantidad });
-      });
-    });
-    window._primerLoteFilas = filas;
-    window._primerLoteCantidades = filas.map(f => f.cantidad);
-    extraHtml.innerHTML = `
-      <table class="lineas-tabla">
-        <thead><tr><th>Modelo</th><th>Talle</th><th>Disponible</th><th>Este lote</th></tr></thead>
-        <tbody>${filas.map((f,i) => `<tr>
-          <td class="modelo-label">${f.modelo}</td>
-          <td class="talle-label">${f.talle?'T'+f.talle:'—'}</td>
-          <td class="cant-label">${f.cantidad}</td>
-          <td><input type="number" id="pl-${i}" min="0" max="${f.cantidad}" placeholder="0" style="width:54px;padding:4px 6px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;" oninput="actualizarTotalPrimerLote()" /></td>
-        </tr>`).join('')}</tbody>
-      </table>
-      <div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 8px;background:#f5f5f3;border-radius:6px;margin-bottom:8px;">
-        <span style="color:#888;">Total este lote:</span>
-        <span style="font-weight:500;color:#1a1a1a;" id="primer-lote-total">0 pares</span>
-      </div>`;
-    document.getElementById('nuevo-lote-cant').value = '';
-    const cantField = document.querySelector('#modal-nuevo-lote .field:first-of-type');
-    if (cantField) cantField.style.display = 'none';
-  } else {
-    extraHtml.innerHTML = '';
-    window._primerLoteFilas = [];
-    window._primerLoteCantidades = [];
-    const cantField = document.querySelector('#modal-nuevo-lote .field:first-of-type');
-    if (cantField) cantField.style.display = 'block';
-    document.getElementById('nuevo-lote-cant').value = totalPares || '';
-  }
-  document.getElementById('modal-nuevo-lote').classList.add('open');
-}
-
-function actualizarTotalPrimerLote() {
-  let total = 0;
-  (window._primerLoteCantidades||[]).forEach((_,i) => { total += parseInt(document.getElementById('pl-'+i)?.value)||0; });
-  const el = document.getElementById('primer-lote-total');
-  if (el) el.textContent = total + ' pares';
-  document.getElementById('nuevo-lote-cant').value = total;
-}
-
-function toggleAparadorLote() {
-  document.getElementById('aparador-lote-field').style.display = document.getElementById('lote-etapa').value === 'aparado' ? 'block' : 'none';
-}
-
-function abrirMoverLote(id, etapaActual, aparador) {
-  document.getElementById('lote-id').value = id;
-  document.getElementById('lote-etapa').value = etapaActual;
-  document.getElementById('aparador-lote').value = aparador || '';
-  document.getElementById('lote-nota').value = '';
-  document.getElementById('lote-titulo').textContent = 'Mover lote';
-  toggleAparadorLote();
-  document.getElementById('modal-lote').classList.add('open');
-}
-
-async function confirmarEtapaLote() {
-  const id = parseInt(document.getElementById('lote-id').value);
-  const etapa = document.getElementById('lote-etapa').value;
-  const aparador = document.getElementById('aparador-lote').value;
-  const notas = document.getElementById('lote-nota').value;
-  await fetch('/api/produccion?action=etapa-lote', {
-    method: 'PUT', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ lote_id: id, etapa, aparador, usuario: usuario.nombre, notas })
-  });
-  cerrarModal('modal-lote');
-  cargarPedidos();
-}
-
-function abrirDividirLote(loteId, cantidad, numero, pedidoId) {
-  const pedido = pedidos.find(p => p.id === parseInt(pedidoId));
-  const lote = pedido?.lotes?.find(l => l.id === parseInt(loteId));
-  document.getElementById('dividir-lote-id').value = loteId;
-  document.getElementById('dividir-pedido-id').value = pedidoId;
-  document.getElementById('dividir-sub').textContent = `Lote ${numero} · ${cantidad} pares disponibles`;
-  document.getElementById('dividir-nota').value = '';
-
-  const fuenteTalles = lote?.talles_detalle || pedido?.talles || [];
-  const tbody = document.getElementById('dividir-lineas-body');
-
-  if (fuenteTalles.length > 0) {
-    const grupos = {};
-    fuenteTalles.forEach(t => {
-      const modelo = t.modelo || '?';
-      if (!grupos[modelo]) grupos[modelo] = { nombre: t.nombre_producto||'', talles: [] };
-      grupos[modelo].talles.push({ talle: t.talle||null, cantidad: t.cantidad });
-    });
-    const filas = [];
-    Object.entries(grupos).sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0)).forEach(([modelo,data]) => {
-      data.talles.sort((a,b)=>(parseInt(a.talle)||0)-(parseInt(b.talle)||0)).forEach(t => {
-        filas.push({ modelo, nombre: data.nombre, talle: t.talle, cantidad: t.cantidad });
-      });
-    });
-    window._dividirFilas = filas;
-    window._dividirCantidades = filas.map(f => f.cantidad);
-    tbody.innerHTML = filas.map((f,i) => `<tr>
-      <td class="modelo-label">${f.modelo}</td>
-      <td class="talle-label">${f.talle?'T'+f.talle:'—'}</td>
-      <td class="cant-label">${f.cantidad}</td>
-      <td><input type="number" id="dd-${i}" min="0" max="${f.cantidad}" value="" placeholder="0" style="width:54px;padding:4px 6px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;" oninput="actualizarTotalDividir()" /></td>
-    </tr>`).join('');
-  } else {
-    window._dividirFilas = [{ modelo:'—', talle:null, cantidad, nombre:'' }];
-    window._dividirCantidades = [cantidad];
-    tbody.innerHTML = `<tr>
-      <td class="modelo-label">—</td><td class="talle-label">—</td><td class="cant-label">${cantidad}</td>
-      <td><input type="number" id="dd-0" min="0" max="${cantidad}" value="" placeholder="0" style="width:54px;padding:4px 6px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;" oninput="actualizarTotalDividir()" /></td>
-    </tr>`;
-  }
-  actualizarTotalDividir();
-  document.getElementById('modal-dividir').classList.add('open');
-}
-
-function actualizarTotalDividir() {
-  let total = 0, err = false;
-  const n = window._dividirCantidades?.length || 0;
-  for (let i = 0; i < n; i++) {
-    const v = parseInt(document.getElementById('dd-'+i)?.value) || 0;
-    total += v;
-    if (v > (window._dividirCantidades[i]||0)) err = true;
-  }
-  document.getElementById('dividir-total-val').textContent = total + ' pares';
-  document.getElementById('dividir-err').style.display = err ? 'block' : 'none';
-}
-
-async function confirmarDividir() {
-  const loteId = parseInt(document.getElementById('dividir-lote-id').value);
-  const notas = document.getElementById('dividir-nota').value;
-  const filas = window._dividirFilas || [];
-  const n = window._dividirCantidades?.length || 0;
-  let total = 0, err = false;
-  const tallesNuevo = [];
-  const tallesOriginal = [];
-
-  for (let i = 0; i < n; i++) {
-    const v = parseInt(document.getElementById('dd-'+i)?.value) || 0;
-    const max = window._dividirCantidades[i] || 0;
-    if (v > max) err = true;
-    if (v > 0) {
-      total += v;
-      tallesNuevo.push({ modelo: filas[i].modelo, talle: filas[i].talle, cantidad: v, nombre_producto: filas[i].nombre });
-    }
-    const restante = max - v;
-    if (restante > 0) {
-      tallesOriginal.push({ modelo: filas[i].modelo, talle: filas[i].talle, cantidad: restante, nombre_producto: filas[i].nombre });
-    }
-  }
-
-  if (err) return alert('Alguna línea supera la cantidad disponible');
-  if (total < 1) return alert('Ingresá al menos una cantidad');
-
-  const res = await fetch('/api/produccion?action=dividir-lote', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ lote_id: loteId, cantidad_nueva: total, usuario: usuario.nombre, notas, talles_nuevo: tallesNuevo, talles_original: tallesOriginal })
-  });
-  const data = await res.json();
-  if (data.error) { alert('Error: ' + data.error); return; }
-  cerrarModal('modal-dividir');
-  cargarPedidos();
-}
-
-function abrirEditarLote(loteId, cantidad, notas, pedidoId) {
-  const pedido = pedidos.find(p => p.id === parseInt(pedidoId));
-  const lote = pedido?.lotes?.find(l => l.id === parseInt(loteId));
-  document.getElementById('editar-lote-id').value = loteId;
-  document.getElementById('editar-lote-pedido-id').value = pedidoId;
-  document.getElementById('editar-lote-notas').value = notas || '';
-
-  const fuenteTalles = lote?.talles_detalle || pedido?.talles || [];
-  const wrap = document.getElementById('editar-lote-tabla-wrap');
-
-  if (fuenteTalles.length > 0) {
-    const filas = [];
-    const grupos = {};
-    fuenteTalles.forEach(t => {
-      const m = t.modelo || '?';
-      if (!grupos[m]) grupos[m] = { nombre: t.nombre_producto||'', talles: [] };
-      grupos[m].talles.push({ talle: t.talle, cantidad: t.cantidad });
-    });
-    Object.entries(grupos).sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0)).forEach(([modelo,data]) => {
-      data.talles.sort((a,b)=>(parseInt(a.talle)||0)-(parseInt(b.talle)||0)).forEach(t => {
-        filas.push({ modelo, nombre: data.nombre, talle: t.talle, cantidad: t.cantidad });
-      });
-    });
-    window._editarLoteFilas = filas;
-    wrap.innerHTML = `<table class="lineas-tabla">
-      <thead><tr><th>Modelo</th><th>Talle</th><th>Cantidad</th></tr></thead>
-      <tbody>${filas.map((f,i) => `<tr>
-        <td class="modelo-label">${f.modelo}</td>
-        <td class="talle-label">${f.talle?'T'+f.talle:'—'}</td>
-        <td><input type="number" id="el-${i}" min="0" value="${f.cantidad}" placeholder="0" style="width:54px;padding:4px 6px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;" oninput="actualizarTotalEditarLote()" /></td>
-      </tr>`).join('')}</tbody>
-    </table>`;
-    actualizarTotalEditarLote();
-  } else {
-    window._editarLoteFilas = [];
-    wrap.innerHTML = `<div class="field"><label>Cantidad de pares</label><input type="number" id="editar-lote-cant-simple" min="1" value="${cantidad}" /></div>`;
-    document.getElementById('editar-lote-total').textContent = cantidad + ' pares';
-  }
-  document.getElementById('modal-editar-lote').classList.add('open');
-}
-
-function actualizarTotalEditarLote() {
-  let total = 0;
-  (window._editarLoteFilas||[]).forEach((_,i) => { total += parseInt(document.getElementById('el-'+i)?.value)||0; });
-  document.getElementById('editar-lote-total').textContent = total + ' pares';
-}
-
-async function confirmarEditarLote() {
-  const id = parseInt(document.getElementById('editar-lote-id').value);
-  const notas = document.getElementById('editar-lote-notas').value;
-  const filas = window._editarLoteFilas || [];
-  let cantidad, tallesDetalle;
-
-  if (filas.length > 0) {
-    tallesDetalle = [];
-    filas.forEach((f,i) => {
-      const v = parseInt(document.getElementById('el-'+i)?.value) || 0;
-      if (v > 0) tallesDetalle.push({ modelo: f.modelo, talle: f.talle, cantidad: v, nombre_producto: f.nombre });
-    });
-    cantidad = tallesDetalle.reduce((a,t) => a+t.cantidad, 0);
-  } else {
-    cantidad = parseInt(document.getElementById('editar-lote-cant-simple')?.value) || 0;
-    tallesDetalle = null;
-  }
-
-  if (!cantidad || cantidad < 1) return alert('Ingresá al menos un par');
-  await fetch('/api/produccion?action=editar-lote', {
-    method: 'PUT', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, cantidad, notas, talles_detalle: tallesDetalle })
-  });
-  cerrarModal('modal-editar-lote');
-  cargarPedidos();
-}
-
-function abrirNuevoLote(pedidoId) {
-  document.getElementById('nuevo-lote-pedido-id').value = pedidoId;
-  document.getElementById('nuevo-lote-cant').value = '';
-  document.getElementById('nuevo-lote-notas').value = '';
-  document.getElementById('nuevo-lote-titulo').textContent = 'Agregar lote';
-  const wrap = document.getElementById('primer-lote-talles-wrap');
-  if (wrap) wrap.innerHTML = '';
-  const cantField = document.querySelector('#modal-nuevo-lote .field:first-of-type');
-  if (cantField) cantField.style.display = 'block';
-  window._primerLoteFilas = [];
-  window._primerLoteCantidades = [];
-  document.getElementById('modal-nuevo-lote').classList.add('open');
-}
-
-async function confirmarNuevoLote() {
-  const pedido_id = parseInt(document.getElementById('nuevo-lote-pedido-id').value);
-  const cantidad = parseInt(document.getElementById('nuevo-lote-cant').value);
-  const notas = document.getElementById('nuevo-lote-notas').value;
-  if (!cantidad || cantidad < 1) return alert('Ingresá al menos un par');
-
-  const filas = window._primerLoteFilas || [];
-  const tallesLote = [];
-  filas.forEach((f,i) => {
-    const v = parseInt(document.getElementById('pl-'+i)?.value) || 0;
-    if (v > 0) tallesLote.push({ modelo: f.modelo, talle: f.talle, cantidad: v, nombre_producto: f.nombre });
-  });
-
-  await fetch('/api/produccion?action=crear-lote', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ pedido_id, cantidad, usuario: usuario.nombre, notas, talles_detalle: tallesLote.length > 0 ? tallesLote : null })
-  });
-
-  const wrap = document.getElementById('primer-lote-talles-wrap');
-  if (wrap) wrap.innerHTML = '';
-  const cantField = document.querySelector('#modal-nuevo-lote .field:first-of-type');
-  if (cantField) cantField.style.display = 'block';
-  window._primerLoteFilas = [];
-  window._primerLoteCantidades = [];
-  cerrarModal('modal-nuevo-lote');
-  cargarPedidos();
-}
-
-async function eliminarLote(id) {
-  if (!confirm('¿Eliminar este lote y el pedido completo?')) return;
-  const lote = pedidos.flatMap(p => p.lotes||[]).find(l => l.id === id);
-  if (!lote) return;
-  const pedido = pedidos.find(p => p.id === lote.pedido_id);
-  const otrosLotes = (pedido?.lotes||[]).filter(l => l.id !== id);
-  if (otrosLotes.length === 0) {
-    // Es el último lote — eliminar el pedido completo
-    await fetch('/api/produccion?action=eliminar', {
-      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: lote.pedido_id })
-    });
-  } else {
-    // Quedan otros lotes — solo eliminar este lote
-    await fetch('/api/produccion?action=eliminar-lote', {
-      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id })
-    });
-  }
-  cargarPedidos();
-}
-
-function actualizarCamposTipo() {
-  const tipo = document.getElementById('form-tipo').value;
-  document.getElementById('campo-cliente-wrap').style.display = tipo === 'stock' ? 'none' : 'block';
-  document.getElementById('campo-stock-wrap').style.display = tipo === 'mixto' ? 'block' : 'none';
-  document.getElementById('label-pedida').textContent = tipo === 'stock' ? 'Cantidad a producir' : 'Cantidad pedida';
-}
-
-function renderTallesGrid(valores = {}) {
-  document.getElementById('talles-grid').innerHTML = TALLES.map(t => `
-    <div class="talle-item">
-      <label>T${t}</label>
-      <input type="number" id="talle-${t}" min="0" placeholder="0" value="${valores[t]||''}" />
+      <button class="btn btn-success btn-sm" onclick="confirmarEntregado(${p.id})">✓ Confirmar entrega</button>
     </div>`).join('');
 }
 
-function abrirNuevo() {
-  document.getElementById('form-id').value = '';
-  document.getElementById('form-titulo').textContent = 'Nuevo pedido';
-  document.getElementById('form-numero').value = '';
-  document.getElementById('form-producto').value = '';
-  document.getElementById('form-cliente').value = '';
-  document.getElementById('form-tipo').value = 'cliente';
-  document.getElementById('form-cantidad-pedida').value = '';
-  document.getElementById('form-cantidad-stock').value = '';
-  document.getElementById('form-monto').value = '';
-  document.getElementById('form-notas').value = '';
-  document.getElementById('form-empresa').value = 'El Resero';
-  actualizarCamposTipo();
-  renderTallesGrid();
-  document.getElementById('modal-form').classList.add('open');
-}
-
-function abrirEditar(id) {
-  const p = pedidos.find(x => x.id === id);
-  document.getElementById('form-id').value = p.id;
-  document.getElementById('form-titulo').textContent = 'Editar pedido';
-  document.getElementById('form-numero').value = p.numero;
-  document.getElementById('form-producto').value = p.producto;
-  document.getElementById('form-cliente').value = p.cliente || '';
-  document.getElementById('form-tipo').value = p.tipo;
-  document.getElementById('form-cantidad-pedida').value = p.cantidad_pedida;
-  document.getElementById('form-cantidad-stock').value = p.cantidad_stock;
-  document.getElementById('form-monto').value = p.monto_total || '';
-  document.getElementById('form-notas').value = p.notas || '';
-  document.getElementById('form-empresa').value = p.empresa;
-  actualizarCamposTipo();
-  const vals = {};
-  p.talles?.forEach(t => { vals[t.talle] = t.cantidad; });
-  renderTallesGrid(vals);
-  cerrarModal('modal-detalle');
-  document.getElementById('modal-form').classList.add('open');
-}
-
-async function guardarPedido() {
-  const id = document.getElementById('form-id').value;
-  const talles = TALLES.map(t => ({ talle: t, cantidad: parseInt(document.getElementById('talle-'+t)?.value)||0 })).filter(t => t.cantidad > 0);
-  const body = {
-    numero: document.getElementById('form-numero').value.trim(),
-    producto: document.getElementById('form-producto').value.trim(),
-    cliente: document.getElementById('form-cliente').value.trim(),
-    tipo: document.getElementById('form-tipo').value,
-    cantidad_pedida: parseInt(document.getElementById('form-cantidad-pedida').value)||0,
-    cantidad_stock: parseInt(document.getElementById('form-cantidad-stock').value)||0,
-    monto_total: parseFloat(document.getElementById('form-monto').value)||0,
-    empresa: document.getElementById('form-empresa').value,
-    notas: document.getElementById('form-notas').value.trim(),
-    talles, usuario: usuario.nombre
-  };
-  if (!body.numero || !body.producto) return alert('Completá número y modelo');
-  if (id) {
-    await fetch('/api/produccion?action=editar', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...body, id: parseInt(id) }) });
-  } else {
-    await fetch('/api/produccion?action=crear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-  }
-  cerrarModal('modal-form');
+async function confirmarEntregado(id) {
+  if (!confirm('¿Confirmar entrega y eliminar del sistema?')) return;
+  await fetch('/api/produccion?action=eliminar',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
   cargarPedidos();
 }
 
-async function eliminarPedido(id) {
-  if (!confirm('¿Eliminar este pedido y todos sus lotes?')) return;
-  await fetch('/api/produccion?action=eliminar', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
-  cerrarModal('modal-detalle');
-  cargarPedidos();
-}
-
-async function importarOdoo() {
-  const btn = document.getElementById('btn-importar');
-  btn.textContent = 'Importando...';
-  btn.disabled = true;
-  try {
-    const res = await fetch('/api/importar-odoo', { method: 'POST' });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    alert(`✓ ${data.importados} importados · — ${data.omitidos} ya existían`);
-    cargarPedidos();
-  } catch (err) {
-    alert('Error: ' + err.message);
-  } finally {
-    btn.textContent = 'Importar Odoo';
-    btn.disabled = false;
-  }
-}
 function renderArchivados() {
-  let wrap = document.getElementById('archivados-wrap');
+  const wrap = document.getElementById('archivados-wrap');
   if (!wrap) return;
-  if (archivados.length === 0) {
-    wrap.innerHTML = '<p style="font-size:13px;color:#aaa;padding:1rem 0;">Sin pedidos archivados</p>';
-    return;
-  }
-  wrap.innerHTML = archivados.map(p => `
+  if (archivados.length===0) { wrap.innerHTML='<p style="font-size:13px;color:#aaa;">Sin pedidos archivados</p>'; return; }
+  wrap.innerHTML = archivados.map(p=>`
     <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid #f0f0f0;font-size:13px;">
       <div>
         <div style="font-weight:500;">${p.numero} · ${p.tipo==='stock'?'Stock propio':(p.cliente||'—')}</div>
@@ -1145,53 +544,500 @@ function renderArchivados() {
 }
 
 async function desarchivarPedido(id) {
-  await fetch('/api/produccion?action=desarchivar', {
-    method: 'PUT', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id })
-  });
+  await fetch('/api/produccion?action=desarchivar',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
   cargarPedidos();
 }
 
 async function eliminarPedidoDefinitivo(id) {
   if (!confirm('¿Eliminar definitivamente? No se podrá reimportar desde Odoo.')) return;
-  await fetch('/api/produccion?action=eliminar', {
-    method: 'DELETE', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id })
-  });
+  await fetch('/api/produccion?action=eliminar',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
   cargarPedidos();
 }
 
 async function archivarPedidoDesdeLote(pedidoId) {
   if (!confirm('¿Archivar este pedido?\n\nVas a archivarlo. Podés reimportarlo desde KANBAN cuando quieras.')) return;
-  await fetch('/api/produccion?action=archivar', {
-    method: 'PUT', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: pedidoId })
-  });
+  await fetch('/api/produccion?action=archivar',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:pedidoId})});
   cargarPedidos();
-}  
-  
-function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
-
-document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
-
-function leerSesion() {
-  try { const s = localStorage.getItem('gx_usuario'); return s ? JSON.parse(s) : null; } catch { return null; }
 }
+
+function renderKanbanCard(p, etapaFiltro) {
+  const todosLotes=p.lotes||[];
+  const sinLotes=todosLotes.length===0;
+  const lotesMostrar=sinLotes?[]:todosLotes.filter(l=>l.etapa===etapaFiltro);
+  const diasTotal=diasDesde(p.created_at);
+  const monto=fmtPesos(p.monto_total);
+  const puedeEditar=usuario?.rol==='produccion'||usuario?.rol==='admin';
+  const cliente=p.tipo==='stock'?'Stock propio':(p.cliente||'—');
+  const esEntregado=entregados.includes(p.numero);
+
+  if (sinLotes) {
+    return `<div class="kanban-pedido${esEntregado?' entregado':''}">
+      <div class="pedido-sin-lotes" onclick="abrirPrimerLote(${p.id})">
+        <div class="pedido-num">${p.numero} · sin lotes</div>
+        <div class="pedido-cliente">${cliente}</div>
+        <div class="pedido-bottom">
+          ${tipoBadge(p.tipo)}
+          <span class="emp-badge ${p.empresa==='El Resero'?'emp-r':'emp-b'}">${p.empresa}</span>
+          <span style="font-size:10px;color:#aaa;margin-left:auto;">${diasTotal}d</span>
+        </div>
+        ${monto?`<div class="pedido-monto">${monto}</div>`:''}
+        ${esEntregado?'<div style="font-size:10px;color:#27500a;font-weight:500;margin-top:4px;">✓ Entregado en Odoo</div>':'<div style="font-size:10px;color:#378ADD;margin-top:4px;">Tap para crear lote →</div>'}
+      </div>
+    </div>`;
+  }
+
+  return `<div class="kanban-pedido${esEntregado?' entregado':''}">
+    <div class="pedido-header" onclick="toggleLotes('lotes-${p.id}-${etapaFiltro}')">
+      <div class="pedido-num">${p.numero} · ${lotesMostrar.length} lote${lotesMostrar.length!==1?'s':''}</div>
+      <div class="pedido-cliente">${cliente}</div>
+      <div class="pedido-bottom">
+        ${tipoBadge(p.tipo)}
+        <span class="emp-badge ${p.empresa==='El Resero'?'emp-r':'emp-b'}">${p.empresa}</span>
+        <span style="font-size:10px;color:#aaa;margin-left:auto;">${diasTotal}d</span>
+      </div>
+      ${monto?`<div class="pedido-monto">${monto}</div>`:''}
+      ${esEntregado?'<div style="font-size:10px;color:#27500a;font-weight:500;margin-top:3px;">✓ Entregado en Odoo</div>':''}
+    </div>
+    <div class="lotes-wrap open" id="lotes-${p.id}-${etapaFiltro}">
+      ${lotesMostrar.map(l=>renderLoteCard(l,p)).join('')}
+    </div>
+  </div>`;
+}
+
+function renderLoteCard(l, p) {
+  const diasEtapa=diasDesde(l.updated_at);
+  const puedeEditar=usuario?.rol==='produccion'||usuario?.rol==='admin';
+  const fuenteTalles=l.talles_detalle||p.talles;
+  const modelosHtml=buildModelosHtml(fuenteTalles,l.notas);
+  return `<div class="lote-card">
+    <div style="font-weight:700;font-size:11px;color:#1a1a1a;margin-bottom:4px;">${l.numero}</div>
+    ${modelosHtml}
+    <div style="font-size:11px;font-weight:500;margin-top:3px;">${l.cantidad} pares · <span class="etapa-pill ${etapaCls(l.etapa)}">${etapaLabel(l.etapa)}</span></div>
+    ${l.aparador?`<div><span class="lote-aparador">${l.aparador}</span></div>`:''}
+    <div style="font-size:10px;color:${diasEtapa>=7?'#a32d2d':'#aaa'};font-weight:${diasEtapa>=7?'600':'400'};margin-top:2px;">${diasEtapa}d en esta etapa${diasEtapa>=7?' ⚠️':''}</div>
+    ${l.historial?.length?`<div style="margin-top:4px;border-top:0.5px solid #f0f0f0;padding-top:4px;">
+      ${l.historial.slice(0,3).map(h=>`<div style="display:flex;gap:6px;font-size:9px;color:#aaa;margin-bottom:2px;">
+        <span style="white-space:nowrap;">${new Date(h.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'})}</span>
+        <span style="color:#555;">${h.usuario} → ${etapaLabel(h.etapa_hasta)}</span>
+      </div>`).join('')}
+    </div>`:''}
+    ${puedeEditar?`<div class="lote-actions">
+      <button class="btn btn-primary btn-sm" onclick="abrirMoverLote(${l.id},'${l.etapa}','${l.aparador||''}')">Mover</button>
+      <button class="btn btn-warn btn-sm" onclick="abrirDividirLote(${l.id},${l.cantidad},'${l.numero}',${p.id})">Dividir</button>
+      <button class="btn btn-outline btn-sm" onclick="abrirEditarLote(${l.id},${l.cantidad},'${(l.notas||'').replace(/'/g,"\\'")}',${p.id})">Editar</button>
+      <button class="btn btn-warn btn-sm" onclick="archivarPedidoDesdeLote(${p.id})">Archivar</button>
+      <button class="btn btn-danger btn-sm" onclick="eliminarLote(${l.id})">Eliminar</button>
+    </div>`:''}
+  </div>`;
+}
+
+function toggleLotes(id) { const el=document.getElementById(id); if(el) el.classList.toggle('open'); }
+
+function renderizar() {
+  const q=document.getElementById('buscar-input')?.value.toLowerCase().trim()||'';
+  const pf=q?pedidos.filter(p=>p.numero?.toLowerCase().includes(q)||p.cliente?.toLowerCase().includes(q)||p.producto?.toLowerCase().includes(q)):pedidos;
+  if (vista==='kanban') renderKanban(pf);
+  else renderLista(pf);
+}
+
+function filtrarPedidos() { renderizar(); }
+
+function renderKanban(pf=pedidos) {
+  const board=document.getElementById('kanban-board');
+  board.innerHTML=ETAPAS.map(etapa=>{
+    let enCol=[];
+    if (etapa.key==='recibido') {
+      enCol=pf.filter(p=>{const l=p.lotes||[];return l.length===0||l.some(l=>l.etapa==='recibido');});
+    } else {
+      enCol=pf.filter(p=>(p.lotes||[]).some(l=>l.etapa===etapa.key));
+    }
+    const ids=[...new Set(enCol.map(p=>p.id))];
+    const pu=ids.map(id=>pf.find(p=>p.id===id));
+    const cnt=etapa.key==='recibido'
+      ?pu.filter(p=>(p.lotes||[]).length===0).length+pf.flatMap(p=>p.lotes||[]).filter(l=>l.etapa==='recibido').length
+      :pf.flatMap(p=>p.lotes||[]).filter(l=>l.etapa===etapa.key).length;
+    return `<div class="kanban-col">
+      <div class="kanban-header ${etapa.cls}"><span>${etapa.label}</span><span>${cnt}</span></div>
+      <div class="kanban-body">${pu.length===0?'<div class="empty-state">—</div>':pu.map(p=>renderKanbanCard(p,etapa.key)).join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderLista(pf=pedidos) {
+  const tbody=document.getElementById('lista-body');
+  if (!pf.length){tbody.innerHTML='<tr><td colspan="11" class="empty-state">Sin pedidos</td></tr>';return;}
+  const puedeEditar=usuario?.rol==='produccion'||usuario?.rol==='admin';
+  tbody.innerHTML=pf.map(p=>{
+    const lotes=p.lotes||[], dias=diasDesde(p.created_at), pl=lotes[0];
+    const esEntregado=entregados.includes(p.numero);
+    return `<tr style="${esEntregado?'background:#eaf3de;':''}">
+      <td onclick="abrirDetalle(${p.id})" style="cursor:pointer;">${p.numero}${esEntregado?' ✓':''}</td>
+      <td onclick="abrirDetalle(${p.id})" style="cursor:pointer;"><strong>${p.tipo==='stock'?'Stock propio':(p.cliente||'—')}</strong></td>
+      <td onclick="abrirDetalle(${p.id})" style="cursor:pointer;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.producto}</td>
+      <td><span class="emp-badge ${p.empresa==='El Resero'?'emp-r':'emp-b'}">${p.empresa}</span></td>
+      <td>${tipoBadge(p.tipo)}</td>
+      <td>${lotes.length}</td>
+      <td>${paresLabel(p)}</td>
+      <td><span class="etapa-pill ${etapaCls(p.etapa)}">${etapaLabel(p.etapa)}</span></td>
+      <td style="font-size:11px;color:#085041;">${fmtPesos(p.monto_total)}</td>
+      <td style="font-size:11px;color:#888;">${dias}d</td>
+      <td>${puedeEditar?(lotes.length===0?`<button class="btn btn-primary btn-sm" onclick="abrirPrimerLote(${p.id})">Iniciar</button>`:`<button class="btn btn-primary btn-sm" onclick="abrirMoverLote(${pl.id},'${pl.etapa}','${pl.aparador||''}')">Mover</button>`):''}
+      ${esEntregado?`<button class="btn btn-success btn-sm" style="margin-left:4px;" onclick="confirmarEntregado(${p.id})">✓ Entregar</button>`:''}</td>
+    </tr>`;
+  }).join('');
+}
+
+function abrirDetalle(id) {
+  const p=pedidos.find(x=>x.id===id); if(!p) return;
+  const lotes=p.lotes||[];
+  const fecha=p.created_at?new Date(p.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'}):'—';
+  const tallesHtml=p.talles?.length?`<div class="talles-resumen">${p.talles.map(t=>`<span class="talle-pill-sm">T${t.talle}: ${t.cantidad}</span>`).join('')}</div>`:'<span style="color:#aaa;font-size:12px">Sin talles</span>';
+  const histHtml=p.historial?.length?p.historial.map(h=>`<div class="hist-item"><span class="hist-fecha">${new Date(h.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span><span class="hist-texto"><strong>${h.usuario}</strong> → <strong>${etapaLabel(h.etapa_hasta)}</strong>${h.notas?' — '+h.notas:''}</span></div>`).join(''):'<span style="color:#aaa;font-size:12px">Sin historial</span>';
+  const lotesHtml=lotes.map(l=>`<div style="background:#fafafa;border-radius:8px;padding:8px 10px;margin-bottom:6px;border:0.5px solid #f0f0f0;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:12px;font-weight:700;">${l.numero}</span>
+      <span class="etapa-pill ${etapaCls(l.etapa)}">${etapaLabel(l.etapa)}</span>
+    </div>
+    <div style="font-size:12px;color:#555;margin-top:3px;">${l.cantidad} pares${l.aparador?' · '+l.aparador:''}</div>
+    ${l.notas?`<div style="font-size:11px;color:#888;margin-top:2px;">${l.notas}</div>`:''}
+  </div>`).join('');
+  document.getElementById('det-titulo').textContent=p.numero;
+  document.getElementById('det-body').innerHTML=`
+    <div class="detalle-row"><span class="detalle-label">Cliente</span><span class="detalle-val">${p.tipo==='stock'?'Stock propio':(p.cliente||'—')}</span></div>
+    <div class="detalle-row"><span class="detalle-label">Modelo</span><span class="detalle-val">${p.producto}</span></div>
+    <div class="detalle-row"><span class="detalle-label">Empresa</span><span class="detalle-val">${p.empresa}</span></div>
+    <div class="detalle-row"><span class="detalle-label">Pares</span><span class="detalle-val">${paresLabel(p)}</span></div>
+    <div class="detalle-row"><span class="detalle-label">Monto</span><span class="detalle-val" style="color:#085041;">${fmtPesos(p.monto_total)||'—'}</span></div>
+    <div class="detalle-row"><span class="detalle-label">Fecha ingreso</span><span class="detalle-val">${fecha}</span></div>
+    <div class="detalle-row"><span class="detalle-label">Días</span><span class="detalle-val">${diasDesde(p.created_at)} días</span></div>
+    ${p.notas?`<div class="detalle-row"><span class="detalle-label">Notas</span><span class="detalle-val" style="font-size:12px;">${p.notas}</span></div>`:''}
+    <div class="modal-section">Talles</div>${tallesHtml}
+    <div class="modal-section">Lotes (${lotes.length})</div>${lotesHtml||'<span style="color:#aaa;font-size:12px">Sin lotes</span>'}
+    <div class="modal-section">Historial</div>${histHtml}`;
+  document.getElementById('det-actions').innerHTML=`
+    <button class="btn btn-danger btn-sm" onclick="eliminarPedido(${p.id})">Eliminar</button>
+    ${(usuario?.rol==='produccion'||usuario?.rol==='admin')?`
+      <button class="btn btn-outline btn-sm" onclick="abrirEditar(${p.id})">Editar</button>
+      ${lotes.length===0?`<button class="btn btn-primary btn-sm" onclick="abrirPrimerLote(${p.id})">Crear lote</button>`:''}
+      ${entregados.includes(p.numero)?`<button class="btn btn-success btn-sm" onclick="confirmarEntregado(${p.id})">✓ Confirmar entrega</button>`:''}`:''}`;
+  document.getElementById('modal-detalle').classList.add('open');
+}
+
+function abrirPrimerLote(pedidoId) {
+  const p=pedidos.find(x=>x.id===pedidoId); if(!p) return;
+  cerrarModal('modal-detalle');
+  document.getElementById('nuevo-lote-pedido-id').value=pedidoId;
+  document.getElementById('nuevo-lote-notas').value='';
+  document.getElementById('nuevo-lote-titulo').textContent='Crear lote — '+(p.cliente||p.producto);
+  const talles=p.talles||[], totalPares=(parseInt(p.cantidad_pedida)||0)+(parseInt(p.cantidad_stock)||0);
+  let extraHtml=document.getElementById('primer-lote-talles-wrap');
+  if (!extraHtml) {
+    extraHtml=document.createElement('div'); extraHtml.id='primer-lote-talles-wrap';
+    const cantField=document.querySelector('#modal-nuevo-lote .field:first-of-type');
+    cantField.parentNode.insertBefore(extraHtml,cantField);
+  }
+  if (talles.length>0) {
+    const grupos={};
+    talles.forEach(t=>{const m=t.modelo||'?';if(!grupos[m])grupos[m]={nombre:t.nombre_producto||'',talles:[]};grupos[m].talles.push({talle:t.talle,cantidad:t.cantidad});});
+    const filas=[];
+    Object.entries(grupos).sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0)).forEach(([modelo,data])=>{
+      data.talles.sort((a,b)=>(parseInt(a.talle)||0)-(parseInt(b.talle)||0)).forEach(t=>{filas.push({modelo,nombre:data.nombre,talle:t.talle,cantidad:t.cantidad});});
+    });
+    window._primerLoteFilas=filas; window._primerLoteCantidades=filas.map(f=>f.cantidad);
+    extraHtml.innerHTML=`<table class="lineas-tabla"><thead><tr><th>Modelo</th><th>Talle</th><th>Disponible</th><th>Este lote</th></tr></thead>
+      <tbody>${filas.map((f,i)=>`<tr><td class="modelo-label">${f.modelo}</td><td class="talle-label">${f.talle?'T'+f.talle:'—'}</td><td class="cant-label">${f.cantidad}</td>
+        <td><input type="number" id="pl-${i}" min="0" max="${f.cantidad}" placeholder="0" style="width:54px;padding:4px 6px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;" oninput="actualizarTotalPrimerLote()" /></td></tr>`).join('')}</tbody></table>
+      <div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 8px;background:#f5f5f3;border-radius:6px;margin-bottom:8px;">
+        <span style="color:#888;">Total este lote:</span><span style="font-weight:500;color:#1a1a1a;" id="primer-lote-total">0 pares</span></div>`;
+    document.getElementById('nuevo-lote-cant').value='';
+    const cantField=document.querySelector('#modal-nuevo-lote .field:first-of-type');
+    if(cantField) cantField.style.display='none';
+  } else {
+    extraHtml.innerHTML=''; window._primerLoteFilas=[]; window._primerLoteCantidades=[];
+    const cantField=document.querySelector('#modal-nuevo-lote .field:first-of-type');
+    if(cantField) cantField.style.display='block';
+    document.getElementById('nuevo-lote-cant').value=totalPares||'';
+  }
+  document.getElementById('modal-nuevo-lote').classList.add('open');
+}
+
+function actualizarTotalPrimerLote() {
+  let total=0;
+  (window._primerLoteCantidades||[]).forEach((_,i)=>{total+=parseInt(document.getElementById('pl-'+i)?.value)||0;});
+  const el=document.getElementById('primer-lote-total'); if(el) el.textContent=total+' pares';
+  document.getElementById('nuevo-lote-cant').value=total;
+}
+
+function toggleAparadorLote() {
+  document.getElementById('aparador-lote-field').style.display=document.getElementById('lote-etapa').value==='aparado'?'block':'none';
+}
+
+function abrirMoverLote(id,etapaActual,aparador) {
+  document.getElementById('lote-id').value=id;
+  document.getElementById('lote-etapa').value=etapaActual;
+  document.getElementById('aparador-lote').value=aparador||'';
+  document.getElementById('lote-nota').value='';
+  document.getElementById('lote-titulo').textContent='Mover lote';
+  toggleAparadorLote();
+  document.getElementById('modal-lote').classList.add('open');
+}
+
+async function confirmarEtapaLote() {
+  const id=parseInt(document.getElementById('lote-id').value);
+  const etapa=document.getElementById('lote-etapa').value;
+  const aparador=document.getElementById('aparador-lote').value;
+  const notas=document.getElementById('lote-nota').value;
+  await fetch('/api/produccion?action=etapa-lote',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({lote_id:id,etapa,aparador,usuario:usuario.nombre,notas})});
+  cerrarModal('modal-lote'); cargarPedidos();
+}
+
+function abrirDividirLote(loteId,cantidad,numero,pedidoId) {
+  const pedido=pedidos.find(p=>p.id===parseInt(pedidoId));
+  const lote=pedido?.lotes?.find(l=>l.id===parseInt(loteId));
+  document.getElementById('dividir-lote-id').value=loteId;
+  document.getElementById('dividir-pedido-id').value=pedidoId;
+  document.getElementById('dividir-sub').textContent=`Lote ${numero} · ${cantidad} pares disponibles`;
+  document.getElementById('dividir-nota').value='';
+  const fuenteTalles=lote?.talles_detalle||pedido?.talles||[];
+  const tbody=document.getElementById('dividir-lineas-body');
+  if (fuenteTalles.length>0) {
+    const grupos={};
+    fuenteTalles.forEach(t=>{const m=t.modelo||'?';if(!grupos[m])grupos[m]={nombre:t.nombre_producto||'',talles:[]};grupos[m].talles.push({talle:t.talle||null,cantidad:t.cantidad});});
+    const filas=[];
+    Object.entries(grupos).sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0)).forEach(([modelo,data])=>{
+      data.talles.sort((a,b)=>(parseInt(a.talle)||0)-(parseInt(b.talle)||0)).forEach(t=>{filas.push({modelo,nombre:data.nombre,talle:t.talle,cantidad:t.cantidad});});
+    });
+    window._dividirFilas=filas; window._dividirCantidades=filas.map(f=>f.cantidad);
+    tbody.innerHTML=filas.map((f,i)=>`<tr><td class="modelo-label">${f.modelo}</td><td class="talle-label">${f.talle?'T'+f.talle:'—'}</td><td class="cant-label">${f.cantidad}</td>
+      <td><input type="number" id="dd-${i}" min="0" max="${f.cantidad}" value="" placeholder="0" style="width:54px;padding:4px 6px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;" oninput="actualizarTotalDividir()" /></td></tr>`).join('');
+  } else {
+    window._dividirFilas=[{modelo:'—',talle:null,cantidad,nombre:''}]; window._dividirCantidades=[cantidad];
+    tbody.innerHTML=`<tr><td class="modelo-label">—</td><td class="talle-label">—</td><td class="cant-label">${cantidad}</td>
+      <td><input type="number" id="dd-0" min="0" max="${cantidad}" value="" placeholder="0" style="width:54px;padding:4px 6px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;" oninput="actualizarTotalDividir()" /></td></tr>`;
+  }
+  actualizarTotalDividir();
+  document.getElementById('modal-dividir').classList.add('open');
+}
+
+function actualizarTotalDividir() {
+  let total=0,err=false;
+  const n=window._dividirCantidades?.length||0;
+  for(let i=0;i<n;i++){const v=parseInt(document.getElementById('dd-'+i)?.value)||0;total+=v;if(v>(window._dividirCantidades[i]||0))err=true;}
+  document.getElementById('dividir-total-val').textContent=total+' pares';
+  document.getElementById('dividir-err').style.display=err?'block':'none';
+}
+
+async function confirmarDividir() {
+  const loteId=parseInt(document.getElementById('dividir-lote-id').value);
+  const notas=document.getElementById('dividir-nota').value;
+  const filas=window._dividirFilas||[], n=window._dividirCantidades?.length||0;
+  let total=0,err=false; const tallesNuevo=[],tallesOriginal=[];
+  for(let i=0;i<n;i++){
+    const v=parseInt(document.getElementById('dd-'+i)?.value)||0, max=window._dividirCantidades[i]||0;
+    if(v>max)err=true;
+    if(v>0){total+=v;tallesNuevo.push({modelo:filas[i].modelo,talle:filas[i].talle,cantidad:v,nombre_producto:filas[i].nombre});}
+    const r=max-v; if(r>0) tallesOriginal.push({modelo:filas[i].modelo,talle:filas[i].talle,cantidad:r,nombre_producto:filas[i].nombre});
+  }
+  if(err) return alert('Alguna línea supera la cantidad disponible');
+  if(total<1) return alert('Ingresá al menos una cantidad');
+  const res=await fetch('/api/produccion?action=dividir-lote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lote_id:loteId,cantidad_nueva:total,usuario:usuario.nombre,notas,talles_nuevo:tallesNuevo,talles_original:tallesOriginal})});
+  const data=await res.json();
+  if(data.error){alert('Error: '+data.error);return;}
+  cerrarModal('modal-dividir'); cargarPedidos();
+}
+
+function abrirEditarLote(loteId,cantidad,notas,pedidoId) {
+  const pedido=pedidos.find(p=>p.id===parseInt(pedidoId));
+  const lote=pedido?.lotes?.find(l=>l.id===parseInt(loteId));
+  document.getElementById('editar-lote-id').value=loteId;
+  document.getElementById('editar-lote-pedido-id').value=pedidoId;
+  document.getElementById('editar-lote-notas').value=notas||'';
+  const fuenteTalles=lote?.talles_detalle||pedido?.talles||[];
+  const wrap=document.getElementById('editar-lote-tabla-wrap');
+  if (fuenteTalles.length>0) {
+    const filas=[],grupos={};
+    fuenteTalles.forEach(t=>{const m=t.modelo||'?';if(!grupos[m])grupos[m]={nombre:t.nombre_producto||'',talles:[]};grupos[m].talles.push({talle:t.talle,cantidad:t.cantidad});});
+    Object.entries(grupos).sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0)).forEach(([modelo,data])=>{
+      data.talles.sort((a,b)=>(parseInt(a.talle)||0)-(parseInt(b.talle)||0)).forEach(t=>{filas.push({modelo,nombre:data.nombre,talle:t.talle,cantidad:t.cantidad});});
+    });
+    window._editarLoteFilas=filas;
+    wrap.innerHTML=`<table class="lineas-tabla"><thead><tr><th>Modelo</th><th>Talle</th><th>Cantidad</th></tr></thead>
+      <tbody>${filas.map((f,i)=>`<tr><td class="modelo-label">${f.modelo}</td><td class="talle-label">${f.talle?'T'+f.talle:'—'}</td>
+        <td><input type="number" id="el-${i}" min="0" value="${f.cantidad}" placeholder="0" style="width:54px;padding:4px 6px;border:0.5px solid #e5e5e5;border-radius:5px;font-size:12px;text-align:center;" oninput="actualizarTotalEditarLote()" /></td></tr>`).join('')}</tbody></table>`;
+    actualizarTotalEditarLote();
+  } else {
+    window._editarLoteFilas=[];
+    wrap.innerHTML=`<div class="field"><label>Cantidad de pares</label><input type="number" id="editar-lote-cant-simple" min="1" value="${cantidad}" /></div>`;
+    document.getElementById('editar-lote-total').textContent=cantidad+' pares';
+  }
+  document.getElementById('modal-editar-lote').classList.add('open');
+}
+
+function actualizarTotalEditarLote() {
+  let total=0;
+  (window._editarLoteFilas||[]).forEach((_,i)=>{total+=parseInt(document.getElementById('el-'+i)?.value)||0;});
+  document.getElementById('editar-lote-total').textContent=total+' pares';
+}
+
+async function confirmarEditarLote() {
+  const id=parseInt(document.getElementById('editar-lote-id').value);
+  const notas=document.getElementById('editar-lote-notas').value;
+  const filas=window._editarLoteFilas||[]; let cantidad,tallesDetalle;
+  if (filas.length>0) {
+    tallesDetalle=[];
+    filas.forEach((f,i)=>{const v=parseInt(document.getElementById('el-'+i)?.value)||0;if(v>0)tallesDetalle.push({modelo:f.modelo,talle:f.talle,cantidad:v,nombre_producto:f.nombre});});
+    cantidad=tallesDetalle.reduce((a,t)=>a+t.cantidad,0);
+  } else {
+    cantidad=parseInt(document.getElementById('editar-lote-cant-simple')?.value)||0; tallesDetalle=null;
+  }
+  if(!cantidad||cantidad<1) return alert('Ingresá al menos un par');
+  await fetch('/api/produccion?action=editar-lote',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,cantidad,notas,talles_detalle:tallesDetalle})});
+  cerrarModal('modal-editar-lote'); cargarPedidos();
+}
+
+function abrirNuevoLote(pedidoId) {
+  document.getElementById('nuevo-lote-pedido-id').value=pedidoId;
+  document.getElementById('nuevo-lote-cant').value='';
+  document.getElementById('nuevo-lote-notas').value='';
+  document.getElementById('nuevo-lote-titulo').textContent='Agregar lote';
+  const wrap=document.getElementById('primer-lote-talles-wrap'); if(wrap) wrap.innerHTML='';
+  const cantField=document.querySelector('#modal-nuevo-lote .field:first-of-type'); if(cantField) cantField.style.display='block';
+  window._primerLoteFilas=[]; window._primerLoteCantidades=[];
+  document.getElementById('modal-nuevo-lote').classList.add('open');
+}
+
+async function confirmarNuevoLote() {
+  const pedido_id=parseInt(document.getElementById('nuevo-lote-pedido-id').value);
+  const cantidad=parseInt(document.getElementById('nuevo-lote-cant').value);
+  const notas=document.getElementById('nuevo-lote-notas').value;
+  if(!cantidad||cantidad<1) return alert('Ingresá al menos un par');
+  const filas=window._primerLoteFilas||[], tallesLote=[];
+  filas.forEach((f,i)=>{const v=parseInt(document.getElementById('pl-'+i)?.value)||0;if(v>0)tallesLote.push({modelo:f.modelo,talle:f.talle,cantidad:v,nombre_producto:f.nombre});});
+  await fetch('/api/produccion?action=crear-lote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pedido_id,cantidad,usuario:usuario.nombre,notas,talles_detalle:tallesLote.length>0?tallesLote:null})});
+  const wrap=document.getElementById('primer-lote-talles-wrap'); if(wrap) wrap.innerHTML='';
+  const cantField=document.querySelector('#modal-nuevo-lote .field:first-of-type'); if(cantField) cantField.style.display='block';
+  window._primerLoteFilas=[]; window._primerLoteCantidades=[];
+  cerrarModal('modal-nuevo-lote'); cargarPedidos();
+}
+
+async function eliminarLote(id) {
+  if(!confirm('¿Eliminar este lote?')) return;
+  const lote=pedidos.flatMap(p=>p.lotes||[]).find(l=>l.id===id); if(!lote) return;
+  const pedido=pedidos.find(p=>p.id===lote.pedido_id);
+  const otrosLotes=(pedido?.lotes||[]).filter(l=>l.id!==id);
+  if(otrosLotes.length===0){
+    await fetch('/api/produccion?action=eliminar',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:lote.pedido_id})});
+  } else {
+    await fetch('/api/produccion?action=eliminar-lote',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+  }
+  cargarPedidos();
+}
+
+function actualizarCamposTipo() {
+  const tipo=document.getElementById('form-tipo').value;
+  document.getElementById('campo-cliente-wrap').style.display=tipo==='stock'?'none':'block';
+  document.getElementById('campo-stock-wrap').style.display=tipo==='mixto'?'block':'none';
+  document.getElementById('label-pedida').textContent=tipo==='stock'?'Cantidad a producir':'Cantidad pedida';
+}
+
+function renderTallesGrid(valores={}) {
+  document.getElementById('talles-grid').innerHTML=TALLES.map(t=>`<div class="talle-item"><label>T${t}</label><input type="number" id="talle-${t}" min="0" placeholder="0" value="${valores[t]||''}" /></div>`).join('');
+}
+
+function abrirNuevo() {
+  document.getElementById('form-id').value='';
+  document.getElementById('form-titulo').textContent='Nuevo pedido';
+  document.getElementById('form-numero').value='';
+  document.getElementById('form-producto').value='';
+  document.getElementById('form-cliente').value='';
+  document.getElementById('form-tipo').value='cliente';
+  document.getElementById('form-cantidad-pedida').value='';
+  document.getElementById('form-cantidad-stock').value='';
+  document.getElementById('form-monto').value='';
+  document.getElementById('form-notas').value='';
+  document.getElementById('form-empresa').value='El Resero';
+  actualizarCamposTipo(); renderTallesGrid();
+  document.getElementById('modal-form').classList.add('open');
+}
+
+function abrirEditar(id) {
+  const p=pedidos.find(x=>x.id===id);
+  document.getElementById('form-id').value=p.id;
+  document.getElementById('form-titulo').textContent='Editar pedido';
+  document.getElementById('form-numero').value=p.numero;
+  document.getElementById('form-producto').value=p.producto;
+  document.getElementById('form-cliente').value=p.cliente||'';
+  document.getElementById('form-tipo').value=p.tipo;
+  document.getElementById('form-cantidad-pedida').value=p.cantidad_pedida;
+  document.getElementById('form-cantidad-stock').value=p.cantidad_stock;
+  document.getElementById('form-monto').value=p.monto_total||'';
+  document.getElementById('form-notas').value=p.notas||'';
+  document.getElementById('form-empresa').value=p.empresa;
+  actualizarCamposTipo();
+  const vals={}; p.talles?.forEach(t=>{vals[t.talle]=t.cantidad;});
+  renderTallesGrid(vals); cerrarModal('modal-detalle');
+  document.getElementById('modal-form').classList.add('open');
+}
+
+async function guardarPedido() {
+  const id=document.getElementById('form-id').value;
+  const talles=TALLES.map(t=>({talle:t,cantidad:parseInt(document.getElementById('talle-'+t)?.value)||0})).filter(t=>t.cantidad>0);
+  const body={
+    numero:document.getElementById('form-numero').value.trim(),
+    producto:document.getElementById('form-producto').value.trim(),
+    cliente:document.getElementById('form-cliente').value.trim(),
+    tipo:document.getElementById('form-tipo').value,
+    cantidad_pedida:parseInt(document.getElementById('form-cantidad-pedida').value)||0,
+    cantidad_stock:parseInt(document.getElementById('form-cantidad-stock').value)||0,
+    monto_total:parseFloat(document.getElementById('form-monto').value)||0,
+    empresa:document.getElementById('form-empresa').value,
+    notas:document.getElementById('form-notas').value.trim(),
+    talles,usuario:usuario.nombre
+  };
+  if(!body.numero||!body.producto) return alert('Completá número y modelo');
+  if(id){await fetch('/api/produccion?action=editar',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({...body,id:parseInt(id)})});}
+  else{await fetch('/api/produccion?action=crear',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}
+  cerrarModal('modal-form'); cargarPedidos();
+}
+
+async function eliminarPedido(id) {
+  if(!confirm('¿Eliminar este pedido y todos sus lotes?')) return;
+  await fetch('/api/produccion?action=eliminar',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+  cerrarModal('modal-detalle'); cargarPedidos();
+}
+
+async function importarOdoo() {
+  const btn=document.getElementById('btn-importar');
+  btn.textContent='Importando...'; btn.disabled=true;
+  try {
+    const res=await fetch('/api/importar-odoo',{method:'POST'});
+    const data=await res.json();
+    if(data.error) throw new Error(data.error);
+    alert(`✓ ${data.importados} importados · — ${data.omitidos} ya existían`);
+    cargarPedidos();
+  } catch(err){alert('Error: '+err.message);}
+  finally{btn.textContent='Importar Odoo';btn.disabled=false;}
+}
+
+function cerrarModal(id){document.getElementById(id).classList.remove('open');}
+document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+
+function leerSesion(){try{const s=localStorage.getItem('gx_usuario');return s?JSON.parse(s):null;}catch{return null;}}
 
 function iniciarConSesion(u) {
-  usuario = u;
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app-screen').style.display = 'block';
-  if (document.getElementById('user-label')) document.getElementById('user-label').textContent = u.nombre + ' · ' + u.rol;
-  if (u.rol === 'produccion' || u.rol === 'admin') {
-    if (document.getElementById('btn-nuevo')) document.getElementById('btn-nuevo').style.display = 'inline-block';
-    if (document.getElementById('btn-importar')) document.getElementById('btn-importar').style.display = 'inline-block';
+  usuario=u;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').style.display='block';
+  if(document.getElementById('user-label')) document.getElementById('user-label').textContent=u.nombre+' · '+u.rol;
+  if(u.rol==='produccion'||u.rol==='admin'){
+    if(document.getElementById('btn-nuevo')) document.getElementById('btn-nuevo').style.display='inline-block';
+    if(document.getElementById('btn-importar')) document.getElementById('btn-importar').style.display='inline-block';
   }
-  if (typeof cargarPedidos === 'function') cargarPedidos();
+  if(typeof cargarPedidos==='function') cargarPedidos();
 }
 
-const sesionGuardada = leerSesion();
-if (sesionGuardada) iniciarConSesion(sesionGuardada);
+const sesionGuardada=leerSesion();
+if(sesionGuardada) iniciarConSesion(sesionGuardada);
 </script>
 </body>
 </html>
