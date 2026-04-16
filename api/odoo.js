@@ -249,8 +249,8 @@ module.exports = async function handler(req, res) {
     })();
 
     // Vencidas (para la sección de facturas vencidas sin cobrar)
-    const todasVencidas = pendientesConDias.filter(f => f.diasVenc >= 0);
-    const totalVencido  = todasVencidas.reduce((a,f) => a+f.amount_residual, 0);
+    const todasVencidas = pendientesConDias;
+    const totalVencido  = totalPendiente;
 
     // Entregas pendientes
     const [xmlPickings1, xmlPickings2] = await Promise.all([
