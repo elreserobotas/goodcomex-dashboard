@@ -141,7 +141,7 @@
     .panel-seccion { margin-top: 1.5rem; }
     .panel-titulo { font-size: 11px; font-weight: 500; color: #aaa; text-transform: uppercase; letter-spacing:.06em; margin-bottom: 10px; }
     .panel-card { border-radius: 12px; padding: 1rem 1.25rem; }
-    .panel-entregados { background: #eaf3de; border: 0.5px solid #9FE1CB; }
+    .panel-entregados { background: #fff5f5; border: 0.5px solid #F0997B; }
     .panel-archivados { background: #fff; border: 0.5px solid #FAC775; }
   </style>
 </head>
@@ -207,7 +207,7 @@
       <div class="panel-seccion" id="panel-entregados-wrap" style="display:none;">
         <div class="panel-titulo">✓ Entregados en Odoo</div>
         <div class="panel-card panel-entregados">
-          <div style="font-size:12px;color:#27500a;margin-bottom:10px;">Estos pedidos figuran como entregados en Odoo. Podés confirmar y eliminarlos del sistema.</div>
+          <div style="font-size:12px;color:#712B13;margin-bottom:10px;">Estos pedidos figuran como entregados en Odoo. Podés confirmar y eliminarlos del sistema.</div>
           <div id="entregados-list"></div>
         </div>
       </div>
@@ -514,7 +514,7 @@ function renderEntregadosOdoo() {
     <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:0.5px solid #9FE1CB;">
       <div>
         <div style="font-size:13px;font-weight:500;color:#1a1a1a;">${p.numero}</div>
-        <div style="font-size:11px;color:#27500a;">${p.tipo==='stock'?'Stock propio':(p.cliente||'—')} · ${p.producto}</div>
+        <div style="font-size:11px;color:#712B13;">${p.tipo==='stock'?'Stock propio':(p.cliente||'—')} · ${p.producto}</div>
       </div>
       <button class="btn btn-success btn-sm" onclick="confirmarEntregado(${p.id})">✓ Confirmar entrega</button>
     </div>`).join('');
@@ -581,7 +581,7 @@ function renderKanbanCard(p, etapaFiltro) {
           <span style="font-size:10px;color:#aaa;margin-left:auto;">${diasTotal}d</span>
         </div>
         ${monto?`<div class="pedido-monto">${monto}</div>`:''}
-        ${esEntregado?'<div style="font-size:10px;color:#27500a;font-weight:500;margin-top:4px;">✓ Entregado en Odoo</div>':'<div style="font-size:10px;color:#378ADD;margin-top:4px;">Tap para crear lote →</div>'}
+        ${esEntregado?'<div style="font-size:10px;color:#a32d2d;font-weight:500;margin-top:4px;">✓ Entregado en Odoo</div>':'<div style="font-size:10px;color:#378ADD;margin-top:4px;">Tap para crear lote →</div>'}
       </div>
     </div>`;
   }
@@ -596,7 +596,7 @@ function renderKanbanCard(p, etapaFiltro) {
         <span style="font-size:10px;color:#aaa;margin-left:auto;">${diasTotal}d</span>
       </div>
       ${monto?`<div class="pedido-monto">${monto}</div>`:''}
-      ${esEntregado?'<div style="font-size:10px;color:#27500a;font-weight:500;margin-top:3px;">✓ Entregado en Odoo</div>':''}
+      ${esEntregado?'<div style="font-size:10px;color:#a32d2d;font-weight:500;margin-top:3px;">✓ Entregado en Odoo</div>':''}
     </div>
     <div class="lotes-wrap open" id="lotes-${p.id}-${etapaFiltro}">
       ${lotesMostrar.map(l=>renderLoteCard(l,p)).join('')}
