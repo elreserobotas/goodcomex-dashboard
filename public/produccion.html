@@ -575,6 +575,7 @@ function renderKanbanCard(p, etapaFiltro) {
       <div class="pedido-sin-lotes" onclick="abrirPrimerLote(${p.id})">
         <div class="pedido-num">${p.numero} · sin lotes</div>
         <div class="pedido-cliente">${cliente}</div>
+        ${p.notas ? `<div style="font-size:10px;color:#633806;font-style:italic;margin-bottom:2px;">📝 ${p.notas.split(' · ')[0]}</div>` : ''}
         <div class="pedido-bottom">
           ${tipoBadge(p.tipo)}
           <span class="emp-badge ${p.empresa==='El Resero'?'emp-r':'emp-b'}">${p.empresa}</span>
@@ -590,6 +591,7 @@ function renderKanbanCard(p, etapaFiltro) {
     <div class="pedido-header" onclick="toggleLotes('lotes-${p.id}-${etapaFiltro}')">
       <div class="pedido-num">${p.numero} · ${lotesMostrar.length} lote${lotesMostrar.length!==1?'s':''}</div>
       <div class="pedido-cliente">${cliente}</div>
+      ${p.notas ? `<div style="font-size:10px;color:#633806;font-style:italic;margin-bottom:2px;">📝 ${p.notas.split(' · ')[0]}</div>` : ''}
       <div class="pedido-bottom">
         ${tipoBadge(p.tipo)}
         <span class="emp-badge ${p.empresa==='El Resero'?'emp-r':'emp-b'}">${p.empresa}</span>
