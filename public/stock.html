@@ -307,12 +307,13 @@
     document.getElementById('stat-listo').textContent = sumar('listo').toLocaleString('es-AR');
   }
 
-  async function cargarStock() {
-    const res = await fetch('/api/produccion?action=pedidos');
-    pedidos = await res.json();
-    renderStock();
-    renderStats();
-  }
+ async function cargarStock() {
+  const res = await fetch('/api/produccion?action=pedidos');
+  const data = await res.json();
+  pedidos = data.pedidos || data;
+  renderStock();
+  renderStats();
+}
 
   function abrirMoverEmpaque(loteId, cantidad, pedidoId) {
     const pedido = pedidos.find(p=>p.id===pedidoId);
