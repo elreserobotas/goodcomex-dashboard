@@ -63,13 +63,15 @@ function parsePickings(xml) {
     const partnerMatch = struct[1].match(/<name>partner_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
     const dateMatch = struct[1].match(/<name>scheduled_date<\/name>\s*<value><string>([^<]+)<\/string>/);
     const companyMatch = struct[1].match(/<name>company_id<\/name>\s*<value><array><data>\s*<value><int>(\d+)<\/int>/);
+    const noteMatch = struct[1].match(/<name>note<\/name>\s*<value><string>([^<]*)<\/string>/);
     if (idMatch && nameMatch) {
       results.push({
         id: parseInt(idMatch[1]),
         name: nameMatch[1],
         partner: partnerMatch?.[1] || '—',
         scheduled_date: dateMatch?.[1] || '',
-        company_id: companyMatch ? parseInt(companyMatch[1]) : 0
+        company_id: companyMatch ? parseInt(companyMatch[1]) : 0,
+        note: noteMatch?.[1] || ''
       });
     }
   }
@@ -99,7 +101,6 @@ function parsearTallesDeProductos(productos) {
   const talles = [];
   let total = 0;
   productos.forEach(pr => {
-    // Correaje: [7.650]
     const correaje = pr.product.match(/\[7\.(\d+)[MNAV]?\]/);
     if (correaje) {
       const modelo = correaje[1];
@@ -108,7 +109,6 @@ function parsearTallesDeProductos(productos) {
       if (cantidad > 0) { talles.push({ modelo, talle: null, cantidad, nombre }); total += cantidad; }
       return;
     }
-    // Medias: [MN] [MG]
     const medias = pr.product.match(/\[(M[NG])\]/);
     if (medias) {
       const modelo = medias[1];
@@ -116,7 +116,6 @@ function parsearTallesDeProductos(productos) {
       if (cantidad > 0) { talles.push({ modelo, talle: null, cantidad, nombre: 'Medias' }); total += cantidad; }
       return;
     }
-    // Normal: [500.42]
     const normal = pr.product.match(/\[(\d+)\.(\d+)[MNAV]?\]/);
     if (normal) {
       const modelo = normal[1];
@@ -128,6 +127,11 @@ function parsearTallesDeProductos(productos) {
     }
   });
   return { talles, total };
+}
+
+function limpiarHtml(str) {
+  if (!str) return '';
+  return str.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();
 }
 
 module.exports = async function handler(req, res) {
@@ -142,11 +146,11 @@ module.exports = async function handler(req, res) {
     const [xmlP1, xmlP2] = await Promise.all([
       odooCall(uid, 'stock.picking',
         [['company_id','=',1],['state','in',['confirmed','assigned','waiting']],['picking_type_code','=','outgoing']],
-        ['name','partner_id','state','scheduled_date','company_id']
+        ['name','partner_id','state','scheduled_date','company_id','note']
       ),
       odooCall(uid, 'stock.picking',
         [['company_id','=',2],['state','in',['confirmed','assigned','waiting']],['picking_type_code','=','outgoing']],
-        ['name','partner_id','state','scheduled_date','company_id']
+        ['name','partner_id','state','scheduled_date','company_id','note']
       )
     ]);
 
@@ -167,8 +171,8 @@ module.exports = async function handler(req, res) {
       if (existe.length) { omitidos++; continue; }
       const ignorado = await sql`SELECT numero FROM pedidos_ignorados WHERE numero=${p.name}`;
       if (ignorado.length) { omitidos++; continue; }
-      const clienteIgnorado = ['goodcomex', 'assigned', 'administrator'].some(x => 
-      p.partner.toLowerCase().includes(x)
+      const clienteIgnorado = ['goodcomex', 'assigned', 'administrator'].some(x =>
+        p.partner.toLowerCase().includes(x)
       );
       if (clienteIgnorado) { omitidos++; continue; }
 
@@ -190,9 +194,13 @@ module.exports = async function handler(req, res) {
         return m ? `T${m[2]} x${Math.round(pr.qty)}` : pr.product + ' x' + pr.qty;
       }).join(' · ');
 
+      // Nota del remito en Odoo (referencia del cliente real)
+      const notaOdoo = limpiarHtml(p.note);
+      const notaFinal = notaOdoo ? `${notaOdoo} · ${notasDetalle}` : notasDetalle;
+
       const result = await sql`
         INSERT INTO pedidos (numero, cliente, producto, tipo, cantidad_pedida, cantidad_stock, empresa, notas, monto_total)
-        VALUES (${p.name}, ${p.partner}, ${productoNombre}, 'cliente', ${total}, 0, ${empresa}, ${notasDetalle}, 0)
+        VALUES (${p.name}, ${p.partner}, ${productoNombre}, 'cliente', ${total}, 0, ${empresa}, ${notaFinal}, 0)
         RETURNING id
       `;
       const pedidoId = result[0].id;
@@ -205,7 +213,7 @@ module.exports = async function handler(req, res) {
 
       if (talles.length > 0) {
         for (const t of talles) {
-        await sql`INSERT INTO talles (pedido_id, talle, cantidad, modelo, nombre_producto) VALUES (${pedidoId}, ${t.talle}, ${t.cantidad}, ${t.modelo}, ${t.nombre})`;
+          await sql`INSERT INTO talles (pedido_id, talle, cantidad, modelo, nombre_producto) VALUES (${pedidoId}, ${t.talle}, ${t.cantidad}, ${t.modelo}, ${t.nombre})`;
         }
       }
 
