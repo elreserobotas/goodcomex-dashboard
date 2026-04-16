@@ -683,7 +683,7 @@
           <div class="venc-row">
             <div class="venc-name">
               <div style="font-weight:500;">${f.partner_name || '—'}</div>
-              <div class="venc-meta">${f.name} · vence ${f.invoice_date_due} · ${f.diasVenc} días</div>
+              <div class="venc-meta">${f.name} · vence ${f.invoice_date_due}${f.diasVenc >= 0 ? ' · <span style="color:#a32d2d;">vencida '+f.diasVenc+' días</span>' : ' · vence en '+Math.abs(f.diasVenc)+' días'}</div>
             </div>
             <div class="venc-amount">${fmt(f.amount_residual)}</div>
           </div>`).join('');
