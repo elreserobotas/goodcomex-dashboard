@@ -86,11 +86,13 @@ function parseMoves(xml) {
     const pickingMatch = struct[1].match(/<name>picking_id<\/name>\s*<value><array><data>\s*<value><int>(\d+)<\/int>/);
     const productMatch = struct[1].match(/<name>product_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
     const qtyMatch = struct[1].match(/<name>product_uom_qty<\/name>\s*<value><double>([\d.]+)<\/double>/);
-    if (pickingMatch && productMatch) {
+    const descMatch = struct[1].match(/<name>description_picking<\/name>\s*<value><string>([^<]*)<\/string>/);
+    if (pickingMatch) {
       results.push({
         picking_id: parseInt(pickingMatch[1]),
-        product: productMatch[1],
-        qty: parseFloat(qtyMatch?.[1] || 0)
+        product: productMatch?.[1] || '',
+        qty: parseFloat(qtyMatch?.[1] || 0),
+        description: descMatch?.[1] || ''
       });
     }
   }
@@ -159,7 +161,7 @@ module.exports = async function handler(req, res) {
 
     const movesXml = await odooCall(uid, 'stock.move',
       [['picking_id','in',pickings.map(p => p.id)],['state','not in',['done','cancel']]],
-      ['picking_id','product_id','product_uom_qty']
+      ['picking_id','product_id','product_uom_qty','description_picking']
     );
     const moves = parseMoves(movesXml);
 
@@ -189,15 +191,20 @@ module.exports = async function handler(req, res) {
         ? productos[0].product.replace(/\[.*?\]\s*/, '').split('(')[0].trim()
         : 'Modelos: ' + modelosUnicos.join(', ');
 
-      const notasDetalle = productos.map(pr => {
-        const m = pr.product.match(/\[(\d+)\.(\d+)[MNAV]?\]/);
-        return m ? `T${m[2]} x${Math.round(pr.qty)}` : pr.product + ' x' + pr.qty;
-      }).join(' · ');
+      // Separar líneas de nota (sin producto) de líneas de producto
+const lineasNota = moves.filter(m => m.picking_id === p.id && !m.product);
+const notaLineas = lineasNota.map(l => l.description).filter(Boolean).join(' · ');
+
+const notasDetalle = productos.map(pr => {
+  const m = pr.product.match(/\[(\d+)\.(\d+)[MNAV]?\]/);
+  return m ? `T${m[2]} x${Math.round(pr.qty)}` : pr.product + ' x' + pr.qty;
+}).join(' · ');
 
       // Nota del remito en Odoo (referencia del cliente real)
       const notaOdoo = limpiarHtml(p.note);
-      const notaFinal = notaOdoo ? `${notaOdoo} · ${notasDetalle}` : notasDetalle;
-
+      const partes = [notaOdoo, notaLineas, notasDetalle].filter(Boolean);
+      const notaFinal = partes.join(' · ');
+      
       const result = await sql`
         INSERT INTO pedidos (numero, cliente, producto, tipo, cantidad_pedida, cantidad_stock, empresa, notas, monto_total)
         VALUES (${p.name}, ${p.partner}, ${productoNombre}, 'cliente', ${total}, 0, ${empresa}, ${notaFinal}, 0)
