@@ -137,8 +137,64 @@ return res.json({ ok: true, usuario: { id: u.id, nombre: u.nombre, email: u.emai
         p.talles = await sql`SELECT * FROM talles WHERE pedido_id=${p.id} ORDER BY talle`;
         p.lotes = await sql`SELECT id, pedido_id, numero, cantidad, etapa, aparador, notas, talles_detalle, created_at, updated_at FROM lotes WHERE pedido_id=${p.id} ORDER BY created_at ASC`;
 }
-return res.json({ pedidos, archivados });
+// Consultar Odoo cuáles están entregados (done)
+let entregados = [];
+try {
+  const ODOO_URL = 'https://goodcomex-el-resero.odoo.com';
+  const ODOO_DB = process.env.ODOO_DB;
+  const authRes = await fetch(`${ODOO_URL}/xmlrpc/2/common`, {
+    method: 'POST', headers: { 'Content-Type': 'text/xml' },
+    body: `<?xml version="1.0"?><methodCall><methodName>authenticate</methodName><params>
+      <param><value><string>${ODOO_DB}</string></value></param>
+      <param><value><string>kevinlubi@gmail.com</string></value></param>
+      <param><value><string>${process.env.ODOO_PASSWORD}</string></value></param>
+      <param><value><struct></struct></value></param>
+    </params></methodCall>`
+  });
+  const authText = await authRes.text();
+  const uidMatch = authText.match(/<int>(\d+)<\/int>/);
+  if (uidMatch) {
+    const uid = parseInt(uidMatch[1]);
+    const numeros = pedidos.map(p => p.numero);
+    if (numeros.length > 0) {
+      const numerosXml = numeros.map(n => `<value><string>${n}</string></value>`).join('');
+      const pickBody = `<?xml version="1.0"?><methodCall><methodName>execute_kw</methodName><params>
+        <param><value><string>${ODOO_DB}</string></value></param>
+        <param><value><int>${uid}</int></value></param>
+        <param><value><string>${process.env.ODOO_PASSWORD}</string></value></param>
+        <param><value><string>stock.picking</string></value></param>
+        <param><value><string>search_read</string></value></param>
+        <param><value><array><data><value><array><data>
+          <value><array><data>
+            <value><string>name</string></value>
+            <value><string>in</string></value>
+            <value><array><data>${numerosXml}</data></array></value>
+          </data></array></value>
+          <value><array><data>
+            <value><string>state</string></value>
+            <value><string>=</string></value>
+            <value><string>done</string></value>
+          </data></array></value>
+        </data></array></value></data></array></value></param>
+        <param><value><struct>
+          <member><name>fields</name><value><array><data>
+            <value><string>name</string></value>
+            <value><string>state</string></value>
+          </data></array></value></member>
+          <member><name>limit</name><value><int>500</int></value></member>
+        </struct></value></param>
+      </params></methodCall>`;
+      const pickRes = await fetch(`${ODOO_URL}/xmlrpc/2/object`, {
+        method: 'POST', headers: { 'Content-Type': 'text/xml' }, body: pickBody
+      });
+      const pickText = await pickRes.text();
+      const matches = [...pickText.matchAll(/<name>name<\/name>\s*<value><string>([^<]+)<\/string>/g)];
+      entregados = matches.map(m => m[1]);
     }
+  }
+} catch(e) { console.error('Error Odoo entregados:', e.message); }
+
+return res.json({ pedidos, archivados, entregados });
 
     if (req.method === 'GET' && action === 'stock') {
       const items = await sql`SELECT * FROM stock_items ORDER BY created_at DESC`;
