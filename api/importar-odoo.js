@@ -64,6 +64,7 @@ function parsePickings(xml) {
     const dateMatch = struct[1].match(/<name>scheduled_date<\/name>\s*<value><string>([^<]+)<\/string>/);
     const companyMatch = struct[1].match(/<name>company_id<\/name>\s*<value><array><data>\s*<value><int>(\d+)<\/int>/);
     const noteMatch = struct[1].match(/<name>note<\/name>\s*<value><string>([^<]*)<\/string>/);
+    const saleMatch = struct[1].match(/<name>sale_id<\/name>\s*<value><array><data>\s*<value><int>(\d+)<\/int>/);
     if (idMatch && nameMatch) {
       results.push({
         id: parseInt(idMatch[1]),
@@ -71,7 +72,8 @@ function parsePickings(xml) {
         partner: partnerMatch?.[1] || '—',
         scheduled_date: dateMatch?.[1] || '',
         company_id: companyMatch ? parseInt(companyMatch[1]) : 0,
-        note: noteMatch?.[1] || ''
+        note: noteMatch?.[1] || '',
+        sale_id: saleMatch ? parseInt(saleMatch[1]) : null
       });
     }
   }
@@ -86,13 +88,28 @@ function parseMoves(xml) {
     const pickingMatch = struct[1].match(/<name>picking_id<\/name>\s*<value><array><data>\s*<value><int>(\d+)<\/int>/);
     const productMatch = struct[1].match(/<name>product_id<\/name>[\s\S]*?<value><string>([^<]+)<\/string>/);
     const qtyMatch = struct[1].match(/<name>product_uom_qty<\/name>\s*<value><double>([\d.]+)<\/double>/);
-    const descMatch = struct[1].match(/<name>description_picking<\/name>\s*<value><string>([^<]*)<\/string>/);
-    if (pickingMatch) {
+    if (pickingMatch && productMatch) {
       results.push({
         picking_id: parseInt(pickingMatch[1]),
-        product: productMatch?.[1] || '',
-        qty: parseFloat(qtyMatch?.[1] || 0),
-        description: descMatch?.[1] || ''
+        product: productMatch[1],
+        qty: parseFloat(qtyMatch?.[1] || 0)
+      });
+    }
+  }
+  return results;
+}
+
+function parseSaleLines(xml) {
+  const results = [];
+  const memberRegex = /<struct>([\s\S]*?)<\/struct>/g;
+  let struct;
+  while ((struct = memberRegex.exec(xml)) !== null) {
+    const orderMatch = struct[1].match(/<name>order_id<\/name>\s*<value><array><data>\s*<value><int>(\d+)<\/int>/);
+    const nameMatch = struct[1].match(/<name>name<\/name>\s*<value><string>([^<]+)<\/string>/);
+    if (orderMatch && nameMatch) {
+      results.push({
+        order_id: parseInt(orderMatch[1]),
+        name: nameMatch[1]
       });
     }
   }
@@ -148,11 +165,11 @@ module.exports = async function handler(req, res) {
     const [xmlP1, xmlP2] = await Promise.all([
       odooCall(uid, 'stock.picking',
         [['company_id','=',1],['state','in',['confirmed','assigned','waiting']],['picking_type_code','=','outgoing']],
-        ['name','partner_id','state','scheduled_date','company_id','note']
+        ['name','partner_id','state','scheduled_date','company_id','note','sale_id']
       ),
       odooCall(uid, 'stock.picking',
         [['company_id','=',2],['state','in',['confirmed','assigned','waiting']],['picking_type_code','=','outgoing']],
-        ['name','partner_id','state','scheduled_date','company_id','note']
+        ['name','partner_id','state','scheduled_date','company_id','note','sale_id']
       )
     ]);
 
@@ -161,9 +178,28 @@ module.exports = async function handler(req, res) {
 
     const movesXml = await odooCall(uid, 'stock.move',
       [['picking_id','in',pickings.map(p => p.id)],['state','not in',['done','cancel']]],
-      ['picking_id','product_id','product_uom_qty','description_picking']
+      ['picking_id','product_id','product_uom_qty']
     );
     const moves = parseMoves(movesXml);
+
+    // Traer notas de las órdenes de venta asociadas
+    const saleIds = [...new Set(pickings.map(p => p.sale_id).filter(Boolean))];
+    const notasPorSale = {};
+    if (saleIds.length > 0) {
+      try {
+        const saleLinesXml = await odooCall(uid, 'sale.order.line',
+          [['order_id','in',saleIds],['display_type','in',['line_note','line_section']]],
+          ['order_id','name','display_type']
+        );
+        const saleLines = parseSaleLines(saleLinesXml);
+        saleLines.forEach(l => {
+          if (!notasPorSale[l.order_id]) notasPorSale[l.order_id] = [];
+          notasPorSale[l.order_id].push(l.name);
+        });
+      } catch(e) {
+        console.error('Error trayendo notas de sale:', e.message);
+      }
+    }
 
     let importados = 0;
     let omitidos = 0;
@@ -191,20 +227,18 @@ module.exports = async function handler(req, res) {
         ? productos[0].product.replace(/\[.*?\]\s*/, '').split('(')[0].trim()
         : 'Modelos: ' + modelosUnicos.join(', ');
 
-      // Separar líneas de nota (sin producto) de líneas de producto
-const lineasNota = moves.filter(m => m.picking_id === p.id && !m.product);
-const notaLineas = lineasNota.map(l => l.description).filter(Boolean).join(' · ');
+      const notasDetalle = productos.map(pr => {
+        const m = pr.product.match(/\[(\d+)\.(\d+)[MNAV]?\]/);
+        return m ? `T${m[2]} x${Math.round(pr.qty)}` : pr.product + ' x' + pr.qty;
+      }).join(' · ');
 
-const notasDetalle = productos.map(pr => {
-  const m = pr.product.match(/\[(\d+)\.(\d+)[MNAV]?\]/);
-  return m ? `T${m[2]} x${Math.round(pr.qty)}` : pr.product + ' x' + pr.qty;
-}).join(' · ');
-
-      // Nota del remito en Odoo (referencia del cliente real)
       const notaOdoo = limpiarHtml(p.note);
-      const partes = [notaOdoo, notaLineas, notasDetalle].filter(Boolean);
+      const notaSale = p.sale_id && notasPorSale[p.sale_id]
+        ? notasPorSale[p.sale_id].join(' · ')
+        : '';
+      const partes = [notaOdoo, notaSale, notasDetalle].filter(Boolean);
       const notaFinal = partes.join(' · ');
-      
+
       const result = await sql`
         INSERT INTO pedidos (numero, cliente, producto, tipo, cantidad_pedida, cantidad_stock, empresa, notas, monto_total)
         VALUES (${p.name}, ${p.partner}, ${productoNombre}, 'cliente', ${total}, 0, ${empresa}, ${notaFinal}, 0)
