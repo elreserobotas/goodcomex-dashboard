@@ -366,7 +366,6 @@
       </div>
     </div>
 
-    <!-- NUEVO: Resumen producción pendiente -->
     <div class="expandible" id="exp-resumen-prod">
       <div class="expandible-header" onclick="toggleResumenProd()">
         <div>
@@ -416,6 +415,18 @@
   <span class="badge" id="status">Cargando...</span>
 </div>
 
+<!-- Modal detalle modelo producción -->
+<div class="modal-bg" id="modal-modelo-bg" onclick="cerrarModalModelo(event)">
+  <div class="modal" style="max-width:700px;">
+    <div class="modal-title">
+      <span id="modal-modelo-titulo">Detalle</span>
+      <button class="modal-close" onclick="document.getElementById('modal-modelo-bg').classList.remove('open')">×</button>
+    </div>
+    <div id="modal-modelo-body"></div>
+  </div>
+</div>
+
+<!-- Modal genérico -->
 <div class="modal-bg" id="modal-bg" onclick="cerrarModal(event)">
   <div class="modal">
     <div class="modal-title">
@@ -437,6 +448,9 @@
   let extrasLoaded = { clientes: false, productos: false, comparativa: false, iva: false, produccion: false };
   let resumenProdLoaded = false;
   document.getElementById('hasta').value = new Date().toISOString().slice(0,10);
+
+  const COLORES_MODELO = ['#e6f1fb','#eaf3de','#faeeda','#fbeaf0','#eeedfe','#fcebeb','#e1f5ee','#f1efe8'];
+  const COLORES_TEXTO  = ['#0c447c','#27500a','#633806','#72243e','#3c3489','#a32d2d','#085041','#444'];
 
   function toggle(id) {
     document.getElementById('body-'+id).classList.toggle('open');
@@ -479,9 +493,6 @@
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
-      const COLORES_MODELO = ['#e6f1fb','#eaf3de','#faeeda','#fbeaf0','#eeedfe','#fcebeb','#e1f5ee','#f1efe8'];
-      const COLORES_TEXTO  = ['#0c447c','#27500a','#633806','#72243e','#3c3489','#a32d2d','#085041','#444'];
-
       document.getElementById('resumen-prod-meta').textContent =
         `${data.modelos.length} modelos · ${data.totalPares.toLocaleString('es-AR')} pares pendientes`;
 
@@ -490,12 +501,14 @@
         return;
       }
 
+      window._resumenModelos = data.modelos;
+
       let html = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;">`;
       data.modelos.forEach((m, idx) => {
         const bg = COLORES_MODELO[idx % COLORES_MODELO.length];
         const color = COLORES_TEXTO[idx % COLORES_TEXTO.length];
         html += `
-          <div style="background:${bg};border-radius:10px;padding:12px;">
+          <div style="background:${bg};border-radius:10px;padding:12px;cursor:pointer;transition:opacity 0.15s;" onmouseenter="this.style.opacity='0.85'" onmouseleave="this.style.opacity='1'" onclick="abrirDetalleModelo(${idx})">
             <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
               <div>
                 <span style="font-size:13px;font-weight:700;color:${color};">Mod. ${m.modelo}</span>
@@ -510,6 +523,7 @@
                   <div style="font-size:14px;font-weight:600;color:${color};">${t.cantidad}</div>
                 </div>`).join('')}
             </div>
+            <div style="font-size:10px;color:${color};opacity:0.6;margin-top:8px;text-align:right;">Ver detalle por cliente →</div>
           </div>`;
       });
       html += `</div>`;
@@ -519,6 +533,74 @@
       document.getElementById('resumen-prod-content').innerHTML = `<p class="empty">Error: ${err.message}</p>`;
       resumenProdLoaded = false;
     }
+  }
+
+  function abrirDetalleModelo(idx) {
+    const m = window._resumenModelos?.[idx];
+    if (!m) return;
+    const bg = COLORES_MODELO[idx % COLORES_MODELO.length];
+    const color = COLORES_TEXTO[idx % COLORES_TEXTO.length];
+
+    document.getElementById('modal-modelo-titulo').innerHTML =
+      `<span style="color:${color};">Mod. ${m.modelo}</span>&nbsp;<span style="font-size:13px;font-weight:400;color:#888;">${m.nombre}</span>`;
+
+    const detalle = m.detalle || [];
+    if (detalle.length === 0) {
+      document.getElementById('modal-modelo-body').innerHTML = '<p class="empty">Sin detalle por cliente disponible</p>';
+      document.getElementById('modal-modelo-bg').classList.add('open');
+      return;
+    }
+
+    const tallesUnicos = [...new Set(detalle.flatMap(c => c.talles.map(t => t.talle)))]
+      .sort((a,b) => (parseInt(a)||0) - (parseInt(b)||0));
+
+    let html = `
+      <div style="font-size:12px;color:#888;margin-bottom:12px;">
+        ${m.total.toLocaleString('es-AR')} pares totales · ${detalle.length} cliente${detalle.length!==1?'s':''}
+      </div>
+      <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="border-bottom:1px solid #e5e5e5;">
+            <th style="text-align:left;padding:8px;color:#888;font-weight:500;white-space:nowrap;">Cliente</th>
+            ${tallesUnicos.map(t => `<th style="text-align:center;padding:8px;color:${color};font-weight:600;white-space:nowrap;">${t!=='—'?'T'+t:'—'}</th>`).join('')}
+            <th style="text-align:right;padding:8px;color:#888;font-weight:500;">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${detalle.map((c,i) => {
+            const tallesMap = {};
+            c.talles.forEach(t => { tallesMap[t.talle] = t.cantidad; });
+            return `<tr style="border-bottom:0.5px solid #f0f0f0;${i%2===0?'':'background:#fafafa'}">
+              <td style="padding:8px;font-weight:500;color:#1a1a1a;white-space:nowrap;">${c.cliente}</td>
+              ${tallesUnicos.map(t => `<td style="text-align:center;padding:8px;color:${tallesMap[t]?color:'#ddd'};">${tallesMap[t]||'—'}</td>`).join('')}
+              <td style="text-align:right;padding:8px;font-weight:700;color:${color};">${c.total}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+        <tfoot>
+          <tr style="border-top:1px solid #e5e5e5;background:${bg};">
+            <td style="padding:8px;font-weight:700;color:${color};">Total</td>
+            ${tallesUnicos.map(t => {
+              const sum = detalle.reduce((a,c) => {
+                const tf = c.talles.find(x => x.talle===t);
+                return a + (tf?.cantidad||0);
+              }, 0);
+              return `<td style="text-align:center;padding:8px;font-weight:700;color:${color};">${sum||'—'}</td>`;
+            }).join('')}
+            <td style="text-align:right;padding:8px;font-weight:700;color:${color};">${m.total}</td>
+          </tr>
+        </tfoot>
+      </table>
+      </div>`;
+
+    document.getElementById('modal-modelo-body').innerHTML = html;
+    document.getElementById('modal-modelo-bg').classList.add('open');
+  }
+
+  function cerrarModalModelo(e) {
+    if (e.target === document.getElementById('modal-modelo-bg'))
+      document.getElementById('modal-modelo-bg').classList.remove('open');
   }
 
   async function cargarExtra(tipo) {
