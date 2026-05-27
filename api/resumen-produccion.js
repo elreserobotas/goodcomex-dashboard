@@ -21,17 +21,17 @@ module.exports = async function handler(req, res) {
     `;
 
     const resumen = {};
-    const detallePorModelo = {}; // modelo → [ { cliente, talle, cantidad } ]
-
+    const detallePorModelo = {};
     const pedidosConDetalle = new Set();
 
     lotes.forEach(l => {
       const td = l.talles_detalle;
       if (td && Array.isArray(td) && td.length > 0) {
         pedidosConDetalle.add(l.pedido_id);
-        const clienteNombre = l.notas
-          ? l.notas.split(' · ')[0]
-          : (l.cliente || '—');
+
+        const clienteNombre = l.cliente && !['10000','—'].includes(l.cliente.trim())
+          ? l.cliente
+          : (l.notas ? l.notas.split(' · ')[0] : '—');
 
         td.forEach(t => {
           const modelo = t.modelo || '?';
@@ -54,9 +54,10 @@ module.exports = async function handler(req, res) {
       const nombre = t.nombre_producto || '';
       const talle = t.talle || '—';
       const cant = parseInt(t.cantidad) || 0;
-      const clienteNombre = t.notas
-        ? t.notas.split(' · ')[0]
-        : (t.cliente || '—');
+
+      const clienteNombre = t.cliente && !['10000','—'].includes(t.cliente.trim())
+        ? t.cliente
+        : (t.notas ? t.notas.split(' · ')[0] : '—');
 
       if (!resumen[modelo]) resumen[modelo] = { modelo, nombre, talles: {} };
       resumen[modelo].talles[talle] = (resumen[modelo].talles[talle] || 0) + cant;
