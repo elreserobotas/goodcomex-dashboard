@@ -604,7 +604,6 @@ function renderKanbanCard(p, etapaFiltro) {
           <span class="emp-badge ${p.empresa==='El Resero'?'emp-r':'emp-b'}">${p.empresa}</span>
           <span style="font-size:10px;color:#aaa;margin-left:auto;">${diasTotal}d</span>
         </div>
-        ${monto?`<div class="pedido-monto">${monto}</div>`:''}
         ${esEntregado?'<div style="font-size:10px;color:#a32d2d;font-weight:500;margin-top:4px;">✓ Entregado en Odoo</div>':'<div style="font-size:10px;color:#378ADD;margin-top:4px;">Tap para crear lote →</div>'}
       </div>
     </div>`;
@@ -620,7 +619,6 @@ function renderKanbanCard(p, etapaFiltro) {
         <span class="emp-badge ${p.empresa==='El Resero'?'emp-r':'emp-b'}">${p.empresa}</span>
         <span style="font-size:10px;color:#aaa;margin-left:auto;">${diasTotal}d</span>
       </div>
-      ${monto?`<div class="pedido-monto">${monto}</div>`:''}
       ${esEntregado?'<div style="font-size:10px;color:#a32d2d;font-weight:500;margin-top:3px;">✓ Entregado en Odoo</div>':''}
     </div>
     <div class="lotes-wrap open" id="lotes-${p.id}-${etapaFiltro}">
@@ -633,10 +631,8 @@ function renderLoteCard(l, p) {
   const diasEtapa=diasDesde(l.updated_at);
   const puedeEditar=usuario?.rol==='produccion'||usuario?.rol==='admin';
   const fuenteTalles=l.talles_detalle||p.talles;
-  const modelosHtml=buildModelosHtml(fuenteTalles, null);
   return `<div class="lote-card">
     <div style="font-weight:700;font-size:11px;color:#1a1a1a;margin-bottom:4px;">${l.numero}</div>
-    ${modelosHtml}
     <div style="font-size:11px;font-weight:500;margin-top:3px;">${l.cantidad} pares · <span class="etapa-pill ${etapaCls(l.etapa)}">${etapaLabel(l.etapa)}</span></div>
     ${l.aparador?`<div><span class="lote-aparador">${l.aparador}</span></div>`:''}
     <div style="font-size:10px;color:${diasEtapa>=7?'#a32d2d':'#aaa'};font-weight:${diasEtapa>=7?'600':'400'};margin-top:2px;">${diasEtapa}d en esta etapa${diasEtapa>=7?' ⚠️':''}</div>
