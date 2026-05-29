@@ -574,7 +574,7 @@ function renderKanbanCard(p, etapaFiltro) {
     return `<div class="kanban-pedido${esEntregado?' entregado':''}">
       <div class="pedido-sin-lotes" onclick="abrirPrimerLote(${p.id})">
         <div class="pedido-num">${p.numero} · sin lotes</div>
-        <div class="pedido-cliente">${cliente}</div>
+        <div class="pedido-cliente">${cliente}</div> <div style="font-size:10px;color:#888;margin-bottom:2px;">${p.producto} · ${(parseInt(p.cantidad_pedida)||0)+(parseInt(p.cantidad_stock)||0)} pares</div>
         ${p.notas ? `<div style="font-size:10px;color:#633806;font-style:italic;margin-bottom:2px;">📝 ${p.notas.split(' · ')[0]}</div>` : ''}
         <div class="pedido-bottom">
           ${tipoBadge(p.tipo)}
@@ -590,7 +590,7 @@ function renderKanbanCard(p, etapaFiltro) {
   return `<div class="kanban-pedido${esEntregado?' entregado':''}">
     <div class="pedido-header" onclick="toggleLotes('lotes-${p.id}-${etapaFiltro}')">
       <div class="pedido-num">${p.numero} · ${lotesMostrar.length} lote${lotesMostrar.length!==1?'s':''}</div>
-      <div class="pedido-cliente">${cliente}</div>
+      <div class="pedido-cliente">${cliente}</div> <div style="font-size:10px;color:#888;margin-bottom:2px;">${p.producto} · ${(parseInt(p.cantidad_pedida)||0)+(parseInt(p.cantidad_stock)||0)} pares</div>
       ${p.notas ? `<div style="font-size:10px;color:#633806;font-style:italic;margin-bottom:2px;">📝 ${p.notas.split(' · ')[0]}</div>` : ''}
       <div class="pedido-bottom">
         ${tipoBadge(p.tipo)}
