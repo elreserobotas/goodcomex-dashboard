@@ -127,7 +127,7 @@ function parsearTallesDeProductos(productos) {
     // Correaje: [7.650M]
     const correaje = pr.product.match(/\[7\.(\d+)([MNAV]?)\]/);
     if (correaje) {
-      const modelo = correaje[1];
+      const modelo = '7.' + correaje[1];
       const color = correaje[2] || '';
       const cantidad = Math.round(pr.qty);
       const nombre = pr.product.replace(/\[.*?\]\s*/, '').split('(')[0].trim();
