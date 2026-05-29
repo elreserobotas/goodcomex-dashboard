@@ -562,21 +562,25 @@ async function archivarPedidoDesdeLote(pedidoId) {
 function resumenModelos(p) {
   const talles = p.talles || [];
   if (!talles.length) return p.producto;
-  
+
   const grupos = {};
   talles.forEach(t => {
     const modelo = t.modelo || '?';
     const color = t.color || '';
-    const colorNombre = { 'M':'M','A':'A','N':'N','V':'V','':'N' }[color];
-    const clave = modelo + (colorNombre !== 'N' ? colorNombre : '');
+    const sufijo = (color && color !== 'N') ? color : '';
+    const clave = modelo + sufijo;
     if (!grupos[clave]) grupos[clave] = { clave, cantidad: 0 };
     grupos[clave].cantidad += parseInt(t.cantidad) || 0;
   });
-  
-  return Object.values(grupos)
-    .sort((a,b) => a.clave.localeCompare(b.clave))
-    .map(g => `${g.clave}: ${g.cantidad}p`)
-    .join(' · ');
+
+  const items = Object.values(grupos).sort((a,b) => a.clave.localeCompare(b.clave));
+  const total = items.reduce((a,g) => a + g.cantidad, 0);
+
+  if (items.length === 1) {
+    return `${items[0].clave}`;
+  }
+
+  return items.map(g => `<strong>${g.clave}</strong>: ${g.cantidad}p`).join(' · ');
 }
   
 function renderKanbanCard(p, etapaFiltro) {
@@ -593,7 +597,7 @@ function renderKanbanCard(p, etapaFiltro) {
     return `<div class="kanban-pedido${esEntregado?' entregado':''}">
       <div class="pedido-sin-lotes" onclick="abrirPrimerLote(${p.id})">
         <div class="pedido-num">${p.numero} · sin lotes</div>
-        <div class="pedido-cliente">${cliente}</div> <div style="font-size:10px;color:#888;margin-bottom:2px;">${resumenModelos(p)} · ${(parseInt(p.cantidad_pedida)||0)+(parseInt(p.cantidad_stock)||0)} pares</div>
+        <div class="pedido-cliente">${cliente === '10000' ? `<span style="font-style:italic;color:#633806;">${p.notas ? p.notas.split(' · ')[0] : '10000'}</span>` : cliente}</div> <div style="font-size:10px;color:#555;margin-bottom:2px;line-height:1.4;">${resumenModelos(p)} · <strong>${(parseInt(p.cantidad_pedida)||0)+(parseInt(p.cantidad_stock)||0)} pares</strong></div>
         ${p.notas ? `<div style="font-size:10px;color:#633806;font-style:italic;margin-bottom:2px;">📝 ${p.notas.split(' · ')[0]}</div>` : ''}
         <div class="pedido-bottom">
           ${tipoBadge(p.tipo)}
@@ -609,7 +613,7 @@ function renderKanbanCard(p, etapaFiltro) {
   return `<div class="kanban-pedido${esEntregado?' entregado':''}">
     <div class="pedido-header" onclick="toggleLotes('lotes-${p.id}-${etapaFiltro}')">
       <div class="pedido-num">${p.numero} · ${lotesMostrar.length} lote${lotesMostrar.length!==1?'s':''}</div>
-      <div class="pedido-cliente">${cliente}</div> <div style="font-size:10px;color:#888;margin-bottom:2px;">${resumenModelos(p)} · ${(parseInt(p.cantidad_pedida)||0)+(parseInt(p.cantidad_stock)||0)} pares</div>
+      <div class="pedido-cliente">${cliente === '10000' ? `<span style="font-style:italic;color:#633806;">${p.notas ? p.notas.split(' · ')[0] : '10000'}</span>` : cliente}</div> <div style="font-size:10px;color:#555;margin-bottom:2px;line-height:1.4;">${resumenModelos(p)} · <strong>${(parseInt(p.cantidad_pedida)||0)+(parseInt(p.cantidad_stock)||0)} pares</strong></div>
       ${p.notas ? `<div style="font-size:10px;color:#633806;font-style:italic;margin-bottom:2px;">📝 ${p.notas.split(' · ')[0]}</div>` : ''}
       <div class="pedido-bottom">
         ${tipoBadge(p.tipo)}
@@ -629,7 +633,7 @@ function renderLoteCard(l, p) {
   const diasEtapa=diasDesde(l.updated_at);
   const puedeEditar=usuario?.rol==='produccion'||usuario?.rol==='admin';
   const fuenteTalles=l.talles_detalle||p.talles;
-  const modelosHtml=buildModelosHtml(fuenteTalles,l.notas);
+  const modelosHtml=buildModelosHtml(fuenteTalles, null);
   return `<div class="lote-card">
     <div style="font-weight:700;font-size:11px;color:#1a1a1a;margin-bottom:4px;">${l.numero}</div>
     ${modelosHtml}
