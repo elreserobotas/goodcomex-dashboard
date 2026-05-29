@@ -445,7 +445,6 @@ function buildModelosHtml(fuenteTalles, notas) {
       </div>`;
     }).join('');
   }
-  if (notas) return `<div style="font-size:10px;color:#888;margin-bottom:3px;">${notas}</div>`;
   return '';
 }
 
@@ -559,7 +558,27 @@ async function archivarPedidoDesdeLote(pedidoId) {
   await fetch('/api/produccion?action=archivar',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:pedidoId})});
   cargarPedidos();
 }
-
+  
+function resumenModelos(p) {
+  const talles = p.talles || [];
+  if (!talles.length) return p.producto;
+  
+  const grupos = {};
+  talles.forEach(t => {
+    const modelo = t.modelo || '?';
+    const color = t.color || '';
+    const colorNombre = { 'M':'M','A':'A','N':'N','V':'V','':'N' }[color];
+    const clave = modelo + (colorNombre !== 'N' ? colorNombre : '');
+    if (!grupos[clave]) grupos[clave] = { clave, cantidad: 0 };
+    grupos[clave].cantidad += parseInt(t.cantidad) || 0;
+  });
+  
+  return Object.values(grupos)
+    .sort((a,b) => a.clave.localeCompare(b.clave))
+    .map(g => `${g.clave}: ${g.cantidad}p`)
+    .join(' · ');
+}
+  
 function renderKanbanCard(p, etapaFiltro) {
   const todosLotes=p.lotes||[];
   const sinLotes=todosLotes.length===0;
