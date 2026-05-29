@@ -107,41 +107,50 @@ function parseSaleLines(xml) {
     const orderMatch = struct[1].match(/<name>order_id<\/name>\s*<value><array><data>\s*<value><int>(\d+)<\/int>/);
     const nameMatch = struct[1].match(/<name>name<\/name>\s*<value><string>([^<]+)<\/string>/);
     if (orderMatch && nameMatch) {
-      results.push({
-        order_id: parseInt(orderMatch[1]),
-        name: nameMatch[1]
-      });
+      results.push({ order_id: parseInt(orderMatch[1]), name: nameMatch[1] });
     }
   }
   return results;
+}
+
+function extraerColor(productoStr) {
+  if (!productoStr) return '';
+  // Formato: [800.42M] → M, [800.42A] → A, [800.42] → '' (negro)
+  const match = productoStr.match(/\[\d+\.\d+([MNAV]?)\]/);
+  return match ? (match[1] || '') : '';
 }
 
 function parsearTallesDeProductos(productos) {
   const talles = [];
   let total = 0;
   productos.forEach(pr => {
-    const correaje = pr.product.match(/\[7\.(\d+)[MNAV]?\]/);
+    // Correaje: [7.650M]
+    const correaje = pr.product.match(/\[7\.(\d+)([MNAV]?)\]/);
     if (correaje) {
       const modelo = correaje[1];
+      const color = correaje[2] || '';
       const cantidad = Math.round(pr.qty);
       const nombre = pr.product.replace(/\[.*?\]\s*/, '').split('(')[0].trim();
-      if (cantidad > 0) { talles.push({ modelo, talle: null, cantidad, nombre }); total += cantidad; }
+      if (cantidad > 0) { talles.push({ modelo, talle: null, cantidad, nombre, color }); total += cantidad; }
       return;
     }
+    // Medias: [MN] [MG]
     const medias = pr.product.match(/\[(M[NG])\]/);
     if (medias) {
       const modelo = medias[1];
       const cantidad = Math.round(pr.qty);
-      if (cantidad > 0) { talles.push({ modelo, talle: null, cantidad, nombre: 'Medias' }); total += cantidad; }
+      if (cantidad > 0) { talles.push({ modelo, talle: null, cantidad, nombre: 'Medias', color: '' }); total += cantidad; }
       return;
     }
-    const normal = pr.product.match(/\[(\d+)\.(\d+)[MNAV]?\]/);
+    // Normal: [500.42M]
+    const normal = pr.product.match(/\[(\d+)\.(\d+)([MNAV]?)\]/);
     if (normal) {
       const modelo = normal[1];
       const talle = normal[2];
+      const color = normal[3] || '';
       const cantidad = Math.round(pr.qty);
       const nombre = pr.product.replace(/\[.*?\]\s*/, '').split('(')[0].trim();
-      if (cantidad > 0) { talles.push({ modelo, talle, cantidad, nombre }); total += cantidad; }
+      if (cantidad > 0) { talles.push({ modelo, talle, cantidad, nombre, color }); total += cantidad; }
       return;
     }
   });
@@ -182,7 +191,6 @@ module.exports = async function handler(req, res) {
     );
     const moves = parseMoves(movesXml);
 
-    // Traer notas de las órdenes de venta asociadas
     const saleIds = [...new Set(pickings.map(p => p.sale_id).filter(Boolean))];
     const notasPorSale = {};
     if (saleIds.length > 0) {
@@ -228,14 +236,17 @@ module.exports = async function handler(req, res) {
         : 'Modelos: ' + modelosUnicos.join(', ');
 
       const notasDetalle = productos.map(pr => {
-        const m = pr.product.match(/\[(\d+)\.(\d+)[MNAV]?\]/);
-        return m ? `T${m[2]} x${Math.round(pr.qty)}` : pr.product + ' x' + pr.qty;
+        const m = pr.product.match(/\[(\d+)\.(\d+)([MNAV]?)\]/);
+        if (m) {
+          const color = m[3] || '';
+          const colorNombre = { 'M':'Marrón','A':'Arena','N':'Negro','V':'Verde','':'Negro' }[color];
+          return `T${m[2]} ${colorNombre} x${Math.round(pr.qty)}`;
+        }
+        return pr.product + ' x' + pr.qty;
       }).join(' · ');
 
       const notaOdoo = limpiarHtml(p.note);
-      const notaSale = p.sale_id && notasPorSale[p.sale_id]
-        ? notasPorSale[p.sale_id].join(' · ')
-        : '';
+      const notaSale = p.sale_id && notasPorSale[p.sale_id] ? notasPorSale[p.sale_id].join(' · ') : '';
       const partes = [notaOdoo, notaSale, notasDetalle].filter(Boolean);
       const notaFinal = partes.join(' · ');
 
@@ -252,10 +263,24 @@ module.exports = async function handler(req, res) {
         RETURNING id
       `;
 
+      // Guardar talles con color
       if (talles.length > 0) {
         for (const t of talles) {
-          await sql`INSERT INTO talles (pedido_id, talle, cantidad, modelo, nombre_producto) VALUES (${pedidoId}, ${t.talle}, ${t.cantidad}, ${t.modelo}, ${t.nombre})`;
+          await sql`INSERT INTO talles (pedido_id, talle, cantidad, modelo, nombre_producto, color)
+            VALUES (${pedidoId}, ${t.talle}, ${t.cantidad}, ${t.modelo}, ${t.nombre}, ${t.color})`;
         }
+      }
+
+      // Guardar talles_detalle en el lote con color
+      if (talles.length > 0) {
+        const tallesDetalle = talles.map(t => ({
+          modelo: t.modelo,
+          talle: t.talle,
+          cantidad: t.cantidad,
+          nombre_producto: t.nombre,
+          color: t.color
+        }));
+        await sql`UPDATE lotes SET talles_detalle=${JSON.stringify(tallesDetalle)} WHERE id=${lote[0].id}`;
       }
 
       await sql`INSERT INTO historial (pedido_id, etapa_desde, etapa_hasta, usuario) VALUES (${pedidoId}, null, 'recibido', 'Sistema Odoo')`;
